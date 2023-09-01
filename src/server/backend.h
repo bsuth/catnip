@@ -1,11 +1,11 @@
-#ifndef BWC_SERVER_BACKEND_H
-#define BWC_SERVER_BACKEND_H
+#ifndef SERVER_BACKEND_H
+#define SERVER_BACKEND_H
 
 #include <wlr/backend.h>
 
-extern struct wlr_backend* bwc_backend;
+extern struct wlr_backend* server_backend;
 
 void
-bwc_backend_init();
+server_backend_init();
 
 #endif

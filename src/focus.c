@@ -3,14 +3,14 @@
 #include <assert.h>
 
 static void
-focus_view(struct bwc_view* view, struct wlr_surface* surface)
+focus_view(struct server_view* view, struct wlr_surface* surface)
 {
   /* Note: this function only deals with keyboard focus. */
   if (view == NULL) {
     return;
   }
 
-  struct wlr_seat* seat = bwc_seat;
+  struct wlr_seat* seat = server_seat;
   struct wlr_surface* prev_surface = seat->keyboard_state.focused_surface;
 
   if (prev_surface == surface) {
@@ -33,7 +33,7 @@ focus_view(struct bwc_view* view, struct wlr_surface* surface)
   /* Move the view to the front */
   wlr_scene_node_raise_to_top(&view->scene_tree->node);
   wl_list_remove(&view->link);
-  wl_list_insert(&bwc_views, &view->link);
+  wl_list_insert(&server_views, &view->link);
   /* Activate the new surface */
   wlr_xdg_toplevel_set_activated(view->xdg_toplevel, true);
   /*

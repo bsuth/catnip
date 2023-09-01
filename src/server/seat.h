@@ -1,11 +1,11 @@
-#ifndef BWC_SERVER_SEAT_H
-#define BWC_SERVER_SEAT_H
+#ifndef SERVER_SEAT_H
+#define SERVER_SEAT_H
 
 #include <wlr/types/wlr_seat.h>
 
-extern struct wlr_seat* bwc_seat;
+extern struct wlr_seat* server_seat;
 
 void
-bwc_seat_init();
+server_seat_init();
 
 #endif

@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 
-struct wlr_seat* bwc_seat;
+struct wlr_seat* server_seat;
 
-struct wl_listener seat_new_input_listener;
-struct wl_listener seat_request_cursor_listener;
-struct wl_listener seat_request_set_selection_listener;
+static struct wl_listener seat_new_input_listener;
+static struct wl_listener seat_request_cursor_listener;
+static struct wl_listener seat_request_set_selection_listener;
 
 static void
 seat_new_input_notify(struct wl_listener* listener, void* data)
@@ -26,7 +26,7 @@ seat_new_input_notify(struct wl_listener* listener, void* data)
        * is proxied through wlr_cursor. On another compositor, you might take
        * this opportunity to do libinput configuration on the device to set
        * acceleration, etc. */
-      wlr_cursor_attach_input_device(bwc_cursor, device);
+      wlr_cursor_attach_input_device(server_cursor, device);
       break;
     default:
       break;
@@ -37,11 +37,11 @@ seat_new_input_notify(struct wl_listener* listener, void* data)
    * there are no pointer devices, so we always include that capability. */
   uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER;
 
-  if (!wl_list_empty(&bwc_keyboards)) {
+  if (!wl_list_empty(&server_keyboards)) {
     capabilities |= WL_SEAT_CAPABILITY_KEYBOARD;
   }
 
-  wlr_seat_set_capabilities(bwc_seat, capabilities);
+  wlr_seat_set_capabilities(server_seat, capabilities);
 }
 
 static void
@@ -50,7 +50,7 @@ seat_request_cursor_notify(struct wl_listener* listener, void* data)
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
   struct wlr_seat_client* focused_client =
-    bwc_seat->pointer_state.focused_client;
+    server_seat->pointer_state.focused_client;
 
   /* This can be sent by any client, so we check to make sure this one is
    * actually has pointer focus first. */
@@ -60,7 +60,7 @@ seat_request_cursor_notify(struct wl_listener* listener, void* data)
      * on the output that it's currently on and continue to do so as the
      * cursor moves between outputs. */
     wlr_cursor_set_surface(
-      bwc_cursor, event->surface, event->hotspot_x, event->hotspot_y);
+      server_cursor, event->surface, event->hotspot_x, event->hotspot_y);
   }
 }
 
@@ -68,23 +68,23 @@ static void
 seat_request_set_selection_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_request_set_selection_event* event = data;
-  wlr_seat_set_selection(bwc_seat, event->source, event->serial);
+  wlr_seat_set_selection(server_seat, event->source, event->serial);
 }
 
 void
-bwc_seat_init()
+server_seat_init()
 {
-  bwc_seat = wlr_seat_create(bwc_display, "seat0");
+  server_seat = wlr_seat_create(server_display, "seat0");
 
-  bwc_keyboard_init();
+  server_keyboard_init();
 
   seat_new_input_listener.notify = seat_new_input_notify;
-  wl_signal_add(&bwc_backend->events.new_input, &seat_new_input_listener);
+  wl_signal_add(&server_backend->events.new_input, &seat_new_input_listener);
   seat_request_cursor_listener.notify = seat_request_cursor_notify;
-  wl_signal_add(&bwc_seat->events.request_set_cursor,
+  wl_signal_add(&server_seat->events.request_set_cursor,
                 &seat_request_cursor_listener);
   seat_request_set_selection_listener.notify =
     seat_request_set_selection_notify;
-  wl_signal_add(&bwc_seat->events.request_set_selection,
+  wl_signal_add(&server_seat->events.request_set_selection,
                 &seat_request_set_selection_listener);
 }

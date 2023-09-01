@@ -1,16 +1,18 @@
 #include "display.h"
+#include <stdlib.h>
+#include <wlr/util/log.h>
 
-struct wl_display* bwc_display;
-
-void
-bwc_display_init()
-{
-  bwc_display = wl_display_create();
-}
+struct wl_display* server_display;
+const char* server_display_socket;
 
 void
-bwc_display_teardown()
+server_display_init()
 {
-  wl_display_destroy_clients(bwc_display);
-  wl_display_destroy(bwc_display);
+  server_display = wl_display_create();
+
+  server_display_socket = wl_display_add_socket_auto(server_display);
+  if (!server_display_socket) {
+    wlr_log(WLR_ERROR, "failed to create server_socket");
+    exit(EXIT_FAILURE);
+  }
 }

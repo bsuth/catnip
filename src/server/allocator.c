@@ -1,19 +1,18 @@
 #include "allocator.h"
 #include "backend.h"
-#include "display.h"
 #include "renderer.h"
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
-struct wlr_allocator* bwc_allocator;
+struct wlr_allocator* server_allocator;
 
 void
-bwc_allocator_init()
+server_allocator_init()
 {
-  bwc_allocator = wlr_allocator_autocreate(bwc_backend, bwc_renderer);
+  server_allocator = wlr_allocator_autocreate(server_backend, server_renderer);
 
-  if (bwc_allocator == NULL) {
-    wlr_log(WLR_ERROR, "failed to create wlr_allocator");
+  if (server_allocator == NULL) {
+    wlr_log(WLR_ERROR, "failed to create server_allocator");
     exit(EXIT_FAILURE);
   }
 }

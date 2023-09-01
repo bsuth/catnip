@@ -4,21 +4,21 @@
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
-struct wlr_cursor* bwc_cursor;
-enum bwc_cursor_mode bwc_cursor_mode;
-struct wlr_xcursor_manager* bwc_cursor_mgr;
+struct wlr_cursor* server_cursor;
+enum server_cursor_mode server_cursor_mode;
+static struct wlr_xcursor_manager* server_cursor_manager;
 
-struct wl_listener cursor_motion_listener;
-struct wl_listener cursor_motion_absolute_listener;
-struct wl_listener cursor_button_listener;
-struct wl_listener cursor_axis_listener;
-struct wl_listener cursor_frame_listener;
+static struct wl_listener cursor_motion_listener;
+static struct wl_listener cursor_motion_absolute_listener;
+static struct wl_listener cursor_button_listener;
+static struct wl_listener cursor_axis_listener;
+static struct wl_listener cursor_frame_listener;
 
 static void
 reset_cursor_mode()
 {
   /* Reset the cursor mode to passthrough. */
-  bwc_cursor_mode = BWC_CURSOR_PASSTHROUGH;
+  server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
   /* server->grabbed_view = NULL; */
 }
 
@@ -26,10 +26,10 @@ static void
 process_cursor_move(uint32_t time)
 {
   // TODO
-  /* struct bwc_view* view = grabbed_view; */
+  /* struct server_view* view = grabbed_view; */
 
-  /* view->x = bwc_cursor->x - grab_x; */
-  /* view->y = bwc_cursor->y - grab_y; */
+  /* view->x = server_cursor->x - grab_x; */
+  /* view->y = server_cursor->y - grab_y; */
 
   /* wlr_scene_node_set_position(&view->scene_tree->node, view->x, view->y); */
 }
@@ -48,9 +48,9 @@ process_cursor_resize(uint32_t time)
    * you'd wait for the client to prepare a buffer at the new size, then
    * commit any movement that was prepared.
    */
-  /* struct bwc_view* view = grabbed_view; */
-  /* double border_x = bwc_cursor->x - server->grab_x; */
-  /* double border_y = bwc_cursor->y - server->grab_y; */
+  /* struct server_view* view = grabbed_view; */
+  /* double border_x = server_cursor->x - server->grab_x; */
+  /* double border_y = server_cursor->y - server->grab_y; */
   /* int new_left = server->grab_geobox.x; */
   /* int new_right = server->grab_geobox.x + server->grab_geobox.width; */
   /* int new_top = server->grab_geobox.y; */
@@ -94,28 +94,28 @@ static void
 process_cursor_motion(uint32_t time)
 {
   /* If the mode is non-passthrough, delegate to those functions. */
-  if (bwc_cursor_mode == BWC_CURSOR_MOVE) {
+  if (server_cursor_mode == SERVER_CURSOR_MODE_MOVE) {
     process_cursor_move(time);
     return;
-  } else if (bwc_cursor_mode == BWC_CURSOR_RESIZE) {
+  } else if (server_cursor_mode == SERVER_CURSOR_MODE_RESIZE) {
     process_cursor_resize(time);
     return;
   }
 
   /* Otherwise, find the view under the pointer and send the event along. */
   double sx, sy;
-  struct wlr_seat* seat = bwc_seat;
+  struct wlr_seat* seat = server_seat;
   struct wlr_surface* surface = NULL;
-  /* struct bwc_view* view = */
-  /*   desktop_view_at(server, bwc_cursor->x, bwc_cursor->y, &surface, &sx,
-   * &sy); */
+  /* struct server_view* view = */
+  /*   desktop_view_at(server, server_cursor->x, server_cursor->y, &surface,
+   * &sx, &sy); */
   /* if (!view) { */
   /*   /1* If there's no view under the cursor, set the cursor image to a */
   /*    * default. This is what makes the cursor image appear when you move it
    */
   /*    * around the screen, not over any views. *1/ */
   /*   wlr_xcursor_manager_set_cursor_image( */
-  /*     bwc_cursor_mgr, "left_ptr", bwc_cursor); */
+  /*     server_cursor_manager, "left_ptr", server_cursor); */
   /* } */
   if (surface) {
     /*
@@ -144,7 +144,7 @@ cursor_motion_notify(struct wl_listener* listener, void* data)
   struct wlr_pointer_motion_event* event = data;
 
   wlr_cursor_move(
-    bwc_cursor, &event->pointer->base, event->delta_x, event->delta_y);
+    server_cursor, &event->pointer->base, event->delta_x, event->delta_y);
 
   process_cursor_motion(event->time_msec);
 }
@@ -155,7 +155,7 @@ cursor_motion_absolute_notify(struct wl_listener* listener, void* data)
   struct wlr_pointer_motion_absolute_event* event = data;
 
   wlr_cursor_warp_absolute(
-    bwc_cursor, &event->pointer->base, event->x, event->y);
+    server_cursor, &event->pointer->base, event->x, event->y);
 
   process_cursor_motion(event->time_msec);
 }
@@ -167,13 +167,13 @@ cursor_button_notify(struct wl_listener* listener, void* data)
 
   /* Notify the client with pointer focus that a button press has occurred */
   wlr_seat_pointer_notify_button(
-    bwc_seat, event->time_msec, event->button, event->state);
+    server_seat, event->time_msec, event->button, event->state);
 
   double sx, sy;
   struct wlr_surface* surface = NULL;
-  /* struct bwc_view* view = */
-  /*   desktop_view_at(server, bwc_cursor->x, bwc_cursor->y, &surface, &sx,
-   * &sy); */
+  /* struct server_view* view = */
+  /*   desktop_view_at(server, server_cursor->x, server_cursor->y, &surface,
+   * &sx, &sy); */
 
   if (event->state == WLR_BUTTON_RELEASED) {
     /* If you released any buttons, we exit interactive move/resize mode. */
@@ -192,7 +192,7 @@ cursor_axis_notify(struct wl_listener* listener, void* data)
   struct wlr_pointer_axis_event* event = data;
 
   /* Notify the client with pointer focus of the axis event. */
-  wlr_seat_pointer_notify_axis(bwc_seat,
+  wlr_seat_pointer_notify_axis(server_seat,
                                event->time_msec,
                                event->orientation,
                                event->delta,
@@ -209,29 +209,29 @@ cursor_frame_notify(struct wl_listener* listener, void* data)
    * same time, in which case a frame event won't be sent in between. */
 
   /* Notify the client with pointer focus of the frame event. */
-  wlr_seat_pointer_notify_frame(bwc_seat);
+  wlr_seat_pointer_notify_frame(server_seat);
 }
 
 void
-bwc_cursor_init()
+server_cursor_init()
 {
-  bwc_cursor = wlr_cursor_create();
-  wlr_cursor_attach_output_layout(bwc_cursor, bwc_output_layout);
+  server_cursor = wlr_cursor_create();
+  wlr_cursor_attach_output_layout(server_cursor, server_output_layout);
 
-  bwc_cursor_mgr = wlr_xcursor_manager_create(NULL, 24);
-  wlr_xcursor_manager_load(bwc_cursor_mgr, 1);
+  server_cursor_manager = wlr_xcursor_manager_create(NULL, 24);
+  wlr_xcursor_manager_load(server_cursor_manager, 1);
 
-  bwc_cursor_mode = BWC_CURSOR_PASSTHROUGH;
+  server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
 
   cursor_motion_listener.notify = cursor_motion_notify;
-  wl_signal_add(&bwc_cursor->events.motion, &cursor_motion_listener);
+  wl_signal_add(&server_cursor->events.motion, &cursor_motion_listener);
   cursor_motion_absolute_listener.notify = cursor_motion_absolute_notify;
-  wl_signal_add(&bwc_cursor->events.motion_absolute,
+  wl_signal_add(&server_cursor->events.motion_absolute,
                 &cursor_motion_absolute_listener);
   cursor_button_listener.notify = cursor_button_notify;
-  wl_signal_add(&bwc_cursor->events.button, &cursor_button_listener);
+  wl_signal_add(&server_cursor->events.button, &cursor_button_listener);
   cursor_axis_listener.notify = cursor_axis_notify;
-  wl_signal_add(&bwc_cursor->events.axis, &cursor_axis_listener);
+  wl_signal_add(&server_cursor->events.axis, &cursor_axis_listener);
   cursor_frame_listener.notify = cursor_frame_notify;
-  wl_signal_add(&bwc_cursor->events.frame, &cursor_frame_listener);
+  wl_signal_add(&server_cursor->events.frame, &cursor_frame_listener);
 }

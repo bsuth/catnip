@@ -1,13 +1,12 @@
-#ifndef BWC_SERVER_DISPLAY_H
-#define BWC_SERVER_DISPLAY_H
+#ifndef SERVER_DISPLAY_H
+#define SERVER_DISPLAY_H
 
 #include <wayland-server-core.h>
 
-extern struct wl_display* bwc_display;
+extern struct wl_display* server_display;
+extern const char* server_display_socket;
 
 void
-bwc_display_init();
-void
-bwc_display_teardown();
+server_display_init();
 
 #endif

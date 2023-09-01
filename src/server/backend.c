@@ -3,15 +3,15 @@
 #include <stdlib.h>
 #include <wlr/util/log.h>
 
-struct wlr_backend* bwc_backend;
+struct wlr_backend* server_backend;
 
 void
-bwc_backend_init()
+server_backend_init()
 {
-  bwc_backend = wlr_backend_autocreate(bwc_display);
+  server_backend = wlr_backend_autocreate(server_display);
 
-  if (bwc_display == NULL) {
-    wlr_log(WLR_ERROR, "failed to create wlr_backend");
+  if (server_backend == NULL) {
+    wlr_log(WLR_ERROR, "failed to create server_backend");
     exit(EXIT_FAILURE);
   }
 }

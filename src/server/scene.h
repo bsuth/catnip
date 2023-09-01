@@ -1,11 +1,11 @@
-#ifndef BWC_SERVER_SCENE_H
-#define BWC_SERVER_SCENE_H
+#ifndef SERVER_SCENE_H
+#define SERVER_SCENE_H
 
 #include <wlr/types/wlr_scene.h>
 
-extern struct wlr_scene* bwc_scene;
+extern struct wlr_scene* server_scene;
 
 void
-bwc_scene_init();
+server_scene_init();
 
 #endif

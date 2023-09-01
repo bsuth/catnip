@@ -4,14 +4,14 @@
 #include "scene.h"
 #include <stdlib.h>
 
-struct wlr_xdg_shell* bwc_xdg_shell;
-struct wl_list bwc_views;
+struct wlr_xdg_shell* server_xdg_shell;
+struct wl_list server_views;
 
-struct wl_listener xdg_shell_new_surface_listener;
+static struct wl_listener xdg_shell_new_surface_listener;
 
 static void
-begin_interactive(struct bwc_view* view,
-                  enum bwc_cursor_mode mode,
+begin_interactive(struct server_view* view,
+                  enum server_cursor_mode mode,
                   uint32_t edges)
 {
   // TODO
@@ -54,9 +54,9 @@ begin_interactive(struct bwc_view* view,
 static void
 xdg_toplevel_map(struct wl_listener* listener, void* data)
 {
-  struct bwc_view* view = wl_container_of(listener, view, map);
+  struct server_view* view = wl_container_of(listener, view, map);
 
-  wl_list_insert(&bwc_views, &view->link);
+  wl_list_insert(&server_views, &view->link);
 
   /* focus_view(view, view->xdg_toplevel->base->surface); */
 }
@@ -64,7 +64,7 @@ xdg_toplevel_map(struct wl_listener* listener, void* data)
 static void
 xdg_toplevel_unmap(struct wl_listener* listener, void* data)
 {
-  struct bwc_view* view = wl_container_of(listener, view, unmap);
+  struct server_view* view = wl_container_of(listener, view, unmap);
 
   /* Reset the cursor mode if the grabbed view was unmapped. */
   /* if (view == view->server->grabbed_view) { */
@@ -77,7 +77,7 @@ xdg_toplevel_unmap(struct wl_listener* listener, void* data)
 static void
 xdg_toplevel_destroy(struct wl_listener* listener, void* data)
 {
-  struct bwc_view* view = wl_container_of(listener, view, destroy);
+  struct server_view* view = wl_container_of(listener, view, destroy);
 
   wl_list_remove(&view->map.link);
   wl_list_remove(&view->unmap.link);
@@ -96,8 +96,8 @@ xdg_toplevel_request_move(struct wl_listener* listener, void* data)
   // TODO check the provided serial against a list of button press serials sent
   // to this client, to prevent the client from requesting this whenever they
   // want.
-  struct bwc_view* view = wl_container_of(listener, view, request_move);
-  begin_interactive(view, BWC_CURSOR_MOVE, 0);
+  struct server_view* view = wl_container_of(listener, view, request_move);
+  begin_interactive(view, SERVER_CURSOR_MODE_MOVE, 0);
 }
 
 static void
@@ -107,15 +107,15 @@ xdg_toplevel_request_resize(struct wl_listener* listener, void* data)
   // to this client, to prevent the client from requesting this whenever they
   // want.
   struct wlr_xdg_toplevel_resize_event* event = data;
-  struct bwc_view* view = wl_container_of(listener, view, request_resize);
-  begin_interactive(view, BWC_CURSOR_RESIZE, event->edges);
+  struct server_view* view = wl_container_of(listener, view, request_resize);
+  begin_interactive(view, SERVER_CURSOR_MODE_RESIZE, event->edges);
 }
 
 static void
 xdg_toplevel_request_maximize(struct wl_listener* listener, void* data)
 {
   // TODO support maximization
-  struct bwc_view* view = wl_container_of(listener, view, request_maximize);
+  struct server_view* view = wl_container_of(listener, view, request_maximize);
   wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
 }
 
@@ -123,7 +123,8 @@ static void
 xdg_toplevel_request_fullscreen(struct wl_listener* listener, void* data)
 {
   // TODO support fullscreen
-  struct bwc_view* view = wl_container_of(listener, view, request_fullscreen);
+  struct server_view* view =
+    wl_container_of(listener, view, request_fullscreen);
   wlr_xdg_surface_schedule_configure(view->xdg_toplevel->base);
 }
 
@@ -141,11 +142,11 @@ xdg_shell_new_surface_notify(struct wl_listener* listener, void* data)
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = wlr_scene_xdg_surface_create(parent->data, xdg_surface);
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-    struct bwc_view* view = calloc(1, sizeof(struct bwc_view));
+    struct server_view* view = calloc(1, sizeof(struct server_view));
 
     view->xdg_toplevel = xdg_surface->toplevel;
-    view->scene_tree =
-      wlr_scene_xdg_surface_create(&bwc_scene->tree, view->xdg_toplevel->base);
+    view->scene_tree = wlr_scene_xdg_surface_create(&server_scene->tree,
+                                                    view->xdg_toplevel->base);
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but
     // it requires the popup parent's scene node. For convenience, we always
@@ -174,11 +175,11 @@ xdg_shell_new_surface_notify(struct wl_listener* listener, void* data)
 }
 
 void
-bwc_xdg_shell_init()
+server_xdg_shell_init()
 {
-  wl_list_init(&bwc_views);
-  bwc_xdg_shell = wlr_xdg_shell_create(bwc_display, 3);
+  wl_list_init(&server_views);
+  server_xdg_shell = wlr_xdg_shell_create(server_display, 3);
   xdg_shell_new_surface_listener.notify = xdg_shell_new_surface_notify;
-  wl_signal_add(&bwc_xdg_shell->events.new_surface,
+  wl_signal_add(&server_xdg_shell->events.new_surface,
                 &xdg_shell_new_surface_listener);
 }

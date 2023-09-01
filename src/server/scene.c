@@ -1,11 +1,11 @@
 #include "scene.h"
 #include "output.h"
 
-struct wlr_scene* bwc_scene;
+struct wlr_scene* server_scene;
 
 void
-bwc_scene_init()
+server_scene_init()
 {
-  bwc_scene = wlr_scene_create();
-  wlr_scene_attach_output_layout(bwc_scene, bwc_output_layout);
+  server_scene = wlr_scene_create();
+  wlr_scene_attach_output_layout(server_scene, server_output_layout);
 }

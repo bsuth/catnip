@@ -5,18 +5,17 @@
 #include "scene.h"
 #include <stdlib.h>
 
-struct wlr_output_layout* bwc_output_layout;
-struct wl_list bwc_outputs;
+struct wlr_output_layout* server_output_layout;
 
-struct wl_listener backend_new_output_listener;
+static struct wl_listener backend_new_output_listener;
 
 static void
 output_frame_notify(struct wl_listener* listener, void* data)
 {
-  struct bwc_output* output = wl_container_of(listener, output, frame);
+  struct server_output* output = wl_container_of(listener, output, frame);
 
   struct wlr_scene_output* scene_output =
-    wlr_scene_get_scene_output(bwc_scene, output->wlr_output);
+    wlr_scene_get_scene_output(server_scene, output->wlr_output);
 
   wlr_scene_output_commit(scene_output);
 
@@ -28,7 +27,7 @@ output_frame_notify(struct wl_listener* listener, void* data)
 static void
 output_destroy_notify(struct wl_listener* listener, void* data)
 {
-  struct bwc_output* output = wl_container_of(listener, output, destroy);
+  struct server_output* output = wl_container_of(listener, output, destroy);
 
   wl_list_remove(&output->frame.link);
   wl_list_remove(&output->destroy.link);
@@ -42,7 +41,7 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_output* wlr_output = data;
 
-  wlr_output_init_render(wlr_output, bwc_allocator, bwc_renderer);
+  wlr_output_init_render(wlr_output, server_allocator, server_renderer);
 
   /* Some backends don't have modes. DRM+KMS does, and we need to set a mode
    * before we can use the output. The mode is a tuple of (width, height,
@@ -60,7 +59,7 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
     }
   }
 
-  struct bwc_output* output = calloc(1, sizeof(struct bwc_output));
+  struct server_output* output = calloc(1, sizeof(struct server_output));
   output->wlr_output = wlr_output;
 
   output->frame.notify = output_frame_notify;
@@ -68,8 +67,6 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
 
   output->destroy.notify = output_destroy_notify;
   wl_signal_add(&wlr_output->events.destroy, &output->destroy);
-
-  wl_list_insert(&bwc_outputs, &output->link);
 
   // Adds this to the output layout. The add_auto function arranges outputs
   // from left-to-right in the order they appear. A more sophisticated
@@ -81,14 +78,14 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
   // output (such as DPI, scale factor, manufacturer, etc).
   //
   // TODO allow layout configuration
-  wlr_output_layout_add_auto(bwc_output_layout, wlr_output);
+  wlr_output_layout_add_auto(server_output_layout, wlr_output);
 }
 
 void
-bwc_output_init()
+server_output_init()
 {
-  bwc_output_layout = wlr_output_layout_create();
-  wl_list_init(&bwc_outputs);
+  server_output_layout = wlr_output_layout_create();
   backend_new_output_listener.notify = backend_new_output_notify;
-  wl_signal_add(&bwc_backend->events.new_output, &backend_new_output_listener);
+  wl_signal_add(&server_backend->events.new_output,
+                &backend_new_output_listener);
 }

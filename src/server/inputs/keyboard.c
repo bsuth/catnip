@@ -1,15 +1,18 @@
 #include "keyboard.h"
 #include "../display.h"
 #include "../seat.h"
+#include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
+#include <wlr/util/log.h>
 #include <xkbcommon/xkbcommon.h>
 
-struct wl_list bwc_keyboards;
+struct wl_list server_keyboards;
 
 static void
 keyboard_modifiers_notify(struct wl_listener* listener, void* data)
 {
-  struct bwc_keyboard* keyboard =
+  struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, modifiers_listener);
 
   /*
@@ -18,26 +21,25 @@ keyboard_modifiers_notify(struct wl_listener* listener, void* data)
    * same seat. You can swap out the underlying wlr_keyboard like this and
    * wlr_seat handles this transparently.
    */
-  wlr_seat_set_keyboard(bwc_seat, keyboard->wlr_keyboard);
+  wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
 
-  wlr_seat_keyboard_notify_modifiers(bwc_seat,
+  wlr_seat_keyboard_notify_modifiers(server_seat,
                                      &keyboard->wlr_keyboard->modifiers);
 }
 
 // TODO handle real bindings
+// NOTE This function assumes Alt is held down.
 static bool
 handle_keybinding(xkb_keysym_t sym)
 {
-  /*
-   * Here we handle compositor keybindings. This is when the compositor is
-   * processing keys, rather than passing them on to the client for its own
-   * processing.
-   *
-   * This function assumes Alt is held down.
-   */
   switch (sym) {
     case XKB_KEY_Escape:
-      wl_display_terminate(bwc_display);
+      wl_display_terminate(server_display);
+      break;
+    case XKB_KEY_a:
+      if (fork() == 0) {
+        execlp("foot", "foot", (void*)NULL);
+      }
       break;
     default:
       return false;
@@ -48,7 +50,7 @@ handle_keybinding(xkb_keysym_t sym)
 static void
 keyboard_key_notify(struct wl_listener* listener, void* data)
 {
-  struct bwc_keyboard* keyboard =
+  struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, key_listener);
 
   struct wlr_keyboard_key_event* event = data;
@@ -75,16 +77,16 @@ keyboard_key_notify(struct wl_listener* listener, void* data)
 
   if (!handled) {
     /* Otherwise, we pass it along to the client. */
-    wlr_seat_set_keyboard(bwc_seat, keyboard->wlr_keyboard);
+    wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
     wlr_seat_keyboard_notify_key(
-      bwc_seat, event->time_msec, event->keycode, event->state);
+      server_seat, event->time_msec, event->keycode, event->state);
   }
 }
 
 static void
 keyboard_destroy_notify(struct wl_listener* listener, void* data)
 {
-  struct bwc_keyboard* keyboard =
+  struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, destroy_listener);
 
   wl_list_remove(&keyboard->modifiers_listener.link);
@@ -100,7 +102,7 @@ register_new_keyboard(struct wlr_input_device* device)
 {
   struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
 
-  struct bwc_keyboard* keyboard = calloc(1, sizeof(struct bwc_keyboard));
+  struct server_keyboard* keyboard = calloc(1, sizeof(struct server_keyboard));
   keyboard->wlr_keyboard = wlr_keyboard;
 
   /* We need to prepare an XKB keymap and assign it to the keyboard. This
@@ -121,13 +123,13 @@ register_new_keyboard(struct wlr_input_device* device)
   keyboard->destroy_listener.notify = keyboard_destroy_notify;
   wl_signal_add(&device->events.destroy, &keyboard->destroy_listener);
 
-  wlr_seat_set_keyboard(bwc_seat, keyboard->wlr_keyboard);
+  wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
 
-  wl_list_insert(&bwc_keyboards, &keyboard->link);
+  wl_list_insert(&server_keyboards, &keyboard->link);
 }
 
 void
-bwc_keyboard_init()
+server_keyboard_init()
 {
-  wl_list_init(&bwc_keyboards);
+  wl_list_init(&server_keyboards);
 }
