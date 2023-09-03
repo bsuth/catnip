@@ -7,8 +7,8 @@
 #include "server/scene.h"
 #include "server/seat.h"
 #include "server/xdg_shell.h"
+#include "user_config/lua.h"
 #include <stdlib.h>
-#include <unistd.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/util/log.h>
@@ -34,6 +34,8 @@ main(int argc, char* argv[])
   server_xdg_shell_init();
   server_cursor_init();
   server_seat_init();
+
+  restart_user_config();
 
   // This must be set AFTER `server_backend_init()`, since
   // `wlr_backend_autocreate()` checks this variable when creating the backend.

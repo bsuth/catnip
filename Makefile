@@ -34,5 +34,9 @@ build/$(EXECUTABLE): build/xdg-shell-protocol.h $(OBJECTS)
 clean:
 	if [[ -d build ]]; then rm -r build; fi
 
-.PHONY = clean
+dev: FLAGS += -DDEV_MODE
+dev: build/$(EXECUTABLE)
+	@build/$(EXECUTABLE)
+
+.PHONY = clean dev
 .DEFAULT_GOAL = build/$(EXECUTABLE)
