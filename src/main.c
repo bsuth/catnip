@@ -7,7 +7,7 @@
 #include "server/scene.h"
 #include "server/seat.h"
 #include "server/xdg_shell.h"
-#include "user_config/lua.h"
+#include "user_config/user_config.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -35,7 +35,7 @@ main(int argc, char* argv[])
   server_cursor_init();
   server_seat_init();
 
-  restart_user_config();
+  reload_user_config();
 
   // This must be set AFTER `server_backend_init()`, since
   // `wlr_backend_autocreate()` checks this variable when creating the backend.

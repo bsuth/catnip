@@ -6,6 +6,8 @@
 struct server_keyboard
 {
   struct wl_list link;
+
+  struct wlr_input_device* wlr_input_device;
   struct wlr_keyboard* wlr_keyboard;
 
   struct wl_listener modifiers_listener;

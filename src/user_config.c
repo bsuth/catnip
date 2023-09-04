@@ -1,6 +1,7 @@
-#include "lua.h"
-#include "../config.h"
-#include "../utils/string.h"
+#include "user_config.h"
+#include "config.h"
+#include "lua_api/lua_api.h"
+#include "utils/string.h"
 #include <lauxlib.h>
 #include <lualib.h>
 #include <stdlib.h>
@@ -20,7 +21,7 @@ lua_State* L;
 char* user_config_path;
 
 static void
-try_config_path(const char* path)
+try_user_config_path(const char* path)
 {
   if (path == NULL || path[0] == '\0' || access(path, R_OK) == -1) {
     return;
@@ -28,6 +29,7 @@ try_config_path(const char* path)
 
   L = lua_open();
   luaL_openlibs(L);
+  init_lua_api(L);
 
   if (luaL_loadfile(L, path) == 0) {
     lua_call(L, 0, 0);
@@ -39,15 +41,15 @@ try_config_path(const char* path)
 }
 
 void
-restart_user_config()
+reload_user_config()
 {
-  try_config_path(user_config_path);
+  try_user_config_path(user_config_path);
 
   if (L != NULL) {
     return;
   }
 
-  char* default_config_path = getenv("XDG_CONFIG_HOME");
+  char* default_config_path;
   const char* env_xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (env_xdg_config_home != NULL && env_xdg_config_home[0] != '\0') {
     default_config_path = string_concat(env_xdg_config_home, "/bwc/init.lua");
@@ -58,12 +60,12 @@ restart_user_config()
     }
   }
 
-  try_config_path(default_config_path);
+  try_user_config_path(default_config_path);
   free(default_config_path);
 
   if (L != NULL) {
     return;
   }
 
-  try_config_path(ROOT_DIR "/fallback_config/init.lua");
+  try_user_config_path(ROOT_DIR "/fallback_config/init.lua");
 }
