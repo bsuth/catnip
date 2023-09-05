@@ -1,6 +1,7 @@
 EXECUTABLE = bwc
 
 PACKAGES = \
+	glib-2.0 \
 	luajit \
 	lua \
 	pixman-1 \

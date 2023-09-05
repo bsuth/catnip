@@ -1,11 +1,9 @@
 #include "user_config.h"
-#include "config.h"
-#include "lua_api/lua_api.h"
-#include "utils/string.h"
+#include "../config.h"
+#include "../lua_api/lua_api.h"
+#include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <stdlib.h>
-#include <string.h>
 #include <unistd.h>
 #include <wlr/util/log.h>
 
@@ -49,19 +47,21 @@ reload_user_config()
     return;
   }
 
-  char* default_config_path;
+  gchar* default_config_path;
   const char* env_xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (env_xdg_config_home != NULL && env_xdg_config_home[0] != '\0') {
-    default_config_path = string_concat(env_xdg_config_home, "/bwc/init.lua");
+    default_config_path =
+      g_strconcat(env_xdg_config_home, "/bwc/init.lua", NULL);
   } else {
     const char* env_home = getenv("HOME");
     if (env_home != NULL && env_home[0] != '\0') {
-      default_config_path = string_concat(env_home, "/.config/bwc/init.lua");
+      default_config_path =
+        g_strconcat(env_home, "/.config/bwc/init.lua", NULL);
     }
   }
 
   try_user_config_path(default_config_path);
-  free(default_config_path);
+  g_free(default_config_path);
 
   if (L != NULL) {
     return;
