@@ -5,7 +5,6 @@
 #include <lauxlib.h>
 #include <lualib.h>
 #include <unistd.h>
-#include <wlr/util/log.h>
 
 lua_State* L;
 
@@ -29,10 +28,8 @@ try_user_config_path(const char* path)
   luaL_openlibs(L);
   init_lua_api(L);
 
-  if (luaL_loadfile(L, path) == 0) {
-    lua_call(L, 0, 0);
-  } else {
-    wlr_log(WLR_ERROR, "%s", lua_tostring(L, -1));
+  if (luaL_loadfile(L, path) || lua_pcall(L, 0, 0, 0)) {
+    g_error("%s", lua_tostring(L, -1));
     lua_close(L);
     L = NULL;
   }

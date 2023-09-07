@@ -8,6 +8,7 @@
 #include "server/seat.h"
 #include "server/xdg_shell.h"
 #include "user_config/user_config.h"
+#include <glib.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -42,7 +43,7 @@ main(int argc, char* argv[])
   setenv("WAYLAND_DISPLAY", server_display_socket, true);
 
   if (!wlr_backend_start(server_backend)) {
-    wlr_log(WLR_ERROR, "failed to start server_backend");
+    g_critical("failed to start server_backend");
     exit(EXIT_FAILURE);
   }
 

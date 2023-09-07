@@ -17,6 +17,12 @@ add_user_keybinding(uint32_t modifiers,
                     xkb_keysym_t keysym,
                     int lua_callback_ref);
 
+void
+remove_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym);
+
+void
+clear_user_keybindings();
+
 bool
 handle_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym);
 

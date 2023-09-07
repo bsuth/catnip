@@ -10,7 +10,7 @@ PACKAGES = \
 	wayland-server
 
 CC = clang
-FLAGS = -DWLR_USE_UNSTABLE
+FLAGS = -DWLR_USE_UNSTABLE -DG_LOG_DOMAIN=\"$(EXECUTABLE)\"
 CFLAGS := -I./build $(shell pkg-config --cflags $(PACKAGES))
 LIBS := $(shell pkg-config --libs $(PACKAGES))
 
