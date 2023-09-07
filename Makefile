@@ -35,7 +35,7 @@ build/$(EXECUTABLE): build/xdg-shell-protocol.h $(OBJECTS)
 clean:
 	if [[ -d build ]]; then rm -r build; fi
 
-dev: FLAGS += -DDEV_MODE
+dev: FLAGS += -g -DDEV_MODE
 dev: build/$(EXECUTABLE)
 	@build/$(EXECUTABLE)
 

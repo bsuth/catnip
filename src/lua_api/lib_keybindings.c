@@ -1,4 +1,4 @@
-#include "keybindings.h"
+#include "lib_keybindings.h"
 #include "../user_config/keybindings.h"
 #include "utils.h"
 #include <glib.h>
@@ -49,7 +49,7 @@ translate_lua_key(const char* s)
 }
 
 static int
-keybindings_add(lua_State* L)
+lib_keybindings_add(lua_State* L)
 {
   uint32_t modifiers = 0;
 
@@ -96,7 +96,7 @@ keybindings_add(lua_State* L)
 }
 
 static int
-keybindings_remove(lua_State* L)
+lib_keybindings_remove(lua_State* L)
 {
   uint32_t modifiers = 0;
 
@@ -138,16 +138,16 @@ keybindings_remove(lua_State* L)
 }
 
 static int
-keybindings_clear(lua_State* L)
+lib_keybindings_clear(lua_State* L)
 {
   clear_user_keybindings();
   return 0;
 }
 
 static const struct luaL_Reg lib_keybindings[] = {
-  { "add", keybindings_add },
-  { "remove", keybindings_remove },
-  { "clear", keybindings_clear },
+  { "add", lib_keybindings_add },
+  { "remove", lib_keybindings_remove },
+  { "clear", lib_keybindings_clear },
   { NULL, NULL }
 };
 

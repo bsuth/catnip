@@ -10,6 +10,7 @@
 #include "user_config/user_config.h"
 #include <glib.h>
 #include <stdlib.h>
+#include <wayland-server-core.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/util/log.h>
@@ -36,7 +37,7 @@ main(int argc, char* argv[])
   server_cursor_init();
   server_seat_init();
 
-  reload_user_config();
+  load_user_config();
 
   // This must be set AFTER `server_backend_init()`, since
   // `wlr_backend_autocreate()` checks this variable when creating the backend.

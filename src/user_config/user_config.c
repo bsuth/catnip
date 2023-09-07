@@ -1,12 +1,14 @@
 #include "user_config.h"
 #include "../config.h"
 #include "../lua_api/lua_api.h"
+#include "keybindings.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
 #include <unistd.h>
 
 lua_State* L;
+bool user_config_request_reload = false;
 
 // TODO: Allow the user to manipulate this. This should be settable both via the
 // CLI and via the Lua API. In the latter case, this will be especially useful
@@ -36,7 +38,7 @@ try_user_config_path(const char* path)
 }
 
 void
-reload_user_config()
+load_user_config()
 {
   try_user_config_path(user_config_path);
 
@@ -65,4 +67,15 @@ reload_user_config()
   }
 
   try_user_config_path(ROOT_DIR "/fallback_config/init.lua");
+}
+
+void
+reload_user_config()
+{
+  clear_user_keybindings();
+
+  lua_close(L);
+  L = NULL;
+
+  load_user_config();
 }

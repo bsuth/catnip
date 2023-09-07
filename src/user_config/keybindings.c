@@ -89,6 +89,11 @@ handle_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
         g_warning("%s", lua_tostring(L, -1));
       }
 
+      if (user_config_request_reload) {
+        user_config_request_reload = false;
+        reload_user_config();
+      }
+
       return true;
     }
   }
