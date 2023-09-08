@@ -6,7 +6,7 @@
 struct wlr_renderer* server_renderer;
 
 void
-server_renderer_init()
+init_server_renderer()
 {
   server_renderer = wlr_renderer_autocreate(server_backend);
 

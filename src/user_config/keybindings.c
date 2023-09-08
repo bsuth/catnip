@@ -3,23 +3,23 @@
 #include "user_config.h"
 #include <glib.h>
 
-static GList* user_keybindings_list;
+// The maximum number of allowed keybindings. This is the size of the
+// `user_keybindings` array, which is just a normal array due to speed and
+// simplicity. If for some reason users are setting more than 128 keybindings,
+// this will need to be incremented.
+#define MAX_KEYBINDINGS 128
 
-static void
-destroy_user_keybinding(gpointer data)
-{
-  struct user_keybinding* user_keybinding = data;
-  luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
-  free(user_keybinding);
-}
+static struct user_keybinding user_keybindings[MAX_KEYBINDINGS];
+static int user_keybindings_len = 0;
 
 void
 add_user_keybinding(uint32_t modifiers,
                     xkb_keysym_t keysym,
                     int lua_callback_ref)
 {
-  for (GList* item = user_keybindings_list; item; item = item->next) {
-    struct user_keybinding* user_keybinding = item->data;
+
+  for (int i = 0; i < user_keybindings_len; ++i) {
+    struct user_keybinding* user_keybinding = &user_keybindings[i];
 
     const bool is_matching_keybinding =
       user_keybinding->modifiers == modifiers &&
@@ -34,32 +34,45 @@ add_user_keybinding(uint32_t modifiers,
     }
   }
 
+  if (user_keybindings_len == MAX_KEYBINDINGS) {
+    g_warning("cannot add more than %d keybindings", MAX_KEYBINDINGS);
+  }
+
   struct user_keybinding* user_keybinding =
-    malloc(sizeof(struct user_keybinding));
+    &user_keybindings[user_keybindings_len];
 
   user_keybinding->modifiers = modifiers;
   user_keybinding->keysym = keysym;
   user_keybinding->lua_callback_ref = lua_callback_ref;
 
-  // Use `g_list_prepend` over `g_list_append` since order doesn't matter and
-  // prepend is faster.
-  user_keybindings_list =
-    g_list_prepend(user_keybindings_list, user_keybinding);
+  ++user_keybindings_len;
 }
 
 void
 remove_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  for (GList* item = user_keybindings_list; item; item = item->next) {
-    struct user_keybinding* user_keybinding = item->data;
+  for (int i = 0; i < user_keybindings_len; ++i) {
+    struct user_keybinding* user_keybinding = &user_keybindings[i];
 
     const bool is_matching_keybinding =
       user_keybinding->modifiers == modifiers &&
       user_keybinding->keysym == keysym;
 
     if (is_matching_keybinding) {
-      user_keybindings_list = g_list_remove_link(user_keybindings_list, item);
-      g_list_free_full(item, destroy_user_keybinding);
+      luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+
+      // Since order does not matter, we simply copy the last element to the
+      // deleted element's index and update the length.
+      struct user_keybinding* last_user_keybinding =
+        &user_keybindings[user_keybindings_len - 1];
+
+      user_keybinding->modifiers = last_user_keybinding->modifiers;
+      user_keybinding->keysym = last_user_keybinding->keysym;
+      user_keybinding->lua_callback_ref =
+        last_user_keybinding->lua_callback_ref;
+
+      --user_keybindings_len;
+
       return;
     }
   }
@@ -68,15 +81,18 @@ remove_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 void
 clear_user_keybindings()
 {
-  g_list_free_full(g_steal_pointer(&user_keybindings_list),
-                   destroy_user_keybinding);
+  for (int i = 0; i < user_keybindings_len; ++i) {
+    luaL_unref(L, LUA_REGISTRYINDEX, user_keybindings[i].lua_callback_ref);
+  }
+
+  user_keybindings_len = 0;
 }
 
 bool
 handle_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  for (GList* item = user_keybindings_list; item; item = item->next) {
-    struct user_keybinding* user_keybinding = item->data;
+  for (int i = 0; i < user_keybindings_len; ++i) {
+    struct user_keybinding* user_keybinding = &user_keybindings[i];
 
     const bool is_matching_keybinding =
       user_keybinding->modifiers == modifiers &&

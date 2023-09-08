@@ -24,6 +24,6 @@ extern struct wlr_xdg_shell* server_xdg_shell;
 extern struct wl_list server_views;
 
 void
-server_xdg_shell_init();
+init_server_xdg_shell();
 
 #endif

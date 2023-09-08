@@ -157,6 +157,6 @@ load_lib_keybindings(lua_State* L)
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   luaL_newlib(L, lib_keybindings);
-  lua_setfield(L, -2, "bwc.keybindings");
+  lua_setfield(L, -2, "catnip.keybindings");
   lua_pop(L, 2);
 }

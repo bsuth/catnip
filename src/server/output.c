@@ -82,7 +82,7 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
 }
 
 void
-server_output_init()
+init_server_output()
 {
   server_output_layout = wlr_output_layout_create();
   backend_new_output_listener.notify = backend_new_output_notify;

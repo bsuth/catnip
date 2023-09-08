@@ -213,7 +213,7 @@ cursor_frame_notify(struct wl_listener* listener, void* data)
 }
 
 void
-server_cursor_init()
+init_server_cursor()
 {
   server_cursor = wlr_cursor_create();
   wlr_cursor_attach_output_layout(server_cursor, server_output_layout);

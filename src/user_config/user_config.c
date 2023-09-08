@@ -14,9 +14,9 @@ bool user_config_request_reload = false;
 // CLI and via the Lua API. In the latter case, this will be especially useful
 // for dynamically switching the theme.
 //
-// 1. Bash: `bwc -c my_custom_config.lua`
-// 2. Lua: `require('bwc').restart("my_custom_config.lua")`
-// 3. Lua: `require('bwc').restart("")` -- let bwc auto detect
+// 1. Bash: `catnip -c my_custom_config.lua`
+// 2. Lua: `require('catnip').restart("my_custom_config.lua")`
+// 3. Lua: `require('catnip').restart("")` -- let catnip auto detect
 char* user_config_path;
 
 static void
@@ -37,7 +37,7 @@ try_user_config_path(const char* path)
   }
 }
 
-void
+static void
 load_user_config()
 {
   try_user_config_path(user_config_path);
@@ -50,12 +50,12 @@ load_user_config()
   const char* env_xdg_config_home = getenv("XDG_CONFIG_HOME");
   if (env_xdg_config_home != NULL && env_xdg_config_home[0] != '\0') {
     default_config_path =
-      g_strconcat(env_xdg_config_home, "/bwc/init.lua", NULL);
+      g_strconcat(env_xdg_config_home, "/catnip/init.lua", NULL);
   } else {
     const char* env_home = getenv("HOME");
     if (env_home != NULL && env_home[0] != '\0') {
       default_config_path =
-        g_strconcat(env_home, "/.config/bwc/init.lua", NULL);
+        g_strconcat(env_home, "/.config/catnip/init.lua", NULL);
     }
   }
 
@@ -67,6 +67,12 @@ load_user_config()
   }
 
   try_user_config_path(ROOT_DIR "/fallback_config/init.lua");
+}
+
+void
+init_user_config()
+{
+  load_user_config();
 }
 
 void

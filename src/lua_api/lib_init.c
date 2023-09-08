@@ -31,6 +31,6 @@ load_lib_init(lua_State* L)
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   luaL_newlib(L, lib_init);
-  lua_setfield(L, -2, "bwc");
+  lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
 }

@@ -21,6 +21,6 @@ void
 register_new_keyboard(struct wlr_input_device* device);
 
 void
-server_keyboard_init();
+init_server_keyboard();
 
 #endif

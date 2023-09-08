@@ -175,7 +175,7 @@ xdg_shell_new_surface_notify(struct wl_listener* listener, void* data)
 }
 
 void
-server_xdg_shell_init()
+init_server_xdg_shell()
 {
   wl_list_init(&server_views);
   server_xdg_shell = wlr_xdg_shell_create(server_display, 3);

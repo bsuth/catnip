@@ -14,6 +14,6 @@ extern struct wlr_cursor* server_cursor;
 extern enum server_cursor_mode server_cursor_mode;
 
 void
-server_cursor_init();
+init_server_cursor();
 
 #endif

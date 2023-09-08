@@ -7,6 +7,6 @@ extern struct wl_display* server_display;
 extern const char* server_display_socket;
 
 void
-server_display_init();
+init_server_display();
 
 #endif

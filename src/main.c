@@ -22,22 +22,22 @@ main(int argc, char* argv[])
 
   // TODO CLI (getopt)
 
-  server_display_init();
-  server_backend_init();
-  server_renderer_init();
-  server_allocator_init();
-  server_output_init();
-  server_scene_init();
+  init_server_display();
+  init_server_backend();
+  init_server_renderer();
+  init_server_allocator();
+  init_server_output();
+  init_server_scene();
 
   wlr_compositor_create(server_display, server_renderer);
   wlr_subcompositor_create(server_display);
   wlr_data_device_manager_create(server_display);
 
-  server_xdg_shell_init();
-  server_cursor_init();
-  server_seat_init();
+  init_server_xdg_shell();
+  init_server_cursor();
+  init_server_seat();
 
-  load_user_config();
+  init_user_config();
 
   // This must be set AFTER `server_backend_init()`, since
   // `wlr_backend_autocreate()` checks this variable when creating the backend.

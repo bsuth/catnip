@@ -6,6 +6,6 @@
 extern struct wlr_seat* server_seat;
 
 void
-server_seat_init();
+init_server_seat();
 
 #endif

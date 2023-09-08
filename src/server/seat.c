@@ -72,11 +72,11 @@ seat_request_set_selection_notify(struct wl_listener* listener, void* data)
 }
 
 void
-server_seat_init()
+init_server_seat()
 {
   server_seat = wlr_seat_create(server_display, "seat0");
 
-  server_keyboard_init();
+  init_server_keyboard();
 
   seat_new_input_listener.notify = seat_new_input_notify;
   wl_signal_add(&server_backend->events.new_input, &seat_new_input_listener);

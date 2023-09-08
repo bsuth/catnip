@@ -1,4 +1,4 @@
-EXECUTABLE = bwc
+EXECUTABLE = catnip
 
 PACKAGES = \
 	glib-2.0 \

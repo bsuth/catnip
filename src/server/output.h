@@ -14,6 +14,6 @@ struct server_output
 extern struct wlr_output_layout* server_output_layout;
 
 void
-server_output_init();
+init_server_output();
 
 #endif

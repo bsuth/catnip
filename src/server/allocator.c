@@ -6,7 +6,7 @@
 struct wlr_allocator* server_allocator;
 
 void
-server_allocator_init()
+init_server_allocator()
 {
   server_allocator = wlr_allocator_autocreate(server_backend, server_renderer);
 

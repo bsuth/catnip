@@ -14,7 +14,7 @@ extern lua_State* L;
 extern bool user_config_request_reload;
 
 void
-load_user_config();
+init_user_config();
 
 void
 reload_user_config();
