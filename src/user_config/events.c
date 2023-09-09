@@ -8,14 +8,16 @@
 static GHashTable* event_registry;
 
 static void
-free_lua_callback_ref(void* lua_callback_ref)
+free_lua_callback_ref(void* data)
 {
-  luaL_unref(L, LUA_REGISTRYINDEX, *(const int*)lua_callback_ref);
+  const int* lua_callback_ref = data;
+  luaL_unref(L, LUA_REGISTRYINDEX, *lua_callback_ref);
 }
 
 static void
-free_event_listeners(void* event_listeners)
+free_event_listeners(void* data)
 {
+  GArray* event_listeners = data;
   g_array_free(event_listeners, true);
 }
 

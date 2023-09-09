@@ -1,5 +1,5 @@
 #include "lib_init.h"
-#include "../server/display.h"
+#include "../server/server.h"
 #include "../user_config/events.h"
 #include "../user_config/user_config.h"
 #include "lua.h"
@@ -11,8 +11,7 @@
 static int
 lib_init_quit(lua_State* L)
 {
-  wl_display_terminate(server_display);
-  call_event_listeners("quit");
+  stop_server();
   return 0;
 }
 
@@ -20,7 +19,6 @@ static int
 lib_init_reload(lua_State* L)
 {
   user_config_request_reload = true;
-  call_event_listeners("reload");
   return 0;
 }
 

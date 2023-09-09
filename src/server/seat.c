@@ -3,7 +3,6 @@
 #include "cursor.h"
 #include "display.h"
 #include "inputs/keyboard.h"
-#include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 
 struct wlr_seat* server_seat;

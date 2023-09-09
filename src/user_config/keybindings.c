@@ -1,101 +1,102 @@
 #include "keybindings.h"
+#include "../user_config/events.h"
 #include "lauxlib.h"
 #include "user_config.h"
 #include <glib.h>
+#include <stdlib.h>
+#include <wlr/types/wlr_keyboard.h>
 
-// The maximum number of allowed keybindings. This is the size of the
-// `user_keybindings` array, which is just a normal array due to speed and
-// simplicity. If for some reason users are setting more than 128 keybindings,
-// this will need to be incremented.
-#define MAX_KEYBINDINGS 128
+static GHashTable* user_keybindings;
 
-static struct user_keybinding user_keybindings[MAX_KEYBINDINGS];
-static int user_keybindings_len = 0;
+static void
+free_user_keybinding(void* data)
+{
+  struct user_keybinding* user_keybinding = data;
+  luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+  free(user_keybinding);
+}
+
+static gint64
+get_user_keybindings_key(uint32_t modifiers, xkb_keysym_t keysym)
+{
+  return (keysym << WLR_MODIFIER_COUNT) | modifiers;
+}
+
+void
+init_user_keybindings()
+{
+  user_keybindings = g_hash_table_new_full(
+    g_int64_hash, g_int_equal, free, free_user_keybinding);
+}
 
 void
 add_user_keybinding(uint32_t modifiers,
                     xkb_keysym_t keysym,
                     int lua_callback_ref)
 {
-  if (user_keybindings_len == MAX_KEYBINDINGS) {
-    g_warning("cannot add more than %d keybindings", MAX_KEYBINDINGS);
-  }
+  gint64 key = get_user_keybindings_key(modifiers, keysym);
 
   struct user_keybinding* user_keybinding =
-    &user_keybindings[user_keybindings_len];
+    g_hash_table_lookup(user_keybindings, &key);
 
-  user_keybinding->modifiers = modifiers;
-  user_keybinding->keysym = keysym;
-  user_keybinding->lua_callback_ref = lua_callback_ref;
+  if (user_keybinding != NULL) {
+    luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+    user_keybinding->lua_callback_ref = lua_callback_ref;
+  } else {
+    gint64* persistent_key = malloc(sizeof(gint64));
+    *persistent_key = key;
 
-  ++user_keybindings_len;
+    user_keybinding = malloc(sizeof(struct user_keybinding));
+    user_keybinding->modifiers = modifiers;
+    user_keybinding->keysym = keysym;
+    user_keybinding->lua_callback_ref = lua_callback_ref;
+
+    g_hash_table_insert(user_keybindings, persistent_key, user_keybinding);
+  }
 }
 
 void
 remove_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  for (int i = 0; i < user_keybindings_len; ++i) {
-    struct user_keybinding* user_keybinding = &user_keybindings[i];
+  gint64 key = get_user_keybindings_key(modifiers, keysym);
 
-    const bool is_matching_keybinding =
-      user_keybinding->modifiers == modifiers &&
-      user_keybinding->keysym == keysym;
+  struct user_keybinding* user_keybinding =
+    g_hash_table_lookup(user_keybindings, &key);
 
-    if (is_matching_keybinding) {
-      luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
-
-      // Since order does not matter, we simply copy the last element to the
-      // deleted element's index and update the length.
-      struct user_keybinding* last_user_keybinding =
-        &user_keybindings[user_keybindings_len - 1];
-
-      user_keybinding->modifiers = last_user_keybinding->modifiers;
-      user_keybinding->keysym = last_user_keybinding->keysym;
-      user_keybinding->lua_callback_ref =
-        last_user_keybinding->lua_callback_ref;
-
-      --user_keybindings_len;
-
-      return;
-    }
+  if (user_keybinding != NULL) {
+    g_hash_table_remove(user_keybindings, &key);
   }
 }
 
 void
 clear_user_keybindings()
 {
-  for (int i = 0; i < user_keybindings_len; ++i) {
-    luaL_unref(L, LUA_REGISTRYINDEX, user_keybindings[i].lua_callback_ref);
-  }
-
-  user_keybindings_len = 0;
+  g_hash_table_remove_all(user_keybindings);
 }
 
 bool
 handle_user_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  for (int i = 0; i < user_keybindings_len; ++i) {
-    struct user_keybinding* user_keybinding = &user_keybindings[i];
+  gint64 key = get_user_keybindings_key(modifiers, keysym);
 
-    const bool is_matching_keybinding =
-      user_keybinding->modifiers == modifiers &&
-      user_keybinding->keysym == keysym;
+  struct user_keybinding* user_keybinding =
+    g_hash_table_lookup(user_keybindings, &key);
 
-    if (is_matching_keybinding) {
-      lua_rawgeti(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
-
-      if (lua_pcall(L, 0, 0, 0) != 0) {
-        g_warning("%s", lua_tostring(L, -1));
-      }
-
-      if (user_config_request_reload) {
-        user_config_request_reload = false;
-        reload_user_config();
-      }
-
-      return true;
-    }
+  if (user_keybinding == NULL) {
+    return false;
   }
 
-  return false;
+  lua_rawgeti(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+
+  if (lua_pcall(L, 0, 0, 0) != 0) {
+    g_warning("%s", lua_tostring(L, -1));
+  }
+
+  if (user_config_request_reload) {
+    user_config_request_reload = false;
+    call_event_listeners("reload");
+    reload_user_config();
+  }
+
+  return true;
 }

@@ -73,6 +73,7 @@ load_user_config()
 void
 init_user_config()
 {
+  init_user_keybindings();
   init_event_listeners();
   load_user_config();
 }

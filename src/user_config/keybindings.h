@@ -13,6 +13,9 @@ struct user_keybinding
 };
 
 void
+init_user_keybindings();
+
+void
 add_user_keybinding(uint32_t modifiers,
                     xkb_keysym_t keysym,
                     int lua_callback_ref);
