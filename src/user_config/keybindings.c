@@ -17,23 +17,6 @@ add_user_keybinding(uint32_t modifiers,
                     xkb_keysym_t keysym,
                     int lua_callback_ref)
 {
-
-  for (int i = 0; i < user_keybindings_len; ++i) {
-    struct user_keybinding* user_keybinding = &user_keybindings[i];
-
-    const bool is_matching_keybinding =
-      user_keybinding->modifiers == modifiers &&
-      user_keybinding->keysym == keysym;
-
-    if (is_matching_keybinding) {
-      if (user_keybinding->lua_callback_ref != lua_callback_ref) {
-        luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
-        user_keybinding->lua_callback_ref = lua_callback_ref;
-      }
-      return;
-    }
-  }
-
   if (user_keybindings_len == MAX_KEYBINDINGS) {
     g_warning("cannot add more than %d keybindings", MAX_KEYBINDINGS);
   }

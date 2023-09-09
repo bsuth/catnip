@@ -1,6 +1,5 @@
 ## TODO
 
-- Events
 - Outputs
 - Tags
 - Clients

@@ -1,6 +1,7 @@
 #include "user_config.h"
 #include "../config.h"
 #include "../lua_api/lua_api.h"
+#include "events.h"
 #include "keybindings.h"
 #include <glib.h>
 #include <lauxlib.h>
@@ -72,6 +73,7 @@ load_user_config()
 void
 init_user_config()
 {
+  init_event_listeners();
   load_user_config();
 }
 
@@ -79,6 +81,7 @@ void
 reload_user_config()
 {
   clear_user_keybindings();
+  clear_event_listeners(NULL);
 
   lua_close(L);
   L = NULL;
