@@ -1,5 +1,4 @@
 #include "server.h"
-#include "../user_config/events.h"
 #include "allocator.h"
 #include "backend.h"
 #include "cursor.h"
@@ -8,6 +7,7 @@
 #include "renderer.h"
 #include "scene.h"
 #include "seat.h"
+#include "user_config/events.h"
 #include "xdg_shell.h"
 #include <glib.h>
 #include <wlr/types/wlr_data_device.h>

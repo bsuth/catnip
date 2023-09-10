@@ -9,35 +9,41 @@ PACKAGES = \
 	wlroots \
 	wayland-server
 
+SOURCE_DIR = src
+BUILD_DIR = build
+BUILD_INCLUDE_DIR = $(BUILD_DIR)/include
+
 CC = clang
 FLAGS = -DWLR_USE_UNSTABLE -DG_LOG_DOMAIN=\"$(EXECUTABLE)\"
-CFLAGS := -I./build $(shell pkg-config --cflags $(PACKAGES))
+CFLAGS := -I$(SOURCE_DIR) -I$(BUILD_INCLUDE_DIR) $(shell pkg-config --cflags $(PACKAGES))
 LIBS := $(shell pkg-config --libs $(PACKAGES))
 
-SOURCES := $(shell find src -name '*.c')
-OBJECTS := $(SOURCES:src/%.c=build/%.o)
+SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
+OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(BUILD_DIR)/%.o)
 
 WAYLAND_SCANNER := $(shell pkg-config --variable=wayland_scanner wayland-scanner)
 WAYLAND_PROTOCOLS := $(shell pkg-config --variable=pkgdatadir wayland-protocols)
 
-$(shell mkdir -p build)
+$(shell mkdir -p $(BUILD_DIR))
+$(shell mkdir -p $(BUILD_INCLUDE_DIR))
 
-build/%.o: src/%.c
+$(BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
 	mkdir -p $(@D)
 	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ $<
 
-build/xdg-shell-protocol.h:
+$(BUILD_INCLUDE_DIR)/xdg-shell-protocol.h:
 	$(WAYLAND_SCANNER) server-header $(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
 
-build/$(EXECUTABLE): build/xdg-shell-protocol.h $(OBJECTS)
-	$(CC) $(FLAGS) $(LIBS) $(OBJECTS) -o build/$(EXECUTABLE)
+$(BUILD_DIR)/$(EXECUTABLE): $(BUILD_INCLUDE_DIR)/xdg-shell-protocol.h $(OBJECTS)
+	$(CC) $(FLAGS) $(LIBS) $(OBJECTS) -o $(BUILD_DIR)/$(EXECUTABLE)
 
 clean:
-	if [[ -d build ]]; then rm -r build; fi
+	if [[ -d $(BUILD_DIR) ]]; then rm -r $(BUILD_DIR); fi
+	if [[ -d $(BUILD_INCLUDE_DIR) ]]; then rm -r $(BUILD_INCLUDE_DIR); fi
 
 dev: FLAGS += -g -DDEV_MODE
-dev: build/$(EXECUTABLE)
-	@build/$(EXECUTABLE)
+dev: $(BUILD_DIR)/$(EXECUTABLE)
+	@$(BUILD_DIR)/$(EXECUTABLE)
 
 .PHONY = clean dev
-.DEFAULT_GOAL = build/$(EXECUTABLE)
+.DEFAULT_GOAL = $(BUILD_DIR)/$(EXECUTABLE)

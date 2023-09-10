@@ -1,7 +1,7 @@
 #include "keyboard.h"
-#include "../../user_config/keybindings.h"
-#include "../display.h"
-#include "../seat.h"
+#include "server/display.h"
+#include "server/seat.h"
+#include "user_config/keybindings.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

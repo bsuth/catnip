@@ -1,8 +1,8 @@
 #include "user_config.h"
-#include "../config.h"
-#include "../lua_api/lua_api.h"
+#include "config.h"
 #include "events.h"
 #include "keybindings.h"
+#include "lua_api/lua_api.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>

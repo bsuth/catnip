@@ -1,5 +1,5 @@
 #include "lib_keybindings.h"
-#include "../user_config/keybindings.h"
+#include "user_config/keybindings.h"
 #include "utils.h"
 #include <glib.h>
 #include <lauxlib.h>

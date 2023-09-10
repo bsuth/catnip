@@ -1,8 +1,8 @@
 #include "lib_init.h"
-#include "../server/server.h"
-#include "../user_config/events.h"
-#include "../user_config/user_config.h"
 #include "lua.h"
+#include "server/server.h"
+#include "user_config/events.h"
+#include "user_config/user_config.h"
 #include "utils.h"
 #include <glib.h>
 #include <lauxlib.h>
