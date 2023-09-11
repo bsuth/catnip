@@ -20,8 +20,10 @@ keyboard_modifiers_notify(struct wl_listener* listener, void* data)
   // keyboards to the same seat, swapping them out on key events.
   wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
 
-  wlr_seat_keyboard_notify_modifiers(server_seat,
-                                     &keyboard->wlr_keyboard->modifiers);
+  wlr_seat_keyboard_notify_modifiers(
+    server_seat,
+    &keyboard->wlr_keyboard->modifiers
+  );
 }
 
 static void
@@ -51,7 +53,11 @@ keyboard_key_notify(struct wl_listener* listener, void* data)
 
   // Forward the key event to clients
   wlr_seat_keyboard_notify_key(
-    server_seat, event->time_msec, event->keycode, event->state);
+    server_seat,
+    event->time_msec,
+    event->keycode,
+    event->state
+  );
 }
 
 static void

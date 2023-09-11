@@ -3,8 +3,7 @@
 
 #include <wlr/types/wlr_cursor.h>
 
-enum server_cursor_mode
-{
+enum server_cursor_mode {
   SERVER_CURSOR_MODE_PASSTHROUGH,
   SERVER_CURSOR_MODE_MOVE,
   SERVER_CURSOR_MODE_RESIZE,

@@ -64,12 +64,11 @@ lib_init_remove_event_listener(lua_State* L)
 }
 
 static const struct luaL_Reg lib_init[] = {
-  { "quit", lib_init_quit },
-  { "reload", lib_init_reload },
-  { "add_event_listener", lib_init_add_event_listener },
-  { "remove_event_listener", lib_init_remove_event_listener },
-  { NULL, NULL }
-};
+  {"quit", lib_init_quit},
+  {"reload", lib_init_reload},
+  {"add_event_listener", lib_init_add_event_listener},
+  {"remove_event_listener", lib_init_remove_event_listener},
+  {NULL, NULL}};
 
 void
 load_lib_init(lua_State* L)

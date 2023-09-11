@@ -42,10 +42,12 @@ focus_view(struct server_view* view, struct wlr_surface* surface)
    * clients without additional work on your part.
    */
   if (keyboard != NULL) {
-    wlr_seat_keyboard_notify_enter(seat,
-                                   view->xdg_toplevel->base->surface,
-                                   keyboard->keycodes,
-                                   keyboard->num_keycodes,
-                                   &keyboard->modifiers);
+    wlr_seat_keyboard_notify_enter(
+      seat,
+      view->xdg_toplevel->base->surface,
+      keyboard->keycodes,
+      keyboard->num_keycodes,
+      &keyboard->modifiers
+    );
   }
 }

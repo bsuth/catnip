@@ -3,8 +3,7 @@
 
 #include <wlr/types/wlr_seat.h>
 
-struct server_keyboard
-{
+struct server_keyboard {
   struct wl_list link;
 
   struct wlr_input_device* wlr_input_device;

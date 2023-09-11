@@ -44,7 +44,7 @@ seat_new_input_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-seat_request_cursor_notify(struct wl_listener* listener, void* data)
+seat_request_set_cursor_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
@@ -59,7 +59,11 @@ seat_request_cursor_notify(struct wl_listener* listener, void* data)
      * on the output that it's currently on and continue to do so as the
      * cursor moves between outputs. */
     wlr_cursor_set_surface(
-      server_cursor, event->surface, event->hotspot_x, event->hotspot_y);
+      server_cursor,
+      event->surface,
+      event->hotspot_x,
+      event->hotspot_y
+    );
   }
 }
 
@@ -79,11 +83,15 @@ init_server_seat()
 
   seat_new_input_listener.notify = seat_new_input_notify;
   wl_signal_add(&server_backend->events.new_input, &seat_new_input_listener);
-  seat_request_cursor_listener.notify = seat_request_cursor_notify;
-  wl_signal_add(&server_seat->events.request_set_cursor,
-                &seat_request_cursor_listener);
+  seat_request_cursor_listener.notify = seat_request_set_cursor_notify;
+  wl_signal_add(
+    &server_seat->events.request_set_cursor,
+    &seat_request_cursor_listener
+  );
   seat_request_set_selection_listener.notify =
     seat_request_set_selection_notify;
-  wl_signal_add(&server_seat->events.request_set_selection,
-                &seat_request_set_selection_listener);
+  wl_signal_add(
+    &server_seat->events.request_set_selection,
+    &seat_request_set_selection_listener
+  );
 }

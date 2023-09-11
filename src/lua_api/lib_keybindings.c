@@ -21,8 +21,7 @@ translate_lua_modifier(const char* s)
     return WLR_MODIFIER_MOD2;
   } else if (g_str_equal(s, "Mod3")) {
     return WLR_MODIFIER_MOD3;
-  } else if (g_str_equal(s, "Mod4") || g_str_equal(s, "Super") ||
-             g_str_equal(s, "Meta")) {
+  } else if (g_str_equal(s, "Mod4") || g_str_equal(s, "Super") || g_str_equal(s, "Meta")) {
     return WLR_MODIFIER_LOGO;
   } else if (g_str_equal(s, "Mod5")) {
     return WLR_MODIFIER_MOD5;
@@ -39,7 +38,7 @@ translate_lua_key(const char* s)
   if (keysym == XKB_KEY_NoSymbol && strlen(s) == 1) {
     // Allow bindings for printable characters by providing the character
     // itself instead of the name.
-    const int keycode = (int)s[0];
+    const int keycode = (int) s[0];
     if (31 < keycode && keycode < 127) {
       keysym = keycode;
     }
@@ -145,11 +144,10 @@ lib_keybindings_clear(lua_State* L)
 }
 
 static const struct luaL_Reg lib_keybindings[] = {
-  { "add", lib_keybindings_add },
-  { "remove", lib_keybindings_remove },
-  { "clear", lib_keybindings_clear },
-  { NULL, NULL }
-};
+  {"add", lib_keybindings_add},
+  {"remove", lib_keybindings_remove},
+  {"clear", lib_keybindings_clear},
+  {NULL, NULL}};
 
 void
 load_lib_keybindings(lua_State* L)

@@ -86,6 +86,8 @@ init_server_output()
 {
   server_output_layout = wlr_output_layout_create();
   backend_new_output_listener.notify = backend_new_output_notify;
-  wl_signal_add(&server_backend->events.new_output,
-                &backend_new_output_listener);
+  wl_signal_add(
+    &server_backend->events.new_output,
+    &backend_new_output_listener
+  );
 }

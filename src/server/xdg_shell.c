@@ -10,9 +10,11 @@ struct wl_list server_views;
 static struct wl_listener xdg_shell_new_surface_listener;
 
 static void
-begin_interactive(struct server_view* view,
-                  enum server_cursor_mode mode,
-                  uint32_t edges)
+begin_interactive(
+  struct server_view* view,
+  enum server_cursor_mode mode,
+  uint32_t edges
+)
 {
   // TODO
   /*   struct wlr_surface* focused_surface = */
@@ -145,8 +147,10 @@ xdg_shell_new_surface_notify(struct wl_listener* listener, void* data)
     struct server_view* view = calloc(1, sizeof(struct server_view));
 
     view->xdg_toplevel = xdg_surface->toplevel;
-    view->scene_tree = wlr_scene_xdg_surface_create(&server_scene->tree,
-                                                    view->xdg_toplevel->base);
+    view->scene_tree = wlr_scene_xdg_surface_create(
+      &server_scene->tree,
+      view->xdg_toplevel->base
+    );
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but
     // it requires the popup parent's scene node. For convenience, we always
@@ -169,8 +173,10 @@ xdg_shell_new_surface_notify(struct wl_listener* listener, void* data)
     view->request_maximize.notify = xdg_toplevel_request_maximize;
     wl_signal_add(&toplevel->events.request_maximize, &view->request_maximize);
     view->request_fullscreen.notify = xdg_toplevel_request_fullscreen;
-    wl_signal_add(&toplevel->events.request_fullscreen,
-                  &view->request_fullscreen);
+    wl_signal_add(
+      &toplevel->events.request_fullscreen,
+      &view->request_fullscreen
+    );
   }
 }
 
@@ -180,6 +186,8 @@ init_server_xdg_shell()
   wl_list_init(&server_views);
   server_xdg_shell = wlr_xdg_shell_create(server_display, 3);
   xdg_shell_new_surface_listener.notify = xdg_shell_new_surface_notify;
-  wl_signal_add(&server_xdg_shell->events.new_surface,
-                &xdg_shell_new_surface_listener);
+  wl_signal_add(
+    &server_xdg_shell->events.new_surface,
+    &xdg_shell_new_surface_listener
+  );
 }

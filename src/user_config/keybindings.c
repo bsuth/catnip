@@ -26,13 +26,19 @@ void
 init_user_keybindings()
 {
   user_keybindings = g_hash_table_new_full(
-    g_int64_hash, g_int_equal, free, free_user_keybinding);
+    g_int64_hash,
+    g_int_equal,
+    free,
+    free_user_keybinding
+  );
 }
 
 void
-add_user_keybinding(uint32_t modifiers,
-                    xkb_keysym_t keysym,
-                    int lua_callback_ref)
+add_user_keybinding(
+  uint32_t modifiers,
+  xkb_keysym_t keysym,
+  int lua_callback_ref
+)
 {
   gint64 key = get_user_keybindings_key(modifiers, keysym);
 

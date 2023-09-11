@@ -132,6 +132,12 @@ process_cursor_motion(uint32_t time)
     wlr_seat_pointer_notify_enter(seat, surface, sx, sy);
     wlr_seat_pointer_notify_motion(seat, time, sx, sy);
   } else {
+    wlr_xcursor_manager_set_cursor_image(
+      server_cursor_manager,
+      "left_ptr",
+      server_cursor
+    );
+
     /* Clear pointer focus so future button events and such are not sent to
      * the last client to have the cursor over it. */
     wlr_seat_pointer_clear_focus(seat);
@@ -144,7 +150,11 @@ cursor_motion_notify(struct wl_listener* listener, void* data)
   struct wlr_pointer_motion_event* event = data;
 
   wlr_cursor_move(
-    server_cursor, &event->pointer->base, event->delta_x, event->delta_y);
+    server_cursor,
+    &event->pointer->base,
+    event->delta_x,
+    event->delta_y
+  );
 
   process_cursor_motion(event->time_msec);
 }
@@ -155,7 +165,11 @@ cursor_motion_absolute_notify(struct wl_listener* listener, void* data)
   struct wlr_pointer_motion_absolute_event* event = data;
 
   wlr_cursor_warp_absolute(
-    server_cursor, &event->pointer->base, event->x, event->y);
+    server_cursor,
+    &event->pointer->base,
+    event->x,
+    event->y
+  );
 
   process_cursor_motion(event->time_msec);
 }
@@ -165,21 +179,21 @@ cursor_button_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_pointer_button_event* event = data;
 
-  /* Notify the client with pointer focus that a button press has occurred */
   wlr_seat_pointer_notify_button(
-    server_seat, event->time_msec, event->button, event->state);
-
-  double sx, sy;
-  struct wlr_surface* surface = NULL;
-  /* struct server_view* view = */
-  /*   desktop_view_at(server, server_cursor->x, server_cursor->y, &surface,
-   * &sx, &sy); */
+    server_seat,
+    event->time_msec,
+    event->button,
+    event->state
+  );
 
   if (event->state == WLR_BUTTON_RELEASED) {
-    /* If you released any buttons, we exit interactive move/resize mode. */
     reset_cursor_mode();
   } else {
-    /* Focus that client if the button was _pressed_ */
+    /* double sx, sy; */
+    /* struct wlr_surface* surface = NULL; */
+    /* struct server_view* view = */
+    /*   desktop_view_at(server, server_cursor->x, server_cursor->y, &surface,
+     * &sx, &sy); */
     /* focus_view(view, surface); */
   }
 }
@@ -187,47 +201,42 @@ cursor_button_notify(struct wl_listener* listener, void* data)
 static void
 cursor_axis_notify(struct wl_listener* listener, void* data)
 {
-  /* This event is forwarded by the cursor when a pointer emits an axis event,
-   * for example when you move the scroll wheel. */
   struct wlr_pointer_axis_event* event = data;
 
-  /* Notify the client with pointer focus of the axis event. */
-  wlr_seat_pointer_notify_axis(server_seat,
-                               event->time_msec,
-                               event->orientation,
-                               event->delta,
-                               event->delta_discrete,
-                               event->source);
+  wlr_seat_pointer_notify_axis(
+    server_seat,
+    event->time_msec,
+    event->orientation,
+    event->delta,
+    event->delta_discrete,
+    event->source
+  );
 }
 
 static void
 cursor_frame_notify(struct wl_listener* listener, void* data)
 {
-  /* This event is forwarded by the cursor when a pointer emits an frame
-   * event. Frame events are sent after regular pointer events to group
-   * multiple events together. For instance, two axis events may happen at the
-   * same time, in which case a frame event won't be sent in between. */
-
-  /* Notify the client with pointer focus of the frame event. */
   wlr_seat_pointer_notify_frame(server_seat);
 }
 
 void
 init_server_cursor()
 {
+  server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
+
   server_cursor = wlr_cursor_create();
   wlr_cursor_attach_output_layout(server_cursor, server_output_layout);
 
   server_cursor_manager = wlr_xcursor_manager_create(NULL, 24);
   wlr_xcursor_manager_load(server_cursor_manager, 1);
 
-  server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
-
   cursor_motion_listener.notify = cursor_motion_notify;
   wl_signal_add(&server_cursor->events.motion, &cursor_motion_listener);
   cursor_motion_absolute_listener.notify = cursor_motion_absolute_notify;
-  wl_signal_add(&server_cursor->events.motion_absolute,
-                &cursor_motion_absolute_listener);
+  wl_signal_add(
+    &server_cursor->events.motion_absolute,
+    &cursor_motion_absolute_listener
+  );
   cursor_button_listener.notify = cursor_button_notify;
   wl_signal_add(&server_cursor->events.button, &cursor_button_listener);
   cursor_axis_listener.notify = cursor_axis_notify;

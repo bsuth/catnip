@@ -3,8 +3,7 @@
 
 #include <wlr/types/wlr_output_layout.h>
 
-struct server_output
-{
+struct server_output {
   struct wl_list link;
   struct wlr_output* wlr_output;
   struct wl_listener frame;
