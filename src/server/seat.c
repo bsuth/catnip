@@ -3,16 +3,19 @@
 #include "cursor.h"
 #include "display.h"
 #include "inputs/keyboard.h"
+#include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
 struct wlr_seat* server_seat;
 
-static struct wl_listener seat_new_input_listener;
-static struct wl_listener seat_request_cursor_listener;
-static struct wl_listener seat_request_set_selection_listener;
+// -----------------------------------------------------------------------------
+// server_seat_new_input
+// -----------------------------------------------------------------------------
+
+static struct wl_listener server_seat_new_input_listener;
 
 static void
-seat_new_input_notify(struct wl_listener* listener, void* data)
+server_seat_new_input_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_input_device* device = data;
 
@@ -44,7 +47,23 @@ seat_new_input_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-seat_request_set_cursor_notify(struct wl_listener* listener, void* data)
+init_server_seat_new_input()
+{
+  server_seat_new_input_listener.notify = server_seat_new_input_notify;
+  wl_signal_add(
+    &server_backend->events.new_input,
+    &server_seat_new_input_listener
+  );
+}
+
+// -----------------------------------------------------------------------------
+// server_seat_request_set_cursor
+// -----------------------------------------------------------------------------
+
+static struct wl_listener server_seat_request_set_cursor_listener;
+
+static void
+server_seat_request_set_cursor_notify(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
@@ -68,30 +87,53 @@ seat_request_set_cursor_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-seat_request_set_selection_notify(struct wl_listener* listener, void* data)
+init_server_seat_request_set_cursor()
+{
+  server_seat_request_set_cursor_listener.notify =
+    server_seat_request_set_cursor_notify;
+  wl_signal_add(
+    &server_seat->events.request_set_cursor,
+    &server_seat_request_set_cursor_listener
+  );
+}
+
+// -----------------------------------------------------------------------------
+// server_seat_request_set_selection
+// -----------------------------------------------------------------------------
+
+static struct wl_listener server_seat_request_set_selection_listener;
+
+static void
+server_seat_request_set_selection_notify(
+  struct wl_listener* listener,
+  void* data
+)
 {
   struct wlr_seat_request_set_selection_event* event = data;
   wlr_seat_set_selection(server_seat, event->source, event->serial);
 }
 
+static void
+init_server_seat_request_set_selection()
+{
+  server_seat_request_set_selection_listener.notify =
+    server_seat_request_set_selection_notify;
+  wl_signal_add(
+    &server_seat->events.request_set_selection,
+    &server_seat_request_set_selection_listener
+  );
+}
+
+// -----------------------------------------------------------------------------
+// init
+// -----------------------------------------------------------------------------
+
 void
 init_server_seat()
 {
   server_seat = wlr_seat_create(server_display, "seat0");
-
   init_server_keyboard();
-
-  seat_new_input_listener.notify = seat_new_input_notify;
-  wl_signal_add(&server_backend->events.new_input, &seat_new_input_listener);
-  seat_request_cursor_listener.notify = seat_request_set_cursor_notify;
-  wl_signal_add(
-    &server_seat->events.request_set_cursor,
-    &seat_request_cursor_listener
-  );
-  seat_request_set_selection_listener.notify =
-    seat_request_set_selection_notify;
-  wl_signal_add(
-    &server_seat->events.request_set_selection,
-    &seat_request_set_selection_listener
-  );
+  init_server_seat_new_input();
+  init_server_seat_request_set_cursor();
+  init_server_seat_request_set_selection();
 }

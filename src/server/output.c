@@ -7,8 +7,6 @@
 
 struct wlr_output_layout* server_output_layout;
 
-static struct wl_listener backend_new_output_listener;
-
 static void
 output_frame_notify(struct wl_listener* listener, void* data)
 {
@@ -37,17 +35,16 @@ output_destroy_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-backend_new_output_notify(struct wl_listener* listener, void* data)
+register_new_output(struct wlr_output* wlr_output)
 {
-  struct wlr_output* wlr_output = data;
-
   wlr_output_init_render(wlr_output, server_allocator, server_renderer);
 
-  /* Some backends don't have modes. DRM+KMS does, and we need to set a mode
-   * before we can use the output. The mode is a tuple of (width, height,
-   * refresh rate), and each monitor supports only a specific set of modes. We
-   * just pick the monitor's preferred mode, a more sophisticated compositor
-   * would let the user configure it. */
+  // Some backends don't have modes. DRM+KMS does, and we need to set a mode
+  // before we can use the output. The mode is a tuple of (width, height,
+  // refresh rate), and each monitor supports only a specific set of modes. We
+  // just pick the monitor's preferred mode, a more sophisticated compositor
+  // would let the user configure it.
+  // TODO: let user configure this.
   if (!wl_list_empty(&wlr_output->modes)) {
     struct wlr_output_mode* mode = wlr_output_preferred_mode(wlr_output);
 
@@ -55,6 +52,7 @@ backend_new_output_notify(struct wl_listener* listener, void* data)
     wlr_output_enable(wlr_output, true);
 
     if (!wlr_output_commit(wlr_output)) {
+      // TODO: log?
       return;
     }
   }
@@ -85,9 +83,5 @@ void
 init_server_output()
 {
   server_output_layout = wlr_output_layout_create();
-  backend_new_output_listener.notify = backend_new_output_notify;
-  wl_signal_add(
-    &server_backend->events.new_output,
-    &backend_new_output_listener
-  );
+  add_server_backend_new_output_callback(register_new_output);
 }

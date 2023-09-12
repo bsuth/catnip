@@ -4,7 +4,7 @@
 #include <wlr/types/wlr_output_layout.h>
 
 struct server_output {
-  struct wl_list link;
+  struct wl_list link; // TODO: remove this? not sure why we need this
   struct wlr_output* wlr_output;
   struct wl_listener frame;
   struct wl_listener destroy;

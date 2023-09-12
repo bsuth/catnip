@@ -4,9 +4,9 @@
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_xdg_shell.h>
 
-// TODO: remove this?
-struct server_view {
+struct server_toplevel {
   int x, y;
+  struct wlr_xdg_surface* xdg_surface;
   struct wlr_xdg_toplevel* xdg_toplevel;
   struct wlr_scene_tree* scene_tree;
   struct wl_list link;
@@ -20,7 +20,7 @@ struct server_view {
 };
 
 extern struct wlr_xdg_shell* server_xdg_shell;
-extern struct wl_list server_views;
+extern struct wl_list server_toplevels;
 
 void
 init_server_xdg_shell();
