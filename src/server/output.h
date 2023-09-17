@@ -1,5 +1,5 @@
-#ifndef SERVER_OUTPUT_H
-#define SERVER_OUTPUT_H
+#ifndef CATNIP_SERVER_OUTPUT_H
+#define CATNIP_SERVER_OUTPUT_H
 
 #include <wlr/types/wlr_output_layout.h>
 

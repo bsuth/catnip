@@ -1,5 +1,6 @@
 #include "lib_init.h"
 #include "lua.h"
+#include "lua_api/lib_keybindings.h"
 #include "server/server.h"
 #include "user_config/events.h"
 #include "user_config/user_config.h"
@@ -68,14 +69,22 @@ static const struct luaL_Reg lib_init[] = {
   {"reload", lib_init_reload},
   {"add_event_listener", lib_init_add_event_listener},
   {"remove_event_listener", lib_init_remove_event_listener},
+  {"add_keybinding", lib_keybindings_add},
+  {"remove_keybinding", lib_keybindings_remove},
+  {"clear_keybindings", lib_keybindings_clear},
   {NULL, NULL}};
 
 void
 load_lib_init(lua_State* L)
 {
+  luaL_newlib(L, lib_init);
+
+  lua_newtable(L);
+  lua_setfield(L, -2, "windows");
+
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
-  luaL_newlib(L, lib_init);
+  lua_pushvalue(L, -3);
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
 }

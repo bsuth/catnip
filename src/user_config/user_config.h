@@ -1,5 +1,5 @@
-#ifndef USER_CONFIG_H
-#define USER_CONFIG_H
+#ifndef CATNIP_USER_CONFIG_H
+#define CATNIP_USER_CONFIG_H
 
 #include <lua.h>
 #include <stdbool.h>

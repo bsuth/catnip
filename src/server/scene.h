@@ -1,5 +1,5 @@
-#ifndef SERVER_SCENE_H
-#define SERVER_SCENE_H
+#ifndef CATNIP_SERVER_SCENE_H
+#define CATNIP_SERVER_SCENE_H
 
 #include <wlr/types/wlr_scene.h>
 

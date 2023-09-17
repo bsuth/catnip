@@ -1,5 +1,5 @@
-#ifndef SERVER_RENDERER_H
-#define SERVER_RENDERER_H
+#ifndef CATNIP_SERVER_RENDERER_H
+#define CATNIP_SERVER_RENDERER_H
 
 #include <wlr/render/wlr_renderer.h>
 

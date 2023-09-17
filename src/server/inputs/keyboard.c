@@ -2,6 +2,7 @@
 #include "server/display.h"
 #include "server/seat.h"
 #include "user_config/keybindings.h"
+#include "utils/wayland.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -11,7 +12,7 @@
 struct wl_list server_keyboards;
 
 static void
-keyboard_modifiers_notify(struct wl_listener* listener, void* data)
+keyboard_modifiers(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, modifiers_listener);
@@ -27,7 +28,7 @@ keyboard_modifiers_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-keyboard_key_notify(struct wl_listener* listener, void* data)
+keyboard_key(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, key_listener);
@@ -61,7 +62,7 @@ keyboard_key_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-keyboard_destroy_notify(struct wl_listener* listener, void* data)
+keyboard_destroy(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
     wl_container_of(listener, keyboard, destroy_listener);
@@ -96,12 +97,21 @@ register_new_keyboard(struct wlr_input_device* device)
 
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
-  keyboard->modifiers_listener.notify = keyboard_modifiers_notify;
-  wl_signal_add(&wlr_keyboard->events.modifiers, &keyboard->modifiers_listener);
-  keyboard->key_listener.notify = keyboard_key_notify;
-  wl_signal_add(&wlr_keyboard->events.key, &keyboard->key_listener);
-  keyboard->destroy_listener.notify = keyboard_destroy_notify;
-  wl_signal_add(&device->events.destroy, &keyboard->destroy_listener);
+  wl_setup_listener(
+    &keyboard->modifiers_listener,
+    &wlr_keyboard->events.modifiers,
+    keyboard_modifiers
+  );
+  wl_setup_listener(
+    &keyboard->key_listener,
+    &wlr_keyboard->events.key,
+    keyboard_key
+  );
+  wl_setup_listener(
+    &keyboard->destroy_listener,
+    &device->events.destroy,
+    keyboard_destroy
+  );
 
   wl_list_insert(&server_keyboards, &keyboard->link);
 }

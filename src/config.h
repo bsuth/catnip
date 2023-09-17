@@ -1,5 +1,5 @@
-#ifndef CONFIG_H
-#define CONFIG_H
+#ifndef CATNIP_CONFIG_H
+#define CATNIP_CONFIG_H
 
 #include <wlr/util/log.h>
 

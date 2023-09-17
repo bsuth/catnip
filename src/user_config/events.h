@@ -1,5 +1,5 @@
-#ifndef USER_CONFIG_EVENTS_H
-#define USER_CONFIG_EVENTS_H
+#ifndef CATNIP_USER_CONFIG_EVENTS_H
+#define CATNIP_USER_CONFIG_EVENTS_H
 
 void
 init_event_listeners();

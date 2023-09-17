@@ -1,5 +1,5 @@
-#ifndef SERVER_ALLOCATOR_H
-#define SERVER_ALLOCATOR_H
+#ifndef CATNIP_SERVER_ALLOCATOR_H
+#define CATNIP_SERVER_ALLOCATOR_H
 
 #include <wlr/render/allocator.h>
 

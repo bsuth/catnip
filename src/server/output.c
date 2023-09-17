@@ -3,12 +3,15 @@
 #include "backend.h"
 #include "renderer.h"
 #include "scene.h"
+#include "utils/wayland.h"
 #include <stdlib.h>
 
 struct wlr_output_layout* server_output_layout;
 
+static struct wl_listener server_backend_new_output_listener;
+
 static void
-output_frame_notify(struct wl_listener* listener, void* data)
+output_frame(struct wl_listener* listener, void* data)
 {
   struct server_output* output = wl_container_of(listener, output, frame);
 
@@ -23,7 +26,7 @@ output_frame_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-output_destroy_notify(struct wl_listener* listener, void* data)
+output_destroy(struct wl_listener* listener, void* data)
 {
   struct server_output* output = wl_container_of(listener, output, destroy);
 
@@ -35,8 +38,10 @@ output_destroy_notify(struct wl_listener* listener, void* data)
 }
 
 static void
-register_new_output(struct wlr_output* wlr_output)
+register_new_output(struct wl_listener* listener, void* data)
 {
+  struct wlr_output* wlr_output = data;
+
   wlr_output_init_render(wlr_output, server_allocator, server_renderer);
 
   // Some backends don't have modes. DRM+KMS does, and we need to set a mode
@@ -60,11 +65,12 @@ register_new_output(struct wlr_output* wlr_output)
   struct server_output* output = calloc(1, sizeof(struct server_output));
   output->wlr_output = wlr_output;
 
-  output->frame.notify = output_frame_notify;
-  wl_signal_add(&wlr_output->events.frame, &output->frame);
-
-  output->destroy.notify = output_destroy_notify;
-  wl_signal_add(&wlr_output->events.destroy, &output->destroy);
+  wl_setup_listener(&output->frame, &wlr_output->events.frame, output_frame);
+  wl_setup_listener(
+    &output->destroy,
+    &wlr_output->events.destroy,
+    output_destroy
+  );
 
   // Adds this to the output layout. The add_auto function arranges outputs
   // from left-to-right in the order they appear. A more sophisticated
@@ -83,5 +89,10 @@ void
 init_server_output()
 {
   server_output_layout = wlr_output_layout_create();
-  add_server_backend_new_output_callback(register_new_output);
+
+  wl_setup_listener(
+    &server_backend_new_output_listener,
+    &server_backend->events.new_output,
+    register_new_output
+  );
 }

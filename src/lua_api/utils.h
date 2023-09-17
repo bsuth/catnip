@@ -1,5 +1,5 @@
-#ifndef LUA_API_UTILS_H
-#define LUA_API_UTILS_H
+#ifndef CATNIP_LUA_API_UTILS_H
+#define CATNIP_LUA_API_UTILS_H
 
 #include <lua.h>
 

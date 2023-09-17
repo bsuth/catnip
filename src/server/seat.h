@@ -1,5 +1,5 @@
-#ifndef SERVER_SEAT_H
-#define SERVER_SEAT_H
+#ifndef CATNIP_SERVER_SEAT_H
+#define CATNIP_SERVER_SEAT_H
 
 #include <wlr/types/wlr_seat.h>
 

@@ -1,5 +1,5 @@
-#ifndef SERVER_H
-#define SERVER_H
+#ifndef CATNIP_SERVER_H
+#define CATNIP_SERVER_H
 
 void
 init_server();

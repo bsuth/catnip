@@ -47,7 +47,7 @@ translate_lua_key(const char* s)
   return keysym;
 }
 
-static int
+int
 lib_keybindings_add(lua_State* L)
 {
   uint32_t modifiers = 0;
@@ -94,7 +94,7 @@ lib_keybindings_add(lua_State* L)
   return 0;
 }
 
-static int
+int
 lib_keybindings_remove(lua_State* L)
 {
   uint32_t modifiers = 0;
@@ -136,25 +136,9 @@ lib_keybindings_remove(lua_State* L)
   return 0;
 }
 
-static int
+int
 lib_keybindings_clear(lua_State* L)
 {
   clear_user_keybindings();
   return 0;
-}
-
-static const struct luaL_Reg lib_keybindings[] = {
-  {"add", lib_keybindings_add},
-  {"remove", lib_keybindings_remove},
-  {"clear", lib_keybindings_clear},
-  {NULL, NULL}};
-
-void
-load_lib_keybindings(lua_State* L)
-{
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  luaL_newlib(L, lib_keybindings);
-  lua_setfield(L, -2, "catnip.keybindings");
-  lua_pop(L, 2);
 }

@@ -1,5 +1,5 @@
-#ifndef USER_CONFIG_KEYBINDINGS_H
-#define USER_CONFIG_KEYBINDINGS_H
+#ifndef CATNIP_USER_CONFIG_KEYBINDINGS_H
+#define CATNIP_USER_CONFIG_KEYBINDINGS_H
 
 #include <stdbool.h>
 #include <stdint.h>

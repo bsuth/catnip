@@ -1,5 +1,5 @@
-#ifndef SERVER_INPUTS_KEYBOARD_H
-#define SERVER_INPUTS_KEYBOARD_H
+#ifndef CATNIP_SERVER_INPUTS_KEYBOARD_H
+#define CATNIP_SERVER_INPUTS_KEYBOARD_H
 
 #include <wlr/types/wlr_seat.h>
 

@@ -1,3 +1,4 @@
+#include "desktop/desktop.h"
 #include "server/server.h"
 #include "user_config/user_config.h"
 #include <wlr/util/log.h>
@@ -10,6 +11,7 @@ main(int argc, char* argv[])
   // TODO CLI (getopt)
 
   init_server();
+  init_desktop();
   init_user_config();
 
   start_server();
