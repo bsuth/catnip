@@ -1,8 +1,10 @@
 #include "windows.h"
 #include "lua_api/windows.h"
+#include "server/output.h"
 #include "server/scene.h"
 #include "server/seat.h"
 #include "utils/wayland.h"
+#include <wayland-util.h>
 
 static struct wl_listener server_xdg_shell_new_surface_listener;
 
@@ -213,14 +215,40 @@ desktop_window_get_ly(struct desktop_window* window)
 int
 desktop_window_get_gx(struct desktop_window* window)
 {
-  // TODO
+  struct wlr_surface_output* surface_output;
+  struct wl_list* surface_outputs =
+    &window->xdg_surface->surface->current_outputs;
+
+  wl_list_for_each(surface_output, surface_outputs, link)
+  {
+    struct wlr_output_layout_output* layout_output =
+      wlr_output_layout_get(server_output_layout, surface_output->output);
+
+    if (layout_output != NULL) {
+      return layout_output->x + desktop_window_get_lx(window);
+    }
+  }
+
   return 0;
 }
 
 int
 desktop_window_get_gy(struct desktop_window* window)
 {
-  // TODO
+  struct wlr_surface_output* surface_output;
+  struct wl_list* surface_outputs =
+    &window->xdg_surface->surface->current_outputs;
+
+  wl_list_for_each(surface_output, surface_outputs, link)
+  {
+    struct wlr_output_layout_output* layout_output =
+      wlr_output_layout_get(server_output_layout, surface_output->output);
+
+    if (layout_output != NULL) {
+      return layout_output->y + desktop_window_get_ly(window);
+    }
+  }
+
   return 0;
 }
 
@@ -245,6 +273,20 @@ desktop_window_get_focused(struct desktop_window* window)
 {
   return window->xdg_toplevel->base->surface
          == server_seat->keyboard_state.focused_surface;
+}
+
+bool
+desktop_window_get_maximized(struct desktop_window* window)
+{
+  // TODO
+  return false;
+}
+
+bool
+desktop_window_get_fullscreen(struct desktop_window* window)
+{
+  // TODO
+  return false;
 }
 
 // -----------------------------------------------------------------------------
@@ -329,17 +371,31 @@ desktop_window_set_focused(struct desktop_window* window, bool new_focused)
   }
 }
 
+void
+desktop_window_set_maximized(struct desktop_window* window, bool new_maximized)
+{
+  // TODO
+}
+
+void
+desktop_window_set_fullscreen(
+  struct desktop_window* window,
+  bool new_fullscreen
+)
+{
+  // TODO
+}
+
 // -----------------------------------------------------------------------------
 // Miscellaneous
 // -----------------------------------------------------------------------------
 
 struct desktop_window*
-get_desktop_window_at(double x, double y)
+get_desktop_window_at(double x, double y, double* nx, double* ny)
 {
   struct wlr_scene_tree* root = &server_scene->tree;
 
-  struct wlr_scene_node* node =
-    wlr_scene_node_at(&root->node, x, y, NULL, NULL);
+  struct wlr_scene_node* node = wlr_scene_node_at(&root->node, x, y, nx, ny);
 
   if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
     return NULL;

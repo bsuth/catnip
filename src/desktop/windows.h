@@ -49,6 +49,12 @@ desktop_window_get_height(struct desktop_window* window);
 bool
 desktop_window_get_focused(struct desktop_window* window);
 
+bool
+desktop_window_get_maximized(struct desktop_window* window);
+
+bool
+desktop_window_get_fullscreen(struct desktop_window* window);
+
 // -----------------------------------------------------------------------------
 // Setters
 // -----------------------------------------------------------------------------
@@ -74,11 +80,20 @@ desktop_window_set_height(struct desktop_window* window, int new_height);
 void
 desktop_window_set_focused(struct desktop_window* window, bool new_focused);
 
+void
+desktop_window_set_maximized(struct desktop_window* window, bool new_maximized);
+
+void
+desktop_window_set_fullscreen(
+  struct desktop_window* window,
+  bool new_fullscreen
+);
+
 // -----------------------------------------------------------------------------
 // Miscellaneous
 // -----------------------------------------------------------------------------
 
 struct desktop_window*
-get_desktop_window_at(double x, double y);
+get_desktop_window_at(double x, double y, double* nx, double* ny);
 
 #endif

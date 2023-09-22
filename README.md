@@ -7,25 +7,38 @@ although the user is also free to use these.
 - catnip
   - [x] restart
   - [x] quit
-- Signals
+- Events
   - [x] add listener
   - [x] remove listener
 - Keybindings
   - [x] add
   - [x] remove
   - [x] clear
+  - [ ] mouse bindings
 - Outputs
   - [ ] Position (x, y)
-  - [ ] Resolution
-- Clients
-  - [ ] Position (x, y, z) (z-index for stacking)
   - [ ] Geometry (width, height)
+  - [ ] Refresh rate
+  - [ ] Curent mode
+  - [ ] Available modes
+  - [ ] Scale
+  - [ ] Gamma
+  - [ ] Windows
+- Windows
+  - [x] Local Position (x, y)
+  - [x] Global Position (x, y)
+  - [x] Geometry (width, height)
   - [ ] Visible
   - [ ] Focused
   - [ ] Fullscreen
   - [ ] Maximized
+  - [ ] Z-index
+  - [ ] Output
+  - [ ] Drag / Resize events
 - Cursor
-  - [ ] Position (x, y)
+  - [x] Local Position (x, y)
+  - [x] Global Position (x, y)
+  - [ ] Visible
   - [ ] State (ex. left_ptr)
   - [ ] Sensitivity
   - [ ] Scale (size)
@@ -39,7 +52,7 @@ although the user is also free to use these.
 Extensions of the core API that are meant specifically to provide common
 functionalities to plugins.
 
-- [ ] UI Widgets
+- [ ] UI Widgets (Nuklear? https://github.com/Immediate-Mode-UI/Nuklear)
 - [ ] libuv (https://github.com/luvit/luv)
 - [ ] DBus support
 

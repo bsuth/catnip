@@ -8,10 +8,8 @@
 // -----------------------------------------------------------------------------
 
 #include "desktop/windows.h"
-#include "lua.h"
 #include "server/seat.h"
 #include "user_config/user_config.h"
-#include "utils.h"
 #include "utils/wayland.h"
 #include "windows.h"
 #include <lauxlib.h>
@@ -34,13 +32,13 @@ static int num_windows = 0;
 static int
 lua_window__index(lua_State* L)
 {
-  if (lua_type(L, 2) != LUA_TSTRING) {
+  struct lua_window* lua_window = lua_touserdata(L, 1);
+  struct desktop_window* desktop_window = lua_window->desktop_window;
+
+  if (desktop_window == NULL || lua_type(L, 2) != LUA_TSTRING) {
     lua_pushnil(L);
     return 1;
   }
-
-  struct lua_window* lua_window = lua_touserdata(L, 1);
-  struct desktop_window* desktop_window = lua_window->desktop_window;
 
   const char* field = lua_tostring(L, 2);
 
@@ -58,6 +56,10 @@ lua_window__index(lua_State* L)
     lua_pushnumber(L, desktop_window_get_height(desktop_window));
   } else if (g_str_equal(field, "focused")) {
     lua_pushboolean(L, desktop_window_get_focused(desktop_window));
+  } else if (g_str_equal(field, "maximized")) {
+    lua_pushboolean(L, desktop_window_get_maximized(desktop_window));
+  } else if (g_str_equal(field, "fullscreen")) {
+    lua_pushboolean(L, desktop_window_get_fullscreen(desktop_window));
   } else {
     lua_pushnil(L);
   }
@@ -68,13 +70,12 @@ lua_window__index(lua_State* L)
 static int
 lua_window__newindex(lua_State* L)
 {
-  if (lua_type(L, 2) != LUA_TSTRING) {
-    // TODO: error?
-    return 0;
-  }
-
   struct lua_window* lua_window = lua_touserdata(L, 1);
   struct desktop_window* desktop_window = lua_window->desktop_window;
+
+  if (desktop_window == NULL || lua_type(L, 2) != LUA_TSTRING) {
+    return 0; // TODO: error?
+  }
 
   const char* field = lua_tostring(L, 2);
 
@@ -92,6 +93,10 @@ lua_window__newindex(lua_State* L)
     desktop_window_set_height(desktop_window, luaL_checknumber(L, 3));
   } else if (g_str_equal(field, "focused")) {
     desktop_window_set_focused(desktop_window, lua_toboolean(L, 3));
+  } else if (g_str_equal(field, "maximized")) {
+    desktop_window_set_maximized(desktop_window, lua_toboolean(L, 3));
+  } else if (g_str_equal(field, "fullscreen")) {
+    desktop_window_set_fullscreen(desktop_window, lua_toboolean(L, 3));
   } else {
     // TODO: error?
   }
@@ -103,15 +108,12 @@ static int
 lua_window__gc(lua_State* L)
 {
   struct lua_window* lua_window = lua_touserdata(L, 1);
-
   wl_list_remove(&lua_window->destroy_listener.link);
-  free(lua_window);
-
   return 0;
 }
 
 // -----------------------------------------------------------------------------
-// lua_window
+// create_lua_desktop_window
 // -----------------------------------------------------------------------------
 
 static void
@@ -127,13 +129,20 @@ lua_window_desktop_window_destroy(struct wl_listener* listener, void* data)
   lua_getfield(L, -1, "catnip");
   lua_getfield(L, -1, "windows");
 
-  // Quick delete by replacing w/ last element
-  lua_rawgeti(L, -1, num_windows);
-  lua_rawseti(L, -2, lua_window->index);
+  if (num_windows == 1) {
+    lua_pushnil(L);
+    lua_rawseti(L, -2, 1);
+  } else {
+    // Quick delete by moving last element
+    lua_rawgeti(L, -1, num_windows);
 
-  // Remove last element
-  lua_pushnil(L);
-  lua_rawseti(L, -2, num_windows);
+    struct lua_window* last_lua_window = lua_touserdata(L, -1);
+    last_lua_window->index = lua_window->index;
+
+    lua_rawseti(L, -2, lua_window->index);
+    lua_pushnil(L);
+    lua_rawseti(L, -2, num_windows);
+  }
 
   --num_windows;
 
@@ -179,6 +188,14 @@ static const struct luaL_Reg lua_window_metatable[] = {
 void
 init_lua_windows(lua_State* L)
 {
+  lua_getglobal(L, "package");
+  lua_getfield(L, -1, "loaded");
+  lua_getfield(L, -1, "catnip");
+  lua_newtable(L);
+  lua_setfield(L, -2, "windows");
+  lua_pop(L, 3);
+
   luaL_newmetatable(L, "catnip.window");
   luaL_setfuncs(L, lua_window_metatable, 0);
+  lua_pop(L, 1);
 }

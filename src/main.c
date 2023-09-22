@@ -1,4 +1,5 @@
 #include "desktop/desktop.h"
+#include "server/display.h"
 #include "server/server.h"
 #include "user_config/user_config.h"
 #include <wlr/util/log.h>

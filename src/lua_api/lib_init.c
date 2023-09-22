@@ -1,5 +1,4 @@
 #include "lib_init.h"
-#include "lua.h"
 #include "lua_api/lib_keybindings.h"
 #include "server/server.h"
 #include "user_config/events.h"
@@ -78,10 +77,6 @@ void
 load_lib_init(lua_State* L)
 {
   luaL_newlib(L, lib_init);
-
-  lua_newtable(L);
-  lua_setfield(L, -2, "windows");
-
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
   lua_pushvalue(L, -3);
