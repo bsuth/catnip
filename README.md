@@ -16,14 +16,15 @@ although the user is also free to use these.
   - [x] clear
   - [ ] mouse bindings
 - Outputs
-  - [ ] Position (x, y)
-  - [ ] Geometry (width, height)
-  - [ ] Refresh rate
-  - [ ] Curent mode
-  - [ ] Available modes
-  - [ ] Scale
+  - [x] Position (x, y)
+  - [x] Geometry (width, height)
+  - [x] Refresh rate
+  - [x] Current mode
+  - [x] Available modes
+  - [x] Scale
   - [ ] Gamma
   - [ ] Windows
+  - [ ] Wallpaper
 - Windows
   - [x] Local Position (x, y)
   - [x] Global Position (x, y)
@@ -43,18 +44,9 @@ although the user is also free to use these.
   - [ ] Sensitivity
   - [ ] Scale (size)
   - [ ] Theme
+- [ ] Layer shell
 - [ ] Server Side decorations?
 - [ ] IME
-- [ ] Lock Screen
-
-### Plugin Core
-
-Extensions of the core API that are meant specifically to provide common
-functionalities to plugins.
-
-- [ ] UI Widgets (Nuklear? https://github.com/Immediate-Mode-UI/Nuklear)
-- [ ] libuv (https://github.com/luvit/luv)
-- [ ] DBus support
 
 ## Plugins
 
@@ -84,30 +76,3 @@ Provides workspace support. Less powerful but easier to use than tags.
 #### Tags
 
 Provides tags support. More powerful but more difficult to use than workspaces.
-
-#### Status
-
-Provides status bar support.
-
-#### Notifications
-
-Registers a notification daemon and exposes the underlying models. Useful in
-conjunction with the UI API.
-
-#### NetworkManager
-
-Provides easy API to work with NetworkManager via DBus.
-
-#### Bluez
-
-Provides easy API to work with bluez via DBus.
-
-#### System Stats
-
-Provides several models for getting / setting system statuses.
-
-- [ ] Battery
-- [ ] Brightness
-- [ ] Volume
-- [ ] CPU
-- [ ] Memory (RAM)
