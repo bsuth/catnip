@@ -8,7 +8,7 @@
 // -----------------------------------------------------------------------------
 
 static int
-lua_cursor__index(lua_State* L)
+api_cursor__index(lua_State* L)
 {
   if (lua_type(L, 2) != LUA_TSTRING) {
     lua_pushnil(L);
@@ -33,7 +33,7 @@ lua_cursor__index(lua_State* L)
 }
 
 static int
-lua_cursor__newindex(lua_State* L)
+api_cursor__newindex(lua_State* L)
 {
   if (lua_type(L, 2) != LUA_TSTRING) {
     // TODO: error?
@@ -62,12 +62,12 @@ lua_cursor__newindex(lua_State* L)
 // -----------------------------------------------------------------------------
 
 static const struct luaL_Reg lua_cursor_metatable[] = {
-  {"__index", lua_cursor__index},
-  {"__newindex", lua_cursor__newindex},
+  {"__index", api_cursor__index},
+  {"__newindex", api_cursor__newindex},
   {NULL, NULL}};
 
 void
-init_lua_cursor(lua_State* L)
+init_api_cursor(lua_State* L)
 {
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");

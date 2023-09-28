@@ -1,5 +1,5 @@
 #include "monitor.h"
-#include "lua_api/monitor.h"
+#include "api/monitor.h"
 #include "server/allocator.h"
 #include "server/backend.h"
 #include "server/output.h"
@@ -134,7 +134,7 @@ create_desktop_monitor(struct wl_listener* listener, void* data)
   // TODO allow layout configuration
   wlr_output_layout_add_auto(server_output_layout, output);
 
-  create_lua_desktop_monitor(monitor);
+  create_api_desktop_monitor(monitor);
 }
 
 void

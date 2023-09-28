@@ -1,6 +1,6 @@
 #include "desktop.h"
 #include "desktop/monitor.h"
-#include "desktop/windows.h"
+#include "desktop/window.h"
 
 void
 init_desktop()

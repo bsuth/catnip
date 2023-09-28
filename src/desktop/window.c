@@ -1,5 +1,5 @@
-#include "windows.h"
-#include "lua_api/windows.h"
+#include "window.h"
+#include "api/window.h"
 #include "server/output.h"
 #include "server/scene.h"
 #include "server/seat.h"
@@ -168,7 +168,7 @@ create_desktop_window(struct wlr_xdg_surface* xdg_surface)
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = window->scene_tree;
 
-    create_lua_desktop_window(window);
+    create_api_desktop_window(window);
   }
 }
 

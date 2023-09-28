@@ -1,5 +1,4 @@
 #include "cursor.h"
-#include "desktop/windows.h"
 #include "server/output.h"
 #include "server/scene.h"
 #include "server/seat.h"

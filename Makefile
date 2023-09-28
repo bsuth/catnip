@@ -4,6 +4,7 @@ CC = clang
 
 DEPENDENCIES = \
 	cairo \
+	pango \
 	pangocairo \
 	glib-2.0 \
 	luajit \
@@ -34,11 +35,16 @@ default: $(BUILD_DIR)/$(EXECUTABLE)
 WAYLAND_SCANNER := $(shell pkg-config --variable=wayland_scanner wayland-scanner)
 WAYLAND_PROTOCOLS := $(shell pkg-config --variable=pkgdatadir wayland-protocols)
 
+PROTOCOLS_DIR := protocols
+
 PROTOCOLS_BUILD_DIR := $(BUILD_DIR)/protocols
 $(shell mkdir -p $(PROTOCOLS_BUILD_DIR))
 
 $(PROTOCOLS_BUILD_DIR)/xdg-shell-protocol.h:
 	$(WAYLAND_SCANNER) server-header $(WAYLAND_PROTOCOLS)/stable/xdg-shell/xdg-shell.xml $@
+
+$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h:
+	$(WAYLAND_SCANNER) server-header $(PROTOCOLS_DIR)/wlr-layer-shell-unstable-v1.xml $@
 
 # ------------------------------------------------------------------------------
 # Objects
@@ -69,6 +75,7 @@ LIBS := \
 OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o)
 
 PROTOCOL_HEADERS = \
+	$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h \
 	$(PROTOCOLS_BUILD_DIR)/xdg-shell-protocol.h
 
 $(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)

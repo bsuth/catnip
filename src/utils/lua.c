@@ -1,11 +1,10 @@
-#include "utils.h"
+#include "lua.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdbool.h>
-#include <string.h>
 
 const char*
-get_arg_error_msg(lua_State* L, const int arg_index, const char* details)
+lua_get_arg_error_msg(lua_State* L, const int arg_index, const char* details)
 {
   GString* error_msg = g_string_new(NULL);
 
@@ -34,7 +33,7 @@ get_arg_error_msg(lua_State* L, const int arg_index, const char* details)
 }
 
 const char*
-get_arg_type_error_msg(lua_State* L, int arg_index, const int expected_type)
+lua_get_arg_type_error_msg(lua_State* L, int arg_index, const int expected_type)
 {
   GString* details = g_string_new(NULL);
 
@@ -45,7 +44,7 @@ get_arg_type_error_msg(lua_State* L, int arg_index, const int expected_type)
     luaL_typename(L, arg_index)
   );
 
-  const char* error_msg = get_arg_error_msg(L, arg_index, details->str);
+  const char* error_msg = lua_get_arg_error_msg(L, arg_index, details->str);
 
   g_string_free(details, true);
 

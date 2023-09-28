@@ -1,6 +1,6 @@
 #include "user_config.h"
+#include "api/api.h"
 #include "config.h"
-#include "lua_api/lua_api.h"
 #include "user_config/events.h"
 #include "user_config/keybindings.h"
 #include <glib.h>
@@ -29,7 +29,7 @@ try_user_config_path(const char* path)
 
   L = lua_open();
   luaL_openlibs(L);
-  init_lua_api(L);
+  init_api(L);
 
   if (luaL_loadfile(L, path) || lua_pcall(L, 0, 0, 0)) {
     g_error("%s", lua_tostring(L, -1));
