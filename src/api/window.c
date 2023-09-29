@@ -1,4 +1,5 @@
 #include "window.h"
+#include "api/refs.h"
 #include "desktop/window.h"
 #include "server/seat.h"
 #include "user_config/user_config.h"
@@ -117,10 +118,7 @@ api_window_desktop_window_destroy(struct wl_listener* listener, void* data)
 
   api_window->desktop_window = NULL;
 
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
-  lua_getfield(L, -1, "windows");
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
 
   if (num_windows == 1) {
     lua_pushnil(L);
@@ -139,16 +137,13 @@ api_window_desktop_window_destroy(struct wl_listener* listener, void* data)
 
   --num_windows;
 
-  lua_pop(L, 4);
+  lua_pop(L, 1);
 }
 
 void
-create_api_desktop_window(struct desktop_window* desktop_window)
+api_create_desktop_window(struct desktop_window* desktop_window)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
-  lua_getfield(L, -1, "windows");
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
 
   struct api_window* api_window = lua_newuserdata(L, sizeof(struct api_window));
   luaL_setmetatable(L, "catnip.window");
@@ -165,7 +160,7 @@ create_api_desktop_window(struct desktop_window* desktop_window)
 
   lua_rawseti(L, -2, api_window->index);
 
-  lua_pop(L, 4);
+  lua_pop(L, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -181,12 +176,13 @@ static const struct luaL_Reg api_window_metatable[] = {
 void
 init_api_windows(lua_State* L)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
   lua_newtable(L);
+  api_catnip_windows = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
   lua_setfield(L, -2, "windows");
-  lua_pop(L, 3);
+  lua_pop(L, 1);
 
   luaL_newmetatable(L, "catnip.window");
   luaL_setfuncs(L, api_window_metatable, 0);

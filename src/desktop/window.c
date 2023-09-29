@@ -168,7 +168,7 @@ create_desktop_window(struct wlr_xdg_surface* xdg_surface)
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = window->scene_tree;
 
-    create_api_desktop_window(window);
+    api_create_desktop_window(window);
   }
 }
 

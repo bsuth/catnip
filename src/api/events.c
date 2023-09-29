@@ -5,7 +5,19 @@
 #include <lauxlib.h>
 
 int
-api_listen(lua_State* L)
+api_publish(lua_State* L)
+{
+  if (lua_type(L, -1) != LUA_TSTRING) {
+    log_warning("%s", lua_get_arg_type_error_msg(L, -1, LUA_TSTRING));
+    return 0;
+  }
+
+  call_event_listeners(lua_tostring(L, -1));
+  return 0;
+}
+
+int
+api_subscribe(lua_State* L)
 {
   if (lua_type(L, -2) != LUA_TSTRING) {
     log_warning("%s", lua_get_arg_type_error_msg(L, -2, LUA_TSTRING));
@@ -26,7 +38,7 @@ api_listen(lua_State* L)
 }
 
 int
-api_unlisten(lua_State* L)
+api_unsubscribe(lua_State* L)
 {
   if (lua_type(L, -2) != LUA_TSTRING) {
     log_warning("%s", lua_get_arg_type_error_msg(L, -2, LUA_TSTRING));

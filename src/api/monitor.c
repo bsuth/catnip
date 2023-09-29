@@ -1,4 +1,5 @@
 #include "monitor.h"
+#include "api/refs.h"
 #include "desktop/monitor.h"
 #include "user_config/user_config.h"
 #include "utils/wayland.h"
@@ -185,10 +186,7 @@ api_monitor_desktop_monitor_destroy(struct wl_listener* listener, void* data)
   api_monitor->desktop_monitor = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, api_monitor->modes);
 
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
-  lua_getfield(L, -1, "monitors");
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_monitors);
 
   if (num_monitors == 1) {
     lua_pushnil(L);
@@ -207,16 +205,13 @@ api_monitor_desktop_monitor_destroy(struct wl_listener* listener, void* data)
 
   --num_monitors;
 
-  lua_pop(L, 4);
+  lua_pop(L, 1);
 }
 
 void
 create_api_desktop_monitor(struct desktop_monitor* desktop_monitor)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
-  lua_getfield(L, -1, "monitors");
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_monitors);
 
   struct api_monitor* api_monitor =
     lua_newuserdata(L, sizeof(struct api_monitor));
@@ -247,7 +242,7 @@ create_api_desktop_monitor(struct desktop_monitor* desktop_monitor)
 
   lua_rawseti(L, -2, api_monitor->index);
 
-  lua_pop(L, 4);
+  lua_pop(L, 1);
 }
 
 // -----------------------------------------------------------------------------
@@ -257,12 +252,13 @@ create_api_desktop_monitor(struct desktop_monitor* desktop_monitor)
 void
 init_api_monitors(lua_State* L)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
   lua_newtable(L);
+  api_catnip_monitors = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_monitors);
   lua_setfield(L, -2, "monitors");
-  lua_pop(L, 3);
+  lua_pop(L, 1);
 
   luaL_newmetatable(L, "catnip.monitor");
   luaL_setfuncs(L, api_monitor_metatable, 0);

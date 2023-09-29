@@ -5,7 +5,7 @@
 #include <lua.h>
 
 void
-create_api_desktop_window(struct desktop_window* desktop_window);
+api_create_desktop_window(struct desktop_window* desktop_window);
 
 void
 init_api_windows(lua_State* L);

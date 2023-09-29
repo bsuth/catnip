@@ -4,9 +4,12 @@
 #include <lua.h>
 
 int
-api_listen(lua_State* L);
+api_publish(lua_State* L);
 
 int
-api_unlisten(lua_State* L);
+api_subscribe(lua_State* L);
+
+int
+api_unsubscribe(lua_State* L);
 
 #endif

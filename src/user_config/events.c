@@ -76,6 +76,7 @@ call_event_listeners(const char* event)
     for (int i = 0; i < event_listeners->len; ++i) {
       lua_rawgeti(L, LUA_REGISTRYINDEX, g_array_index(event_listeners, int, i));
 
+      // TODO: event parameters?
       if (lua_pcall(L, 0, 0, 0) != 0) {
         g_warning("%s", lua_tostring(L, -1));
       }

@@ -1,4 +1,5 @@
 #include "server/cursor.h"
+#include "api/refs.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <string.h>
@@ -69,16 +70,14 @@ static const struct luaL_Reg lua_cursor_metatable[] = {
 void
 init_api_cursor(lua_State* L)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-  lua_getfield(L, -1, "catnip");
-
   struct lua_window* lua_window = lua_newuserdata(L, 0);
-
   luaL_newmetatable(L, "catnip.cursor");
   luaL_setfuncs(L, lua_cursor_metatable, 0);
   lua_setmetatable(L, -2);
+  api_catnip_cursor = luaL_ref(L, LUA_REGISTRYINDEX);
 
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_cursor);
   lua_setfield(L, -2, "cursor");
-  lua_pop(L, 3);
+  lua_pop(L, 1);
 }
