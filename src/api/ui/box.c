@@ -1,17 +1,22 @@
 #include "box.h"
-#include "api/refs.h"
+#include "api/ui/ui.h"
 #include "lua.h"
 #include "ui/box.h"
 #include "ui/types.h"
+#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
+
+// -----------------------------------------------------------------------------
+// Types
+// -----------------------------------------------------------------------------
 
 struct api_ui_box {
   struct ui_box* ui_box;
 };
 
 // -----------------------------------------------------------------------------
-// Metatable
+// Metatable: catnip.ui.box
 // -----------------------------------------------------------------------------
 
 static int
@@ -20,18 +25,25 @@ api_ui_box__index(lua_State* L)
   struct api_ui_box* api_ui_box = lua_touserdata(L, 1);
   struct ui_box* ui_box = api_ui_box->ui_box;
 
-  if (ui_box == NULL || lua_type(L, 2) != LUA_TSTRING) {
+  if (ui_box == NULL) {
+    log_warning("cannot get field of expired box");
     lua_pushnil(L);
     return 1;
   }
 
-  const char* field = lua_tostring(L, 2);
+  int key_type = lua_type(L, 2);
+  if (key_type != LUA_TNUMBER && key_type != LUA_TSTRING) {
+    lua_pushnil(L);
+    return 1;
+  }
 
-  if (g_str_equal(field, "width")) {
+  const char* key = lua_tostring(L, 2);
+
+  if (g_str_equal(key, "width")) {
     lua_pushnumber(L, ui_box_get_width(ui_box));
-  } else if (g_str_equal(field, "height")) {
+  } else if (g_str_equal(key, "height")) {
     lua_pushnumber(L, ui_box_get_height(ui_box));
-  } else if (g_str_equal(field, "background")) {
+  } else if (g_str_equal(key, "background")) {
     lua_pushnumber(L, ui_box_get_background(ui_box));
   } else {
     lua_pushnil(L);
@@ -46,28 +58,41 @@ api_ui_box__newindex(lua_State* L)
   struct api_ui_box* api_ui_box = lua_touserdata(L, 1);
   struct ui_box* ui_box = api_ui_box->ui_box;
 
-  if (ui_box == NULL || lua_type(L, 2) != LUA_TSTRING) {
-    // TODO: error?
+  if (ui_box == NULL) {
+    log_warning("cannot get field of expired root");
     return 0;
   }
 
-  const char* field = lua_tostring(L, 2);
+  int key_type = lua_type(L, 2);
+  if (key_type != LUA_TNUMBER && key_type != LUA_TSTRING) {
+    log_warning("invalid key type: %s", lua_typename(L, key_type));
+    return 0;
+  }
 
-  if (g_str_equal(field, "width")) {
+  // TODO: handle number key
+
+  const char* key = lua_tostring(L, 2);
+
+  if (g_str_equal(key, "width")) {
     ui_box_set_width(ui_box, luaL_checknumber(L, 3), UI_SIZE_PX);
-  } else if (g_str_equal(field, "height")) {
+  } else if (g_str_equal(key, "height")) {
     ui_box_set_height(ui_box, luaL_checknumber(L, 3), UI_SIZE_PX);
-  } else if (g_str_equal(field, "background")) {
+  } else if (g_str_equal(key, "background")) {
     ui_box_set_background(ui_box, luaL_checknumber(L, 3));
   } else {
-    // TODO: error?
+    log_warning("invalid key: %s", key);
   }
 
   return 0;
 }
 
+static const struct luaL_Reg api_ui_box_metatable[] = {
+  {"__index", api_ui_box__index},
+  {"__newindex", api_ui_box__newindex},
+  {NULL, NULL}};
+
 // -----------------------------------------------------------------------------
-// api_create_ui_box
+// Init
 // -----------------------------------------------------------------------------
 
 static int
@@ -93,20 +118,11 @@ api_create_ui_box(lua_State* L)
   return 1;
 }
 
-// -----------------------------------------------------------------------------
-// init
-// -----------------------------------------------------------------------------
-
-static const struct luaL_Reg lua_ui_box_metatable[] = {
-  {"__index", api_ui_box__index},
-  {"__newindex", api_ui_box__newindex},
-  {NULL, NULL}};
-
 void
 init_api_ui_box(lua_State* L)
 {
   luaL_newmetatable(L, "catnip.ui.box");
-  luaL_setfuncs(L, lua_ui_box_metatable, 0);
+  luaL_setfuncs(L, api_ui_box_metatable, 0);
   lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_ui);

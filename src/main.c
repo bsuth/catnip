@@ -1,19 +1,18 @@
-#include "desktop/desktop.h"
+#include "config/config.h"
+#include "meta.h"
 #include "server/display.h"
 #include "server/server.h"
-#include "user_config/user_config.h"
 #include <wlr/util/log.h>
 
 int
 main(int argc, char* argv[])
 {
-  wlr_log_init(WLR_DEBUG, NULL);
+  wlr_log_init(WLR_LOG_LEVEL, NULL);
 
   // TODO CLI (getopt)
 
   init_server();
-  init_desktop();
-  init_user_config();
+  init_config();
 
   start_server();
 

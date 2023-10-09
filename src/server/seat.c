@@ -7,24 +7,30 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
 struct wlr_seat* server_seat;
 
-static struct wl_listener server_backend_new_input_listener;
-static struct wl_listener server_seat_request_set_cursor_listener;
-static struct wl_listener server_seat_request_set_selection_listener;
+static struct {
+  struct wl_listener new_input;
+  struct wl_listener request_set_cursor;
+  struct wl_listener request_set_selection;
+} listeners;
 
 // -----------------------------------------------------------------------------
-// Event Listeners
+// Init
 // -----------------------------------------------------------------------------
 
 static void
-server_backend_new_input(struct wl_listener* listener, void* data)
+on_new_input(struct wl_listener* listener, void* data)
 {
   struct wlr_input_device* device = data;
 
   switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
-      register_new_keyboard(device);
+      create_server_keyboard(device);
       break;
     case WLR_INPUT_DEVICE_POINTER:
       /* We don't do anything special with pointers. All of our pointer handling
@@ -50,7 +56,7 @@ server_backend_new_input(struct wl_listener* listener, void* data)
 }
 
 static void
-server_seat_request_set_cursor(struct wl_listener* listener, void* data)
+on_request_set_cursor(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
@@ -74,15 +80,11 @@ server_seat_request_set_cursor(struct wl_listener* listener, void* data)
 }
 
 static void
-server_seat_request_set_selection(struct wl_listener* listener, void* data)
+on_request_set_selection(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_request_set_selection_event* event = data;
   wlr_seat_set_selection(server_seat, event->source, event->serial);
 }
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
 
 void
 init_server_seat()
@@ -91,18 +93,18 @@ init_server_seat()
   init_server_keyboard();
 
   wl_setup_listener(
-    &server_backend_new_input_listener,
+    &listeners.new_input,
     &server_backend->events.new_input,
-    server_backend_new_input
+    on_new_input
   );
   wl_setup_listener(
-    &server_seat_request_set_cursor_listener,
+    &listeners.request_set_cursor,
     &server_seat->events.request_set_cursor,
-    server_seat_request_set_cursor
+    on_request_set_cursor
   );
   wl_setup_listener(
-    &server_seat_request_set_selection_listener,
+    &listeners.request_set_selection,
     &server_seat->events.request_set_selection,
-    server_seat_request_set_selection
+    on_request_set_selection
   );
 }

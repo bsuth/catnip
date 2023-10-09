@@ -1,11 +1,10 @@
 #ifndef CATNIP_API_WINDOW_H
 #define CATNIP_API_WINDOW_H
 
-#include "desktop/window.h"
+#include "utils/lua.h"
 #include <lua.h>
 
-void
-api_create_desktop_window(struct desktop_window* desktop_window);
+extern lua_Ref api_catnip_windows;
 
 void
 init_api_windows(lua_State* L);

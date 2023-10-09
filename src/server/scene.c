@@ -1,5 +1,5 @@
 #include "scene.h"
-#include "server/output.h"
+#include "server/output_layout.h"
 
 struct wlr_scene* server_scene;
 

@@ -1,7 +1,10 @@
 #include "ui.h"
-#include "api/refs.h"
+#include "api/api.h"
 #include "api/ui/box.h"
+#include "api/ui/root.h"
 #include <lauxlib.h>
+
+lua_Ref api_catnip_ui = LUA_NOREF;
 
 void
 init_api_ui(lua_State* L)
@@ -14,5 +17,6 @@ init_api_ui(lua_State* L)
   lua_setfield(L, -2, "ui");
   lua_pop(L, 1);
 
+  init_api_ui_root(L);
   init_api_ui_box(L);
 }

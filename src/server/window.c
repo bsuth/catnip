@@ -1,31 +1,40 @@
 #include "window.h"
 #include "api/window.h"
-#include "server/output.h"
+#include "server/output_layout.h"
 #include "server/scene.h"
 #include "server/seat.h"
 #include "utils/wayland.h"
 #include <stdlib.h>
 #include <wayland-util.h>
 
-static struct wl_listener server_xdg_shell_new_surface_listener;
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
+struct wl_list server_windows;
+struct server_window_events server_window_events;
+
+static struct {
+  struct wl_listener xdg_shell_new_surface;
+} listeners;
 
 // -----------------------------------------------------------------------------
-// create_desktop_window
+// Create
 // -----------------------------------------------------------------------------
 
 static void
-desktop_window_xdg_surface_map(struct wl_listener* listener, void* data)
+on_xdg_surface_map(struct wl_listener* listener, void* data)
 {
-  struct desktop_window* window =
-    wl_container_of(listener, window, map_listener);
-  desktop_window_set_focused(window, true);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.map);
+  server_window_set_focused(window, true);
 }
 
 static void
-desktop_window_xdg_surface_unmap(struct wl_listener* listener, void* data)
+on_xdg_surface_unmap(struct wl_listener* listener, void* data)
 {
-  struct desktop_window* window =
-    wl_container_of(listener, window, unmap_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.unmap);
 
   // TODO
   // Reset the cursor mode if the grabbed view was unmapped.
@@ -35,78 +44,72 @@ desktop_window_xdg_surface_unmap(struct wl_listener* listener, void* data)
 }
 
 static void
-desktop_window_xdg_surface_destroy(struct wl_listener* listener, void* data)
+on_xdg_surface_destroy(struct wl_listener* listener, void* data)
 {
-  struct desktop_window* window =
-    wl_container_of(listener, window, destroy_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.destroy);
 
-  wl_list_remove(&window->map_listener.link);
-  wl_list_remove(&window->unmap_listener.link);
-  wl_list_remove(&window->destroy_listener.link);
-  wl_list_remove(&window->request_move_listener.link);
-  wl_list_remove(&window->request_resize_listener.link);
-  wl_list_remove(&window->request_maximize_listener.link);
-  wl_list_remove(&window->request_fullscreen_listener.link);
+  wl_list_remove(&window->listeners.map.link);
+  wl_list_remove(&window->listeners.unmap.link);
+  wl_list_remove(&window->listeners.destroy.link);
+  wl_list_remove(&window->listeners.request_move.link);
+  wl_list_remove(&window->listeners.request_resize.link);
+  wl_list_remove(&window->listeners.request_maximize.link);
+  wl_list_remove(&window->listeners.request_fullscreen.link);
 
   free(window);
 }
 
 static void
-desktop_window_xdg_toplevel_request_move(
-  struct wl_listener* listener,
-  void* data
-)
+on_xdg_toplevel_request_move(struct wl_listener* listener, void* data)
 {
   // TODO check the provided serial against a list of button press serials sent
   // to this client, to prevent the client from requesting this whenever they
   // want.
-  struct desktop_window* window =
-    wl_container_of(listener, window, request_move_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.request_move);
   // TODO start move
 }
 
 static void
-desktop_window_xdg_toplevel_request_resize(
-  struct wl_listener* listener,
-  void* data
-)
+on_xdg_toplevel_request_resize(struct wl_listener* listener, void* data)
 {
   // TODO check the provided serial against a list of button press serials sent
   // to this client, to prevent the client from requesting this whenever they
   // want.
   struct wlr_xdg_toplevel_resize_event* event = data;
-  struct desktop_window* window =
-    wl_container_of(listener, window, request_resize_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.request_resize);
   // TODO start resize
 }
 
 static void
-desktop_window_xdg_toplevel_request_maximize(
-  struct wl_listener* listener,
-  void* data
-)
+on_xdg_toplevel_request_maximize(struct wl_listener* listener, void* data)
 {
   // TODO support maximization
-  struct desktop_window* window =
-    wl_container_of(listener, window, request_maximize_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.request_maximize);
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
 static void
-desktop_window_xdg_toplevel_request_fullscreen(
-  struct wl_listener* listener,
-  void* data
-)
+on_xdg_toplevel_request_fullscreen(struct wl_listener* listener, void* data)
 {
   // TODO support fullscreen
-  struct desktop_window* window =
-    wl_container_of(listener, window, request_fullscreen_listener);
+  struct server_window* window =
+    wl_container_of(listener, window, listeners.request_fullscreen);
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
 static void
-create_desktop_window(struct wlr_xdg_surface* xdg_surface)
+on_xdg_shell_new_surface(struct wl_listener* listener, void* data)
 {
+  struct wlr_xdg_surface* xdg_surface = data;
+
   if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
     struct wlr_xdg_surface* parent =
       wlr_xdg_surface_from_wlr_surface(xdg_surface->popup->parent);
@@ -116,7 +119,7 @@ create_desktop_window(struct wlr_xdg_surface* xdg_surface)
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = wlr_scene_xdg_surface_create(parent->data, xdg_surface);
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-    struct desktop_window* window = calloc(1, sizeof(struct desktop_window));
+    struct server_window* window = calloc(1, sizeof(struct server_window));
 
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;
@@ -127,40 +130,42 @@ create_desktop_window(struct wlr_xdg_surface* xdg_surface)
     );
     window->scene_tree->node.data = window;
 
+    wl_signal_init(&window->events.destroy);
+
     wl_setup_listener(
-      &window->map_listener,
+      &window->listeners.map,
       &window->xdg_surface->events.map,
-      desktop_window_xdg_surface_map
+      on_xdg_surface_map
     );
     wl_setup_listener(
-      &window->unmap_listener,
+      &window->listeners.unmap,
       &window->xdg_surface->events.unmap,
-      desktop_window_xdg_surface_unmap
+      on_xdg_surface_unmap
     );
     wl_setup_listener(
-      &window->destroy_listener,
+      &window->listeners.destroy,
       &window->xdg_surface->events.destroy,
-      desktop_window_xdg_surface_destroy
+      on_xdg_surface_destroy
     );
     wl_setup_listener(
-      &window->request_move_listener,
+      &window->listeners.request_move,
       &window->xdg_toplevel->events.request_move,
-      desktop_window_xdg_toplevel_request_move
+      on_xdg_toplevel_request_move
     );
     wl_setup_listener(
-      &window->request_resize_listener,
+      &window->listeners.request_resize,
       &window->xdg_toplevel->events.request_resize,
-      desktop_window_xdg_toplevel_request_resize
+      on_xdg_toplevel_request_resize
     );
     wl_setup_listener(
-      &window->request_maximize_listener,
+      &window->listeners.request_maximize,
       &window->xdg_toplevel->events.request_maximize,
-      desktop_window_xdg_toplevel_request_maximize
+      on_xdg_toplevel_request_maximize
     );
     wl_setup_listener(
-      &window->request_fullscreen_listener,
+      &window->listeners.request_fullscreen,
       &window->xdg_toplevel->events.request_fullscreen,
-      desktop_window_xdg_toplevel_request_fullscreen
+      on_xdg_toplevel_request_fullscreen
     );
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but
@@ -168,28 +173,22 @@ create_desktop_window(struct wlr_xdg_surface* xdg_surface)
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = window->scene_tree;
 
-    api_create_desktop_window(window);
+    wl_list_insert(&server_windows, &window->link);
+    wl_signal_emit_mutable(&server_window_events.new_server_window, window);
   }
 }
 
-// -----------------------------------------------------------------------------
-// init
-// -----------------------------------------------------------------------------
-
-static void
-server_xdg_shell_new_surface(struct wl_listener* listener, void* data)
-{
-  struct wlr_xdg_surface* xdg_surface = data;
-  create_desktop_window(xdg_surface);
-}
-
 void
-init_desktop_windows()
+init_server_windows()
 {
+  wl_list_init(&server_windows);
+
+  wl_signal_init(&server_window_events.new_server_window);
+
   wl_setup_listener(
-    &server_xdg_shell_new_surface_listener,
+    &listeners.xdg_shell_new_surface,
     &server_xdg_shell->events.new_surface,
-    server_xdg_shell_new_surface
+    on_xdg_shell_new_surface
   );
 }
 
@@ -198,7 +197,7 @@ init_desktop_windows()
 // -----------------------------------------------------------------------------
 
 int
-desktop_window_get_lx(struct desktop_window* window)
+server_window_get_lx(struct server_window* window)
 {
   int lx, ly;
   wlr_scene_node_coords(&window->scene_tree->node, &lx, &ly);
@@ -206,7 +205,7 @@ desktop_window_get_lx(struct desktop_window* window)
 }
 
 int
-desktop_window_get_ly(struct desktop_window* window)
+server_window_get_ly(struct server_window* window)
 {
   int lx, ly;
   wlr_scene_node_coords(&window->scene_tree->node, &lx, &ly);
@@ -214,7 +213,7 @@ desktop_window_get_ly(struct desktop_window* window)
 }
 
 int
-desktop_window_get_gx(struct desktop_window* window)
+server_window_get_gx(struct server_window* window)
 {
   struct wlr_surface_output* surface_output;
   struct wl_list* surface_outputs =
@@ -226,7 +225,7 @@ desktop_window_get_gx(struct desktop_window* window)
       wlr_output_layout_get(server_output_layout, surface_output->output);
 
     if (layout_output != NULL) {
-      return layout_output->x + desktop_window_get_lx(window);
+      return layout_output->x + server_window_get_lx(window);
     }
   }
 
@@ -234,7 +233,7 @@ desktop_window_get_gx(struct desktop_window* window)
 }
 
 int
-desktop_window_get_gy(struct desktop_window* window)
+server_window_get_gy(struct server_window* window)
 {
   struct wlr_surface_output* surface_output;
   struct wl_list* surface_outputs =
@@ -246,7 +245,7 @@ desktop_window_get_gy(struct desktop_window* window)
       wlr_output_layout_get(server_output_layout, surface_output->output);
 
     if (layout_output != NULL) {
-      return layout_output->y + desktop_window_get_ly(window);
+      return layout_output->y + server_window_get_ly(window);
     }
   }
 
@@ -254,7 +253,7 @@ desktop_window_get_gy(struct desktop_window* window)
 }
 
 int
-desktop_window_get_width(struct desktop_window* window)
+server_window_get_width(struct server_window* window)
 {
   struct wlr_box box;
   wlr_xdg_surface_get_geometry(window->xdg_toplevel->base, &box);
@@ -262,7 +261,7 @@ desktop_window_get_width(struct desktop_window* window)
 }
 
 int
-desktop_window_get_height(struct desktop_window* window)
+server_window_get_height(struct server_window* window)
 {
   struct wlr_box box;
   wlr_xdg_surface_get_geometry(window->xdg_toplevel->base, &box);
@@ -270,21 +269,21 @@ desktop_window_get_height(struct desktop_window* window)
 }
 
 bool
-desktop_window_get_focused(struct desktop_window* window)
+server_window_get_focused(struct server_window* window)
 {
   return window->xdg_toplevel->base->surface
          == server_seat->keyboard_state.focused_surface;
 }
 
 bool
-desktop_window_get_maximized(struct desktop_window* window)
+server_window_get_maximized(struct server_window* window)
 {
   // TODO
   return false;
 }
 
 bool
-desktop_window_get_fullscreen(struct desktop_window* window)
+server_window_get_fullscreen(struct server_window* window)
 {
   // TODO
   return false;
@@ -295,61 +294,61 @@ desktop_window_get_fullscreen(struct desktop_window* window)
 // -----------------------------------------------------------------------------
 
 void
-desktop_window_set_lx(struct desktop_window* window, int new_lx)
+server_window_set_lx(struct server_window* window, int new_lx)
 {
   wlr_scene_node_set_position(
     &window->scene_tree->node,
     new_lx,
-    desktop_window_get_ly(window)
+    server_window_get_ly(window)
   );
 }
 
 void
-desktop_window_set_ly(struct desktop_window* window, int new_ly)
+server_window_set_ly(struct server_window* window, int new_ly)
 {
   wlr_scene_node_set_position(
     &window->scene_tree->node,
-    desktop_window_get_lx(window),
+    server_window_get_lx(window),
     new_ly
   );
 }
 
 void
-desktop_window_set_gx(struct desktop_window* window, int new_gx)
+server_window_set_gx(struct server_window* window, int new_gx)
 {
   // TODO
 }
 
 void
-desktop_window_set_gy(struct desktop_window* window, int new_gy)
+server_window_set_gy(struct server_window* window, int new_gy)
 {
   // TODO
 }
 
 void
-desktop_window_set_width(struct desktop_window* window, int new_width)
+server_window_set_width(struct server_window* window, int new_width)
 {
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
     new_width,
-    desktop_window_get_height(window)
+    server_window_get_height(window)
   );
 }
 
 void
-desktop_window_set_height(struct desktop_window* window, int new_height)
+server_window_set_height(struct server_window* window, int new_height)
 {
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
-    desktop_window_get_width(window),
+    server_window_get_width(window),
     new_height
   );
 }
 
 void
-desktop_window_set_focused(struct desktop_window* window, bool new_focused)
+server_window_set_focused(struct server_window* window, bool new_focused)
 {
-  if (desktop_window_get_focused(window) == new_focused) {
+  if (server_window_get_focused(window) == new_focused) {
     return; // nothing to do
   } else if (new_focused == false) {
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, false);
@@ -373,16 +372,13 @@ desktop_window_set_focused(struct desktop_window* window, bool new_focused)
 }
 
 void
-desktop_window_set_maximized(struct desktop_window* window, bool new_maximized)
+server_window_set_maximized(struct server_window* window, bool new_maximized)
 {
   // TODO
 }
 
 void
-desktop_window_set_fullscreen(
-  struct desktop_window* window,
-  bool new_fullscreen
-)
+server_window_set_fullscreen(struct server_window* window, bool new_fullscreen)
 {
   // TODO
 }
@@ -391,8 +387,8 @@ desktop_window_set_fullscreen(
 // Miscellaneous
 // -----------------------------------------------------------------------------
 
-struct desktop_window*
-get_desktop_window_at(double x, double y, double* nx, double* ny)
+struct server_window*
+get_server_window_at(double x, double y, double* nx, double* ny)
 {
   struct wlr_scene_tree* root = &server_scene->tree;
 

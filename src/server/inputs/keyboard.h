@@ -9,15 +9,17 @@ struct server_keyboard {
   struct wlr_input_device* wlr_input_device;
   struct wlr_keyboard* wlr_keyboard;
 
-  struct wl_listener modifiers_listener;
-  struct wl_listener key_listener;
-  struct wl_listener destroy_listener;
+  struct {
+    struct wl_listener modifiers;
+    struct wl_listener key;
+    struct wl_listener destroy;
+  } listeners;
 };
 
 extern struct wl_list server_keyboards;
 
 void
-register_new_keyboard(struct wlr_input_device* device);
+create_server_keyboard(struct wlr_input_device* device);
 
 void
 init_server_keyboard();

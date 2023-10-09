@@ -3,6 +3,8 @@
 
 #include <lua.h>
 
+typedef int lua_Ref;
+
 const char*
 lua_get_arg_error_msg(lua_State* L, const int arg_index, const char* details);
 

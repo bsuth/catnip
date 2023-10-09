@@ -1,15 +1,20 @@
-#include "user_config.h"
-#include "api/api.h"
 #include "config.h"
-#include "user_config/events.h"
-#include "user_config/keybindings.h"
+#include "api/api.h"
+#include "config/events.h"
+#include "config/keybindings.h"
+#include "meta.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
 #include <unistd.h>
 
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
 lua_State* L;
-bool user_config_request_reload = false;
+
+bool config_reload_requested = false;
 
 // TODO: Allow the user to manipulate this. This should be settable both via the
 // CLI and via the Lua API. In the latter case, this will be especially useful
@@ -18,10 +23,14 @@ bool user_config_request_reload = false;
 // 1. Bash: `catnip -c my_custom_config.lua`
 // 2. Lua: `require('catnip').restart("my_custom_config.lua")`
 // 3. Lua: `require('catnip').restart("")` -- let catnip auto detect
-char* user_config_path;
+char* config_path;
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
 
 static void
-try_user_config_path(const char* path)
+try_config_path(const char* path)
 {
   if (path == NULL || path[0] == '\0' || access(path, R_OK) == -1) {
     return;
@@ -39,9 +48,9 @@ try_user_config_path(const char* path)
 }
 
 static void
-load_user_config()
+load_config()
 {
-  try_user_config_path(user_config_path);
+  try_config_path(config_path);
 
   if (L != NULL) {
     return;
@@ -60,32 +69,42 @@ load_user_config()
     }
   }
 
-  try_user_config_path(default_config_path);
+  try_config_path(default_config_path);
   g_free(default_config_path);
 
   if (L != NULL) {
     return;
   }
 
-  try_user_config_path(ROOT_DIR "/fallback_config/init.lua");
+  try_config_path(ROOT_DIR "/fallback_config/init.lua");
 }
 
-void
-init_user_config()
-{
-  init_user_keybindings();
-  init_event_listeners();
-  load_user_config();
-}
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
 
 void
-reload_user_config()
+init_config()
 {
-  clear_user_keybindings();
-  clear_event_listeners(NULL);
+  init_config_keybindings();
+  init_config_events();
+  load_config();
+}
+
+// -----------------------------------------------------------------------------
+// API
+// -----------------------------------------------------------------------------
+
+void
+reload_config()
+{
+  publish_config_event("reload");
+
+  clear_config_keybindings();
+  clear_config_subscriptions(NULL);
 
   lua_close(L);
   L = NULL;
 
-  load_user_config();
+  load_config();
 }

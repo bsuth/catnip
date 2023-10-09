@@ -14,7 +14,7 @@ struct ui_box_styles {
 };
 
 struct ui_box {
-  struct drawable* drawable;
+  struct ui_root* root;
   struct ui_box_properties properties;
   struct ui_box_styles styles;
 };

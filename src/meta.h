@@ -1,5 +1,5 @@
-#ifndef CATNIP_CONFIG_H
-#define CATNIP_CONFIG_H
+#ifndef CATNIP_META_H
+#define CATNIP_META_H
 
 #include <wlr/util/log.h>
 

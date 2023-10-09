@@ -1,5 +1,5 @@
 #include "keybindings.h"
-#include "user_config/keybindings.h"
+#include "config/keybindings.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <glib.h>
@@ -8,6 +8,10 @@
 #include <string.h>
 #include <wlr/types/wlr_seat.h>
 #include <xkbcommon/xkbcommon.h>
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
 
 static uint32_t
 translate_lua_modifier(const char* s)
@@ -47,6 +51,10 @@ translate_lua_key(const char* s)
 
   return keysym;
 }
+
+// -----------------------------------------------------------------------------
+// API
+// -----------------------------------------------------------------------------
 
 int
 api_bind(lua_State* L)
@@ -90,7 +98,7 @@ api_bind(lua_State* L)
     return 0;
   }
 
-  add_user_keybinding(modifiers, keysym, luaL_ref(L, LUA_REGISTRYINDEX));
+  add_config_keybinding(modifiers, keysym, luaL_ref(L, LUA_REGISTRYINDEX));
 
   return 0;
 }
@@ -132,7 +140,7 @@ api_unbind(lua_State* L)
     return 0;
   }
 
-  remove_user_keybinding(modifiers, keysym);
+  remove_config_keybinding(modifiers, keysym);
 
   return 0;
 }

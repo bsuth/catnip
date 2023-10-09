@@ -2,13 +2,22 @@
 #include "api/cursor.h"
 #include "api/events.h"
 #include "api/keybindings.h"
-#include "api/monitor.h"
-#include "api/refs.h"
+#include "api/output.h"
 #include "api/ui/ui.h"
 #include "api/window.h"
+#include "config/config.h"
 #include "server/server.h"
-#include "user_config/user_config.h"
 #include <lauxlib.h>
+
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
+lua_Ref api_catnip = LUA_NOREF;
+
+// -----------------------------------------------------------------------------
+// API
+// -----------------------------------------------------------------------------
 
 static int
 api_quit(lua_State* L)
@@ -20,9 +29,13 @@ api_quit(lua_State* L)
 static int
 api_reload(lua_State* L)
 {
-  user_config_request_reload = true;
+  config_reload_requested = true;
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
 
 static const struct luaL_Reg lib_init[] = {
   {"quit", api_quit},
@@ -47,7 +60,7 @@ init_api(lua_State* L)
   lua_pop(L, 2);
 
   init_api_windows(L);
-  init_api_monitors(L);
+  init_api_outputs(L);
   init_api_cursor(L);
   init_api_ui(L);
 }

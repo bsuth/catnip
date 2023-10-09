@@ -1,7 +1,7 @@
 #include "keyboard.h"
+#include "config/keybindings.h"
 #include "server/display.h"
 #include "server/seat.h"
-#include "user_config/keybindings.h"
 #include "utils/wayland.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,13 +9,31 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
 struct wl_list server_keyboards;
 
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+void
+init_server_keyboard()
+{
+  wl_list_init(&server_keyboards);
+}
+
+// -----------------------------------------------------------------------------
+// Create
+// -----------------------------------------------------------------------------
+
 static void
-keyboard_modifiers(struct wl_listener* listener, void* data)
+on_keyboard_modifiers(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
-    wl_container_of(listener, keyboard, modifiers_listener);
+    wl_container_of(listener, keyboard, listeners.modifiers);
 
   // Wayland only allows a single keyboard per seat. Thus, we assign all
   // keyboards to the same seat, swapping them out on key events.
@@ -28,10 +46,10 @@ keyboard_modifiers(struct wl_listener* listener, void* data)
 }
 
 static void
-keyboard_key(struct wl_listener* listener, void* data)
+on_keyboard_key(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
-    wl_container_of(listener, keyboard, key_listener);
+    wl_container_of(listener, keyboard, listeners.key);
 
   struct wlr_keyboard_key_event* event = data;
 
@@ -42,7 +60,7 @@ keyboard_key(struct wl_listener* listener, void* data)
     xkb_keysym_t keysym =
       xkb_state_key_get_one_sym(keyboard->wlr_keyboard->xkb_state, xkb_keycode);
 
-    if (handle_user_keybinding(modifiers, keysym)) {
+    if (handle_config_keybinding(modifiers, keysym)) {
       // Do not forward key events that have been handled by the compositor
       return;
     }
@@ -62,21 +80,21 @@ keyboard_key(struct wl_listener* listener, void* data)
 }
 
 static void
-keyboard_destroy(struct wl_listener* listener, void* data)
+on_keyboard_destroy(struct wl_listener* listener, void* data)
 {
   struct server_keyboard* keyboard =
-    wl_container_of(listener, keyboard, destroy_listener);
+    wl_container_of(listener, keyboard, listeners.destroy);
 
-  wl_list_remove(&keyboard->modifiers_listener.link);
-  wl_list_remove(&keyboard->key_listener.link);
-  wl_list_remove(&keyboard->destroy_listener.link);
+  wl_list_remove(&keyboard->listeners.modifiers.link);
+  wl_list_remove(&keyboard->listeners.key.link);
+  wl_list_remove(&keyboard->listeners.destroy.link);
   wl_list_remove(&keyboard->link);
 
   free(keyboard);
 }
 
 void
-register_new_keyboard(struct wlr_input_device* device)
+create_server_keyboard(struct wlr_input_device* device)
 {
   struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
 
@@ -98,26 +116,20 @@ register_new_keyboard(struct wlr_input_device* device)
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
   wl_setup_listener(
-    &keyboard->modifiers_listener,
+    &keyboard->listeners.modifiers,
     &wlr_keyboard->events.modifiers,
-    keyboard_modifiers
+    on_keyboard_modifiers
   );
   wl_setup_listener(
-    &keyboard->key_listener,
+    &keyboard->listeners.key,
     &wlr_keyboard->events.key,
-    keyboard_key
+    on_keyboard_key
   );
   wl_setup_listener(
-    &keyboard->destroy_listener,
+    &keyboard->listeners.destroy,
     &device->events.destroy,
-    keyboard_destroy
+    on_keyboard_destroy
   );
 
   wl_list_insert(&server_keyboards, &keyboard->link);
-}
-
-void
-init_server_keyboard()
-{
-  wl_list_init(&server_keyboards);
 }

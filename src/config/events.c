@@ -1,11 +1,19 @@
 #include "events.h"
-#include "user_config/user_config.h"
+#include "config/config.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdbool.h>
 #include <string.h>
 
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
 static GHashTable* event_registry;
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
 
 static void
 free_lua_callback_ref(void* data)
@@ -13,6 +21,10 @@ free_lua_callback_ref(void* data)
   const int* lua_callback_ref = data;
   luaL_unref(L, LUA_REGISTRYINDEX, *lua_callback_ref);
 }
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
 
 static void
 free_event_listeners(void* data)
@@ -22,14 +34,18 @@ free_event_listeners(void* data)
 }
 
 void
-init_event_listeners()
+init_config_events()
 {
   event_registry =
     g_hash_table_new_full(g_str_hash, g_str_equal, free, free_event_listeners);
 }
 
+// -----------------------------------------------------------------------------
+// API
+// -----------------------------------------------------------------------------
+
 void
-add_event_listener(const char* event, const int lua_callback_ref)
+subscribe_config_event(const char* event, const int lua_callback_ref)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 
@@ -43,7 +59,7 @@ add_event_listener(const char* event, const int lua_callback_ref)
 }
 
 void
-remove_event_listener(const char* event, const int lua_callback_ref)
+unsubscribe_config_event(const char* event, const int lua_callback_ref)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 
@@ -58,7 +74,7 @@ remove_event_listener(const char* event, const int lua_callback_ref)
 }
 
 void
-clear_event_listeners(const char* event)
+clear_config_subscriptions(const char* event)
 {
   if (event == NULL) {
     g_hash_table_remove_all(event_registry);
@@ -68,7 +84,7 @@ clear_event_listeners(const char* event)
 }
 
 void
-call_event_listeners(const char* event)
+publish_config_event(const char* event)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 

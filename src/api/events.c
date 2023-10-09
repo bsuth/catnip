@@ -1,5 +1,5 @@
 #include "events.h"
-#include "user_config/events.h"
+#include "config/events.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
@@ -12,7 +12,7 @@ api_publish(lua_State* L)
     return 0;
   }
 
-  call_event_listeners(lua_tostring(L, -1));
+  publish_config_event(lua_tostring(L, -1));
   return 0;
 }
 
@@ -31,7 +31,7 @@ api_subscribe(lua_State* L)
 
   const char* event = lua_tostring(L, -2);
   const int lua_callback_ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  add_event_listener(event, lua_callback_ref);
+  subscribe_config_event(event, lua_callback_ref);
 
   lua_pushnumber(L, lua_callback_ref);
   return 1;
@@ -52,7 +52,7 @@ api_unsubscribe(lua_State* L)
 
   const char* event = lua_tostring(L, -2);
   const int lua_callback_ref = lua_tonumber(L, -1);
-  remove_event_listener(event, lua_callback_ref);
+  unsubscribe_config_event(event, lua_callback_ref);
 
   return 0;
 }

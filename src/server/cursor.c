@@ -1,5 +1,5 @@
 #include "cursor.h"
-#include "server/output.h"
+#include "server/output_layout.h"
 #include "server/scene.h"
 #include "server/seat.h"
 #include "utils/wayland.h"
@@ -7,15 +7,21 @@
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
+// -----------------------------------------------------------------------------
+// State
+// -----------------------------------------------------------------------------
+
 struct wlr_cursor* server_cursor;
 enum server_cursor_mode server_cursor_mode;
 static struct wlr_xcursor_manager* server_cursor_manager;
 
-static struct wl_listener server_cursor_motion_listener;
-static struct wl_listener server_cursor_motion_absolute_listener;
-static struct wl_listener server_cursor_button_listener;
-static struct wl_listener server_cursor_axis_listener;
-static struct wl_listener server_cursor_frame_listener;
+static struct {
+  struct wl_listener cursor_motion;
+  struct wl_listener cursor_motion_absolute;
+  struct wl_listener cursor_button;
+  struct wl_listener cursor_axis;
+  struct wl_listener cursor_frame;
+} listeners;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -53,11 +59,11 @@ update_server_cursor(uint32_t time_msec)
 }
 
 // -----------------------------------------------------------------------------
-// init
+// Init
 // -----------------------------------------------------------------------------
 
 static void
-server_cursor_motion(struct wl_listener* listener, void* data)
+on_cursor_motion(struct wl_listener* listener, void* data)
 {
   struct wlr_pointer_motion_event* event = data;
 
@@ -72,7 +78,7 @@ server_cursor_motion(struct wl_listener* listener, void* data)
 }
 
 static void
-server_cursor_motion_absolute(struct wl_listener* listener, void* data)
+on_cursor_motion_absolute(struct wl_listener* listener, void* data)
 {
   struct wlr_pointer_motion_absolute_event* event = data;
 
@@ -87,7 +93,7 @@ server_cursor_motion_absolute(struct wl_listener* listener, void* data)
 }
 
 static void
-server_cursor_button(struct wl_listener* listener, void* data)
+on_cursor_button(struct wl_listener* listener, void* data)
 {
   struct wlr_pointer_button_event* event = data;
 
@@ -104,7 +110,7 @@ server_cursor_button(struct wl_listener* listener, void* data)
 }
 
 static void
-server_cursor_axis(struct wl_listener* listener, void* data)
+on_cursor_axis(struct wl_listener* listener, void* data)
 {
   struct wlr_pointer_axis_event* event = data;
 
@@ -119,7 +125,7 @@ server_cursor_axis(struct wl_listener* listener, void* data)
 }
 
 static void
-server_cursor_frame(struct wl_listener* listener, void* data)
+on_cursor_frame(struct wl_listener* listener, void* data)
 {
   wlr_seat_pointer_notify_frame(server_seat);
 }
@@ -136,29 +142,29 @@ init_server_cursor()
   wlr_xcursor_manager_load(server_cursor_manager, 1);
 
   wl_setup_listener(
-    &server_cursor_motion_listener,
+    &listeners.cursor_motion,
     &server_cursor->events.motion,
-    server_cursor_motion
+    on_cursor_motion
   );
   wl_setup_listener(
-    &server_cursor_motion_absolute_listener,
+    &listeners.cursor_motion_absolute,
     &server_cursor->events.motion_absolute,
-    server_cursor_motion_absolute
+    on_cursor_motion_absolute
   );
   wl_setup_listener(
-    &server_cursor_button_listener,
+    &listeners.cursor_button,
     &server_cursor->events.button,
-    server_cursor_button
+    on_cursor_button
   );
   wl_setup_listener(
-    &server_cursor_axis_listener,
+    &listeners.cursor_axis,
     &server_cursor->events.axis,
-    server_cursor_axis
+    on_cursor_axis
   );
   wl_setup_listener(
-    &server_cursor_frame_listener,
+    &listeners.cursor_frame,
     &server_cursor->events.frame,
-    server_cursor_frame
+    on_cursor_frame
   );
 }
 
