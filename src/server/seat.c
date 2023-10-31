@@ -7,10 +7,6 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 struct wlr_seat* server_seat;
 
 static struct {
@@ -30,7 +26,7 @@ on_new_input(struct wl_listener* listener, void* data)
 
   switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
-      create_server_keyboard(device);
+      server_keyboard_create(device);
       break;
     case WLR_INPUT_DEVICE_POINTER:
       /* We don't do anything special with pointers. All of our pointer handling
@@ -87,10 +83,10 @@ on_request_set_selection(struct wl_listener* listener, void* data)
 }
 
 void
-init_server_seat()
+server_seat_init()
 {
   server_seat = wlr_seat_create(server_display, "seat0");
-  init_server_keyboard();
+  server_keyboard_init();
 
   wl_setup_listener(
     &listeners.new_input,

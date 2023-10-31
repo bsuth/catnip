@@ -63,7 +63,7 @@ struct wlr_layer_shell_v1* server_layer_shell;
 // }
 
 void
-init_server_layer_shell()
+server_layer_shell_init()
 {
   server_layer_shell = wlr_layer_shell_v1_create(server_display);
   // wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);

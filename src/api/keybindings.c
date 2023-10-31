@@ -1,11 +1,11 @@
 #include "keybindings.h"
+#include "api/api.h"
 #include "config/keybindings.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lua.h>
-#include <string.h>
 #include <wlr/types/wlr_seat.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -56,7 +56,7 @@ translate_lua_key(const char* s)
 // API
 // -----------------------------------------------------------------------------
 
-int
+static int
 api_bind(lua_State* L)
 {
   uint32_t modifiers = 0;
@@ -98,12 +98,12 @@ api_bind(lua_State* L)
     return 0;
   }
 
-  add_config_keybinding(modifiers, keysym, luaL_ref(L, LUA_REGISTRYINDEX));
+  config_keybindings_bind(modifiers, keysym, luaL_ref(L, LUA_REGISTRYINDEX));
 
   return 0;
 }
 
-int
+static int
 api_unbind(lua_State* L)
 {
   uint32_t modifiers = 0;
@@ -140,7 +140,25 @@ api_unbind(lua_State* L)
     return 0;
   }
 
-  remove_config_keybinding(modifiers, keysym);
+  config_keybindings_unbind(modifiers, keysym);
 
   return 0;
+}
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+void
+api_keybindings_init(lua_State* L)
+{
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+
+  lua_pushcfunction(L, api_bind);
+  lua_setfield(L, -2, "bind");
+
+  lua_pushcfunction(L, api_unbind);
+  lua_setfield(L, -2, "unbind");
+
+  lua_pop(L, 1);
 }

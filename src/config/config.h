@@ -14,9 +14,12 @@ extern lua_State* L;
 extern bool config_reload_requested;
 
 void
-init_config();
+config_load();
 
 void
-reload_config();
+config_reload();
+
+void
+config_init();
 
 #endif

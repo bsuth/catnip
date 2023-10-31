@@ -1,14 +1,11 @@
 #include "keybindings.h"
 #include "config/config.h"
 #include "config/events.h"
+#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <wlr/types/wlr_keyboard.h>
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
 
 static GHashTable* config_keybindings;
 
@@ -17,46 +14,23 @@ static GHashTable* config_keybindings;
 // -----------------------------------------------------------------------------
 
 static gint64
-get_config_keybindings_key(uint32_t modifiers, xkb_keysym_t keysym)
+config_keybindings_get_key(uint32_t modifiers, xkb_keysym_t keysym)
 {
   return (keysym << WLR_MODIFIER_COUNT) | modifiers;
 }
 
 // -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-static void
-free_config_keybinding(void* data)
-{
-  struct config_keybinding* keybinding = data;
-  luaL_unref(L, LUA_REGISTRYINDEX, keybinding->lua_callback_ref);
-  free(keybinding);
-}
-
-void
-init_config_keybindings()
-{
-  config_keybindings = g_hash_table_new_full(
-    g_int64_hash,
-    g_int_equal,
-    free,
-    free_config_keybinding
-  );
-}
-
-// -----------------------------------------------------------------------------
-// API
+// Keybindings
 // -----------------------------------------------------------------------------
 
 void
-add_config_keybinding(
+config_keybindings_bind(
   uint32_t modifiers,
   xkb_keysym_t keysym,
   int lua_callback_ref
 )
 {
-  gint64 key = get_config_keybindings_key(modifiers, keysym);
+  gint64 key = config_keybindings_get_key(modifiers, keysym);
 
   struct config_keybinding* user_keybinding =
     g_hash_table_lookup(config_keybindings, &key);
@@ -78,9 +52,9 @@ add_config_keybinding(
 }
 
 void
-remove_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
+config_keybindings_unbind(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  gint64 key = get_config_keybindings_key(modifiers, keysym);
+  gint64 key = config_keybindings_get_key(modifiers, keysym);
 
   struct config_keybinding* user_keybinding =
     g_hash_table_lookup(config_keybindings, &key);
@@ -91,15 +65,15 @@ remove_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
 }
 
 void
-clear_config_keybindings()
+config_keybindings_clear()
 {
   g_hash_table_remove_all(config_keybindings);
 }
 
 bool
-handle_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
+config_keybinding_handle(uint32_t modifiers, xkb_keysym_t keysym)
 {
-  gint64 key = get_config_keybindings_key(modifiers, keysym);
+  gint64 key = config_keybindings_get_key(modifiers, keysym);
 
   struct config_keybinding* user_keybinding =
     g_hash_table_lookup(config_keybindings, &key);
@@ -111,13 +85,37 @@ handle_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym)
   lua_rawgeti(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
 
   if (lua_pcall(L, 0, 0, 0) != 0) {
-    g_warning("%s", lua_tostring(L, -1));
+    log_error("%s", lua_tostring(L, -1));
   }
 
   if (config_reload_requested) {
+    // TODO: do this in the event loop...
     config_reload_requested = false;
-    reload_config();
+    config_reload();
   }
 
   return true;
+}
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+static void
+free_config_keybinding(void* data)
+{
+  struct config_keybinding* keybinding = data;
+  luaL_unref(L, LUA_REGISTRYINDEX, keybinding->lua_callback_ref);
+  free(keybinding);
+}
+
+void
+config_keybindings_init()
+{
+  config_keybindings = g_hash_table_new_full(
+    g_int64_hash,
+    g_int_equal,
+    free,
+    free_config_keybinding
+  );
 }

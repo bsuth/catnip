@@ -3,7 +3,7 @@
 #include <unistd.h>
 
 const char*
-get_errno_string()
+errno_to_string()
 {
   switch (errno) {
     case EPERM:

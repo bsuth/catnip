@@ -6,6 +6,6 @@
 extern struct wlr_layer_shell_v1* server_layer_shell;
 
 void
-init_server_layer_shell();
+server_layer_shell_init();
 
 #endif

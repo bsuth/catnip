@@ -6,6 +6,6 @@
 extern struct wlr_allocator* server_allocator;
 
 void
-init_server_allocator();
+server_allocator_init();
 
 #endif

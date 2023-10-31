@@ -6,6 +6,6 @@
 extern struct wlr_xdg_shell* server_xdg_shell;
 
 void
-init_server_xdg_shell();
+server_xdg_shell_init();
 
 #endif

@@ -3,13 +3,7 @@
 
 #include <lua.h>
 
-int
-api_publish(lua_State* L);
-
-int
-api_subscribe(lua_State* L);
-
-int
-api_unsubscribe(lua_State* L);
+void
+api_events_init(lua_State* L);
 
 #endif

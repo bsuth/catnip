@@ -4,9 +4,9 @@
 #include "utils/lua.h"
 #include <lua.h>
 
-extern lua_Ref api_catnip_cursor;
+extern lua_Ref api_cursor_ref;
 
 void
-init_api_cursor(lua_State* L);
+api_cursor_init(lua_State* L);
 
 #endif

@@ -2,18 +2,18 @@
 #define CATNIP_CONFIG_EVENTS_H
 
 void
-init_config_events();
+config_events_subscribe(const char* event, int lua_callback_ref);
 
 void
-subscribe_config_event(const char* event, int lua_callback_ref);
+config_events_unsubscribe(const char* event, int lua_callback_ref);
 
 void
-unsubscribe_config_event(const char* event, int lua_callback_ref);
+config_events_clear_subscriptions(const char* event);
 
 void
-clear_config_subscriptions(const char* event);
+config_events_publish(const char* event);
 
 void
-publish_config_event(const char* event);
+config_events_init();
 
 #endif

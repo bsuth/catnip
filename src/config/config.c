@@ -3,14 +3,11 @@
 #include "config/events.h"
 #include "config/keybindings.h"
 #include "meta.h"
+#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
 #include <unistd.h>
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
 
 lua_State* L;
 
@@ -21,38 +18,43 @@ bool config_reload_requested = false;
 // for dynamically switching the theme.
 //
 // 1. Bash: `catnip -c my_custom_config.lua`
-// 2. Lua: `require('catnip').restart("my_custom_config.lua")`
-// 3. Lua: `require('catnip').restart("")` -- let catnip auto detect
-char* config_path;
+// 2. Lua: `require('catnip').reload("my_custom_config.lua")`
+// 3. Lua: `require('catnip').reload("")` -- let catnip auto detect
+static char* config_path;
 
 // -----------------------------------------------------------------------------
 // Helpers
 // -----------------------------------------------------------------------------
 
-static void
-try_config_path(const char* path)
+static bool
+config_try_path(const char* path)
 {
   if (path == NULL || path[0] == '\0' || access(path, R_OK) == -1) {
-    return;
+    return false;
   }
 
   L = lua_open();
   luaL_openlibs(L);
-  init_api(L);
+  api_init(L);
 
   if (luaL_loadfile(L, path) || lua_pcall(L, 0, 0, 0)) {
-    g_error("%s", lua_tostring(L, -1));
+    log_error("%s", lua_tostring(L, -1));
     lua_close(L);
     L = NULL;
+    return false;
   }
+
+  return true;
 }
 
-static void
-load_config()
-{
-  try_config_path(config_path);
+// -----------------------------------------------------------------------------
+// Config
+// -----------------------------------------------------------------------------
 
-  if (L != NULL) {
+void
+config_load()
+{
+  if (config_try_path(config_path)) {
     return;
   }
 
@@ -69,14 +71,25 @@ load_config()
     }
   }
 
-  try_config_path(default_config_path);
-  g_free(default_config_path);
-
-  if (L != NULL) {
-    return;
+  if (!config_try_path(default_config_path)) {
+    config_try_path(ROOT_DIR "/lua/fallback.lua");
   }
 
-  try_config_path(ROOT_DIR "/fallback_config/init.lua");
+  g_free(default_config_path);
+}
+
+void
+config_reload()
+{
+  config_events_publish("reload");
+
+  config_keybindings_clear();
+  config_events_clear_subscriptions(NULL);
+
+  lua_close(L);
+  L = NULL;
+
+  config_load();
 }
 
 // -----------------------------------------------------------------------------
@@ -84,27 +97,8 @@ load_config()
 // -----------------------------------------------------------------------------
 
 void
-init_config()
+config_init()
 {
-  init_config_keybindings();
-  init_config_events();
-  load_config();
-}
-
-// -----------------------------------------------------------------------------
-// API
-// -----------------------------------------------------------------------------
-
-void
-reload_config()
-{
-  publish_config_event("reload");
-
-  clear_config_keybindings();
-  clear_config_subscriptions(NULL);
-
-  lua_close(L);
-  L = NULL;
-
-  load_config();
+  config_keybindings_init();
+  config_events_init();
 }

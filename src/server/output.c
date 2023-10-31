@@ -8,10 +8,6 @@
 #include "utils/wayland.h"
 #include <stdlib.h>
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 struct wl_list server_outputs;
 struct server_output_events server_output_events;
 
@@ -62,7 +58,7 @@ server_output_set_matching_mode(
 }
 
 // -----------------------------------------------------------------------------
-// Init
+// Server Output
 // -----------------------------------------------------------------------------
 
 static void
@@ -87,19 +83,17 @@ on_wlr_output_destroy(struct wl_listener* listener, void* data)
   struct server_output* output =
     wl_container_of(listener, output, listeners.destroy);
 
+  wl_signal_emit_mutable(&output->events.destroy, output);
+
   wl_list_remove(&output->listeners.frame.link);
   wl_list_remove(&output->listeners.destroy.link);
-
-  wl_signal_emit_mutable(&output->events.destroy, output);
 
   free(output);
 }
 
 static void
-on_new_wlr_output(struct wl_listener* listener, void* data)
+server_output_create(struct wlr_output* wlr_output)
 {
-  struct wlr_output* wlr_output = data;
-
   wlr_output_init_render(wlr_output, server_allocator, server_renderer);
 
   if (!wl_list_empty(&wlr_output->modes)) {
@@ -136,20 +130,6 @@ on_new_wlr_output(struct wl_listener* listener, void* data)
 
   wl_list_insert(&server_outputs, &output->link);
   wl_signal_emit_mutable(&server_output_events.new_server_output, output);
-}
-
-void
-init_server_outputs()
-{
-  wl_list_init(&server_outputs);
-
-  wl_signal_init(&server_output_events.new_server_output);
-
-  wl_setup_listener(
-    &listeners.new_wlr_output,
-    &server_backend->events.new_output,
-    on_new_wlr_output
-  );
 }
 
 // -----------------------------------------------------------------------------
@@ -276,4 +256,28 @@ void
 server_output_set_scale(struct server_output* output, float new_scale)
 {
   wlr_output_set_scale(output->wlr_output, new_scale);
+}
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+static void
+on_new_wlr_output(struct wl_listener* listener, void* data)
+{
+  server_output_create(data);
+}
+
+void
+server_output_init()
+{
+  wl_list_init(&server_outputs);
+
+  wl_signal_init(&server_output_events.new_server_output);
+
+  wl_setup_listener(
+    &listeners.new_wlr_output,
+    &server_backend->events.new_output,
+    on_new_wlr_output
+  );
 }

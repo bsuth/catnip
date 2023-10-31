@@ -9,21 +9,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 struct wl_list server_keyboards;
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-void
-init_server_keyboard()
-{
-  wl_list_init(&server_keyboards);
-}
 
 // -----------------------------------------------------------------------------
 // Create
@@ -60,7 +46,7 @@ on_keyboard_key(struct wl_listener* listener, void* data)
     xkb_keysym_t keysym =
       xkb_state_key_get_one_sym(keyboard->wlr_keyboard->xkb_state, xkb_keycode);
 
-    if (handle_config_keybinding(modifiers, keysym)) {
+    if (config_keybinding_handle(modifiers, keysym)) {
       // Do not forward key events that have been handled by the compositor
       return;
     }
@@ -94,7 +80,7 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
 }
 
 void
-create_server_keyboard(struct wlr_input_device* device)
+server_keyboard_create(struct wlr_input_device* device)
 {
   struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
 
@@ -132,4 +118,14 @@ create_server_keyboard(struct wlr_input_device* device)
   );
 
   wl_list_insert(&server_keyboards, &keyboard->link);
+}
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+void
+server_keyboard_init()
+{
+  wl_list_init(&server_keyboards);
 }

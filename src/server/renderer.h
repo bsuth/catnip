@@ -6,6 +6,6 @@
 extern struct wlr_renderer* server_renderer;
 
 void
-init_server_renderer();
+server_renderer_init();
 
 #endif

@@ -3,10 +3,7 @@
 
 #include <lua.h>
 
-int
-api_bind(lua_State* L);
-
-int
-api_unbind(lua_State* L);
+void
+api_keybindings_init(lua_State* L);
 
 #endif

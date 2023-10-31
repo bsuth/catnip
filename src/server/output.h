@@ -3,10 +3,6 @@
 
 #include <wlr/types/wlr_output.h>
 
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
 struct server_output {
   struct wl_list link;
   struct wlr_output* wlr_output;
@@ -25,19 +21,8 @@ struct server_output_events {
   struct wl_signal new_server_output;
 };
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 extern struct wl_list server_outputs;
 extern struct server_output_events server_output_events;
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-void
-init_server_outputs();
 
 // -----------------------------------------------------------------------------
 // Getters
@@ -94,5 +79,12 @@ server_output_set_mode(
 
 void
 server_output_set_scale(struct server_output* output, float new_scale);
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+void
+server_output_init();
 
 #endif

@@ -2,6 +2,6 @@
 #define CATNIP_UTILS_ERRNO_H
 
 const char*
-get_errno_string();
+errno_to_string();
 
 #endif

@@ -19,9 +19,9 @@ struct server_keyboard {
 extern struct wl_list server_keyboards;
 
 void
-create_server_keyboard(struct wlr_input_device* device);
+server_keyboard_create(struct wlr_input_device* device);
 
 void
-init_server_keyboard();
+server_keyboard_init();
 
 #endif

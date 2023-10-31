@@ -1,42 +1,27 @@
 #include "window.h"
 #include "api/api.h"
 #include "config/config.h"
-#include "server/seat.h"
 #include "server/window.h"
 #include "utils/log.h"
 #include "utils/wayland.h"
 #include <glib.h>
 #include <lauxlib.h>
-#include <string.h>
-#include <wlr/types/wlr_scene.h>
-
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
 
 struct api_window {
-  struct server_window* server_window;
+  struct server_window* window;
 
   int index;
 
   struct {
-    struct wl_listener server_window_destroy;
+    struct wl_listener window_destroy;
   } listeners;
 };
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
-lua_Ref api_catnip_windows = LUA_NOREF;
+lua_Ref api_windows_ref = LUA_NOREF;
 
 static struct {
   struct wl_listener new_server_window;
 } listeners;
-
-// Keep track of num_windows manually. keeps things simpler when manipulating
-// Lua's catnip.windows
-static int num_windows = 0;
 
 // -----------------------------------------------------------------------------
 // Metatable: catnip.window
@@ -46,7 +31,7 @@ static int
 api_window__index(lua_State* L)
 {
   struct api_window* api_window = lua_touserdata(L, 1);
-  struct server_window* server_window = api_window->server_window;
+  struct server_window* server_window = api_window->window;
 
   if (server_window == NULL) {
     log_warning("cannot get field of expired winow");
@@ -91,7 +76,7 @@ static int
 api_window__newindex(lua_State* L)
 {
   struct api_window* api_window = lua_touserdata(L, 1);
-  struct server_window* server_window = api_window->server_window;
+  struct server_window* server_window = api_window->window;
 
   if (server_window == NULL) {
     log_warning("cannot set field of expired window");
@@ -135,91 +120,101 @@ static int
 api_window__gc(lua_State* L)
 {
   struct api_window* api_window = lua_touserdata(L, 1);
-
-  wl_list_remove(&api_window->listeners.server_window_destroy.link);
-
+  wl_list_remove(&api_window->listeners.window_destroy.link);
   return 0;
 }
 
 static const struct luaL_Reg api_window_metatable[] = {
-  {"__gc", api_window__gc},
   {"__index", api_window__index},
   {"__newindex", api_window__newindex},
-  {NULL, NULL}};
+  {"__gc", api_window__gc},
+  {NULL, NULL}
+};
 
 // -----------------------------------------------------------------------------
-// Init
+// API Window
 // -----------------------------------------------------------------------------
 
 static void
 on_server_window_destroy(struct wl_listener* listener, void* data)
 {
   struct api_window* api_window =
-    wl_container_of(listener, api_window, listeners.server_window_destroy);
+    wl_container_of(listener, api_window, listeners.window_destroy);
 
-  api_window->server_window = NULL;
+  api_window->window = NULL;
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_windows_ref);
+  size_t api_windows_len = lua_objlen(L, -1);
 
-  if (num_windows == 1) {
+  if (api_windows_len == 1) {
     lua_pushnil(L);
     lua_rawseti(L, -2, 1);
   } else {
     // Quick delete by moving last element
-    lua_rawgeti(L, -1, num_windows);
+    lua_rawgeti(L, -1, api_windows_len);
 
     struct api_window* last_api_window = lua_touserdata(L, -1);
     last_api_window->index = api_window->index;
 
     lua_rawseti(L, -2, api_window->index);
     lua_pushnil(L);
-    lua_rawseti(L, -2, num_windows);
+    lua_rawseti(L, -2, api_windows_len);
   }
-
-  --num_windows;
 
   lua_pop(L, 1);
 }
 
 static void
-on_new_server_window(struct wl_listener* listener, void* data)
+api_window_create(struct server_window* window)
 {
-  struct server_window* server_window = data;
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_windows_ref);
 
   struct api_window* api_window = lua_newuserdata(L, sizeof(struct api_window));
   luaL_setmetatable(L, "catnip.window");
 
-  ++num_windows;
-  api_window->server_window = server_window;
-  api_window->index = num_windows;
+  api_window->window = window;
+  api_window->index = lua_objlen(L, -2) + 1;
 
   wl_setup_listener(
-    &api_window->listeners.server_window_destroy,
-    &server_window->events.destroy,
+    &api_window->listeners.window_destroy,
+    &window->events.destroy,
     on_server_window_destroy
   );
 
   lua_rawseti(L, -2, api_window->index);
-
   lua_pop(L, 1);
 }
 
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+static void
+on_new_server_window(struct wl_listener* listener, void* data)
+{
+  api_window_create(data);
+}
+
 void
-init_api_windows(lua_State* L)
+api_window_init(lua_State* L)
 {
   lua_newtable(L);
-  api_catnip_windows = luaL_ref(L, LUA_REGISTRYINDEX);
+  api_windows_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_windows);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_windows_ref);
   lua_setfield(L, -2, "windows");
   lua_pop(L, 1);
 
   luaL_newmetatable(L, "catnip.window");
   luaL_setfuncs(L, api_window_metatable, 0);
   lua_pop(L, 1);
+
+  struct server_window* window;
+  wl_list_for_each(window, &server_windows, link)
+  {
+    api_window_create(window);
+  }
 
   wl_setup_listener(
     &listeners.new_server_window,

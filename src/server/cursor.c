@@ -7,10 +7,6 @@
 #include <wlr/types/wlr_scene.h>
 #include <wlr/types/wlr_xcursor_manager.h>
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 struct wlr_cursor* server_cursor;
 enum server_cursor_mode server_cursor_mode;
 static struct wlr_xcursor_manager* server_cursor_manager;
@@ -28,7 +24,7 @@ static struct {
 // -----------------------------------------------------------------------------
 
 static void
-update_server_cursor(uint32_t time_msec)
+server_cursor_update(uint32_t time_msec)
 {
   double sx = 0;
   double sy = 0;
@@ -49,13 +45,33 @@ update_server_cursor(uint32_t time_msec)
       server_cursor
     );
   } else {
-    struct wlr_surface* target_surface =
-      wlr_scene_surface_from_buffer(wlr_scene_buffer_from_node(target_node))
-        ->surface;
+    struct wlr_scene_buffer* target_buffer =
+      wlr_scene_buffer_from_node(target_node);
 
-    wlr_seat_pointer_notify_enter(server_seat, target_surface, sx, sy);
+    struct wlr_scene_surface* target_scene_surface =
+      wlr_scene_surface_from_buffer(target_buffer);
+
+    if (target_scene_surface != NULL) {
+      wlr_seat_pointer_notify_enter(
+        server_seat,
+        target_scene_surface->surface,
+        sx,
+        sy
+      );
+    }
+
     wlr_seat_pointer_notify_motion(server_seat, time_msec, sx, sy);
   }
+}
+
+static struct wlr_output*
+server_cursor_get_wlr_output()
+{
+  return wlr_output_layout_output_at(
+    server_output_layout,
+    server_cursor->x,
+    server_cursor->y
+  );
 }
 
 // -----------------------------------------------------------------------------
@@ -74,7 +90,7 @@ on_cursor_motion(struct wl_listener* listener, void* data)
     event->delta_y
   );
 
-  update_server_cursor(event->time_msec);
+  server_cursor_update(event->time_msec);
 }
 
 static void
@@ -89,7 +105,7 @@ on_cursor_motion_absolute(struct wl_listener* listener, void* data)
     event->y
   );
 
-  update_server_cursor(event->time_msec);
+  server_cursor_update(event->time_msec);
 }
 
 static void
@@ -131,7 +147,7 @@ on_cursor_frame(struct wl_listener* listener, void* data)
 }
 
 void
-init_server_cursor()
+server_cursor_init()
 {
   server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
 
@@ -172,20 +188,10 @@ init_server_cursor()
 // Getters
 // -----------------------------------------------------------------------------
 
-struct wlr_output*
-server_cursor_get_output()
-{
-  return wlr_output_layout_output_at(
-    server_output_layout,
-    server_cursor->x,
-    server_cursor->y
-  );
-}
-
 int
 server_cursor_get_lx()
 {
-  struct wlr_output* output = server_cursor_get_output();
+  struct wlr_output* output = server_cursor_get_wlr_output();
 
   double lx = server_cursor->x;
   double ly = server_cursor->y;
@@ -197,7 +203,7 @@ server_cursor_get_lx()
 int
 server_cursor_get_ly()
 {
-  struct wlr_output* output = server_cursor_get_output();
+  struct wlr_output* output = server_cursor_get_wlr_output();
 
   double lx = server_cursor->x;
   double ly = server_cursor->y;
@@ -225,7 +231,7 @@ server_cursor_get_gy()
 void
 server_cursor_set_lx(int new_lx)
 {
-  struct wlr_output* output = server_cursor_get_output();
+  struct wlr_output* output = server_cursor_get_wlr_output();
   struct wlr_output_layout_output* layout =
     wlr_output_layout_get(server_output_layout, output);
 
@@ -236,13 +242,13 @@ server_cursor_set_lx(int new_lx)
     server_cursor_get_gy()
   );
 
-  update_server_cursor(wlr_get_time_msec());
+  server_cursor_update(wlr_get_time_msec());
 }
 
 void
 server_cursor_set_ly(int new_ly)
 {
-  struct wlr_output* output = server_cursor_get_output();
+  struct wlr_output* output = server_cursor_get_wlr_output();
   struct wlr_output_layout_output* layout =
     wlr_output_layout_get(server_output_layout, output);
 
@@ -253,19 +259,19 @@ server_cursor_set_ly(int new_ly)
     layout->y + new_ly
   );
 
-  update_server_cursor(wlr_get_time_msec());
+  server_cursor_update(wlr_get_time_msec());
 }
 
 void
 server_cursor_set_gx(int new_gx)
 {
   wlr_cursor_warp_closest(server_cursor, NULL, new_gx, server_cursor_get_gy());
-  update_server_cursor(wlr_get_time_msec());
+  server_cursor_update(wlr_get_time_msec());
 }
 
 void
 server_cursor_set_gy(int new_gy)
 {
   wlr_cursor_warp_closest(server_cursor, NULL, server_cursor_get_gx(), new_gy);
-  update_server_cursor(wlr_get_time_msec());
+  server_cursor_update(wlr_get_time_msec());
 }

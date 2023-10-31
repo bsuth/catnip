@@ -7,41 +7,23 @@
 #include "utils/wayland.h"
 #include <glib.h>
 #include <lauxlib.h>
-#include <stdio.h>
-#include <string.h>
-#include <wayland-util.h>
-
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
 
 struct api_output {
-  struct server_output* server_output;
+  struct server_output* output;
 
   int index;
   lua_Ref modes;
 
   struct {
-    struct wl_listener server_output_destroy;
+    struct wl_listener output_destroy;
   } listeners;
 };
 
-struct api_output_mode {
-  struct wlr_output_mode* mode;
-};
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
-lua_Ref api_catnip_outputs = LUA_NOREF;
+lua_Ref api_outputs_ref = LUA_NOREF;
 
 static struct {
   struct wl_listener new_server_output;
 } listeners;
-
-// Keep track of num_outputs manually to simplify managing Lua's catnip.outputs.
-static int num_outputs = 0;
 
 // -----------------------------------------------------------------------------
 // Metatable: catnip.output.mode
@@ -50,10 +32,10 @@ static int num_outputs = 0;
 static int
 api_output_mode__index(lua_State* L)
 {
-  struct api_output_mode* api_output_mode = lua_touserdata(L, 1);
-  struct wlr_output_mode* mode = api_output_mode->mode;
+  struct wlr_output_mode** api_output_mode = lua_touserdata(L, 1);
+  struct wlr_output_mode* output_mode = *api_output_mode;
 
-  if (mode == NULL) {
+  if (output_mode == NULL) {
     log_error("cannot get field of expired mode");
     lua_pushnil(L);
     return 1;
@@ -62,11 +44,11 @@ api_output_mode__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (g_str_equal(key, "width")) {
-    lua_pushnumber(L, mode->width);
+    lua_pushnumber(L, output_mode->width);
   } else if (g_str_equal(key, "height")) {
-    lua_pushnumber(L, mode->height);
+    lua_pushnumber(L, output_mode->height);
   } else if (g_str_equal(key, "refresh")) {
-    lua_pushnumber(L, mode->refresh);
+    lua_pushnumber(L, output_mode->refresh);
   } else {
     lua_pushnil(L);
   }
@@ -76,7 +58,8 @@ api_output_mode__index(lua_State* L)
 
 static const struct luaL_Reg api_output_mode_metatable[] = {
   {"__index", api_output_mode__index},
-  {NULL, NULL}};
+  {NULL, NULL}
+};
 
 // -----------------------------------------------------------------------------
 // Metatable: catnip.output
@@ -86,20 +69,21 @@ static void
 api_output_push_current_mode(lua_State* L, struct api_output* api_output)
 {
   struct wlr_output_mode* current_mode =
-    server_output_get_mode(api_output->server_output);
+    server_output_get_mode(api_output->output);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, api_output->modes);
   lua_pushnil(L);
 
   while (lua_next(L, -2) != 0) {
-    struct api_output_mode* api_output_mode =
-      luaL_checkudata(L, -2, "catnip.output.mode");
+    struct wlr_output_mode** api_output_mode = lua_touserdata(L, -1);
 
-    if (api_output_mode->mode == current_mode) {
-      lua_pop(L, 1);
+    if (current_mode == *api_output_mode) {
+      lua_remove(L, -3);
       lua_remove(L, -2);
       return;
     }
+
+    lua_pop(L, 1);
   }
 
   lua_pop(L, 1);
@@ -110,7 +94,7 @@ static int
 api_output__index(lua_State* L)
 {
   struct api_output* api_output = lua_touserdata(L, 1);
-  struct server_output* server_output = api_output->server_output;
+  struct server_output* server_output = api_output->output;
 
   if (server_output == NULL) {
     log_warning("cannot get field of expired output");
@@ -153,7 +137,7 @@ static int
 api_output__newindex(lua_State* L)
 {
   struct api_output* api_output = lua_touserdata(L, 1);
-  struct server_output* server_output = api_output->server_output;
+  struct server_output* server_output = api_output->output;
 
   if (server_output == NULL) {
     log_warning("cannot set field of expired output");
@@ -179,9 +163,9 @@ api_output__newindex(lua_State* L)
   } else if (g_str_equal(key, "refresh")) {
     server_output_set_refresh(server_output, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "mode")) {
-    struct api_output_mode* api_output_mode =
+    struct wlr_output_mode** api_output_mode =
       luaL_checkudata(L, 3, "catnip.output.mode");
-    server_output_set_mode(server_output, api_output_mode->mode);
+    server_output_set_mode(server_output, *api_output_mode);
   } else if (g_str_equal(key, "scale")) {
     server_output_set_scale(server_output, luaL_checknumber(L, 3));
   } else {
@@ -195,100 +179,104 @@ static int
 api_output__gc(lua_State* L)
 {
   struct api_output* api_output = lua_touserdata(L, 1);
-
-  wl_list_remove(&api_output->listeners.server_output_destroy.link);
-
+  wl_list_remove(&api_output->listeners.output_destroy.link);
   return 0;
 }
 
 static const struct luaL_Reg api_output_metatable[] = {
-  {"__gc", api_output__gc},
   {"__index", api_output__index},
   {"__newindex", api_output__newindex},
-  {NULL, NULL}};
+  {"__gc", api_output__gc},
+  {NULL, NULL}
+};
 
 // -----------------------------------------------------------------------------
-// Init
+// API Output
 // -----------------------------------------------------------------------------
 
 static void
 on_server_output_destroy(struct wl_listener* listener, void* data)
 {
   struct api_output* api_output =
-    wl_container_of(listener, api_output, listeners.server_output_destroy);
+    wl_container_of(listener, api_output, listeners.output_destroy);
 
-  api_output->server_output = NULL;
+  api_output->output = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, api_output->modes);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_outputs);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_outputs_ref);
+  size_t api_outputs_len = lua_objlen(L, -1);
 
-  if (num_outputs == 1) {
+  if (api_outputs_len == 1) {
     lua_pushnil(L);
     lua_rawseti(L, -2, 1);
   } else {
     // Quick delete by moving last element
-    lua_rawgeti(L, -1, num_outputs);
+    lua_rawgeti(L, -1, api_outputs_len);
 
     struct api_output* last_api_output = lua_touserdata(L, -1);
     last_api_output->index = api_output->index;
 
     lua_rawseti(L, -2, api_output->index);
     lua_pushnil(L);
-    lua_rawseti(L, -2, num_outputs);
+    lua_rawseti(L, -2, api_outputs_len);
   }
-
-  --num_outputs;
 
   lua_pop(L, 1);
 }
 
 static void
-on_new_server_output(struct wl_listener* listener, void* data)
+api_output_create(struct server_output* output)
 {
-  struct server_output* server_output = data;
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_outputs);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_outputs_ref);
 
   struct api_output* api_output = lua_newuserdata(L, sizeof(struct api_output));
   luaL_setmetatable(L, "catnip.output");
 
-  ++num_outputs;
-  api_output->server_output = server_output;
-  api_output->index = num_outputs;
+  api_output->output = output;
+  api_output->index = lua_objlen(L, -2) + 1;
 
   lua_newtable(L);
   struct wlr_output_mode* mode;
-  struct wl_list* modes = server_output_get_modes(server_output);
+  struct wl_list* modes = server_output_get_modes(output);
   int mode_counter = 0;
   wl_list_for_each(mode, modes, link)
   {
-    struct api_output_mode* api_output_mode =
-      lua_newuserdata(L, sizeof(struct api_output_mode));
+    struct wlr_output_mode** api_output_mode =
+      lua_newuserdata(L, sizeof(struct wlr_output_mode*));
     luaL_setmetatable(L, "catnip.output.mode");
-    api_output_mode->mode = mode;
+    *api_output_mode = mode;
     lua_rawseti(L, -2, ++mode_counter);
   }
   api_output->modes = luaL_ref(L, LUA_REGISTRYINDEX);
 
   wl_setup_listener(
-    &api_output->listeners.server_output_destroy,
-    &server_output->events.destroy,
+    &api_output->listeners.output_destroy,
+    &output->events.destroy,
     on_server_output_destroy
   );
 
   lua_rawseti(L, -2, api_output->index);
-
   lua_pop(L, 1);
 }
 
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+static void
+on_new_server_output(struct wl_listener* listener, void* data)
+{
+  api_output_create(data);
+}
+
 void
-init_api_outputs(lua_State* L)
+api_output_init(lua_State* L)
 {
   lua_newtable(L);
-  api_catnip_outputs = luaL_ref(L, LUA_REGISTRYINDEX);
+  api_outputs_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_outputs);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_outputs_ref);
   lua_setfield(L, -2, "outputs");
   lua_pop(L, 1);
 
@@ -299,6 +287,12 @@ init_api_outputs(lua_State* L)
   luaL_newmetatable(L, "catnip.output.mode");
   luaL_setfuncs(L, api_output_mode_metatable, 0);
   lua_pop(L, 1);
+
+  struct server_output* output;
+  wl_list_for_each(output, &server_outputs, link)
+  {
+    api_output_create(output);
+  }
 
   wl_setup_listener(
     &listeners.new_server_output,

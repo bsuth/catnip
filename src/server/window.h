@@ -3,10 +3,6 @@
 
 #include "server/xdg_shell.h"
 
-// -----------------------------------------------------------------------------
-// Types
-// -----------------------------------------------------------------------------
-
 struct server_window {
   struct wl_list link;
   struct wlr_xdg_surface* xdg_surface;
@@ -32,19 +28,15 @@ struct server_window_events {
   struct wl_signal new_server_window;
 };
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 extern struct wl_list server_windows;
 extern struct server_window_events server_window_events;
 
 // -----------------------------------------------------------------------------
-// Init
+// Server Window
 // -----------------------------------------------------------------------------
 
-void
-init_server_windows();
+struct server_window*
+server_window_get_at(double x, double y, double* nx, double* ny);
 
 // -----------------------------------------------------------------------------
 // Getters
@@ -109,10 +101,10 @@ void
 server_window_set_fullscreen(struct server_window* window, bool new_fullscreen);
 
 // -----------------------------------------------------------------------------
-// Miscellaneous
+// Init
 // -----------------------------------------------------------------------------
 
-struct server_window*
-get_server_window_at(double x, double y, double* nx, double* ny);
+void
+server_window_init();
 
 #endif

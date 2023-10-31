@@ -6,7 +6,7 @@ struct wl_display* server_display;
 const char* server_display_socket;
 
 void
-init_server_display()
+server_display_init()
 {
   server_display = wl_display_create();
 

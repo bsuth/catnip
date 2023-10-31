@@ -7,10 +7,6 @@
 #include <stdlib.h>
 #include <wayland-util.h>
 
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
 struct wl_list server_windows;
 struct server_window_events server_window_events;
 
@@ -19,7 +15,7 @@ static struct {
 } listeners;
 
 // -----------------------------------------------------------------------------
-// Create
+// Server Window
 // -----------------------------------------------------------------------------
 
 static void
@@ -48,6 +44,8 @@ on_xdg_surface_destroy(struct wl_listener* listener, void* data)
 {
   struct server_window* window =
     wl_container_of(listener, window, listeners.destroy);
+
+  wl_signal_emit_mutable(&window->events.destroy, window);
 
   wl_list_remove(&window->listeners.map.link);
   wl_list_remove(&window->listeners.unmap.link);
@@ -101,15 +99,9 @@ on_xdg_toplevel_request_fullscreen(struct wl_listener* listener, void* data)
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
 static void
-on_xdg_shell_new_surface(struct wl_listener* listener, void* data)
+server_window_create(struct wlr_xdg_surface* xdg_surface)
 {
-  struct wlr_xdg_surface* xdg_surface = data;
-
   if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
     struct wlr_xdg_surface* parent =
       wlr_xdg_surface_from_wlr_surface(xdg_surface->popup->parent);
@@ -178,18 +170,24 @@ on_xdg_shell_new_surface(struct wl_listener* listener, void* data)
   }
 }
 
-void
-init_server_windows()
+struct server_window*
+server_window_get_at(double x, double y, double* nx, double* ny)
 {
-  wl_list_init(&server_windows);
+  struct wlr_scene_tree* root = &server_scene->tree;
 
-  wl_signal_init(&server_window_events.new_server_window);
+  struct wlr_scene_node* node = wlr_scene_node_at(&root->node, x, y, nx, ny);
 
-  wl_setup_listener(
-    &listeners.xdg_shell_new_surface,
-    &server_xdg_shell->events.new_surface,
-    on_xdg_shell_new_surface
-  );
+  if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
+    return NULL;
+  }
+
+  struct wlr_scene_tree* tree = node->parent;
+
+  while (tree != NULL && tree->node.data == NULL) {
+    tree = tree->node.parent;
+  }
+
+  return tree == NULL ? NULL : tree->node.data;
 }
 
 // -----------------------------------------------------------------------------
@@ -384,25 +382,25 @@ server_window_set_fullscreen(struct server_window* window, bool new_fullscreen)
 }
 
 // -----------------------------------------------------------------------------
-// Miscellaneous
+// Init
 // -----------------------------------------------------------------------------
 
-struct server_window*
-get_server_window_at(double x, double y, double* nx, double* ny)
+static void
+on_xdg_shell_new_surface(struct wl_listener* listener, void* data)
 {
-  struct wlr_scene_tree* root = &server_scene->tree;
+  server_window_create(data);
+}
 
-  struct wlr_scene_node* node = wlr_scene_node_at(&root->node, x, y, nx, ny);
+void
+server_window_init()
+{
+  wl_list_init(&server_windows);
 
-  if (node == NULL || node->type != WLR_SCENE_NODE_BUFFER) {
-    return NULL;
-  }
+  wl_signal_init(&server_window_events.new_server_window);
 
-  struct wlr_scene_tree* tree = node->parent;
-
-  while (tree != NULL && tree->node.data == NULL) {
-    tree = tree->node.parent;
-  }
-
-  return tree == NULL ? NULL : tree->node.data;
+  wl_setup_listener(
+    &listeners.xdg_shell_new_surface,
+    &server_xdg_shell->events.new_surface,
+    on_xdg_shell_new_surface
+  );
 }

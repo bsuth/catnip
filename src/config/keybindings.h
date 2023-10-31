@@ -12,22 +12,22 @@ struct config_keybinding {
 };
 
 void
-init_config_keybindings();
-
-void
-add_config_keybinding(
+config_keybindings_bind(
   uint32_t modifiers,
   xkb_keysym_t keysym,
   int lua_callback_ref
 );
 
 void
-remove_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym);
+config_keybindings_unbind(uint32_t modifiers, xkb_keysym_t keysym);
 
 void
-clear_config_keybindings();
+config_keybindings_clear();
 
 bool
-handle_config_keybinding(uint32_t modifiers, xkb_keysym_t keysym);
+config_keybinding_handle(uint32_t modifiers, xkb_keysym_t keysym);
+
+void
+config_keybindings_init();
 
 #endif

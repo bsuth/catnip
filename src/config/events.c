@@ -1,13 +1,10 @@
 #include "events.h"
 #include "config/config.h"
+#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdbool.h>
 #include <string.h>
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
 
 static GHashTable* event_registry;
 
@@ -23,29 +20,11 @@ free_lua_callback_ref(void* data)
 }
 
 // -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-static void
-free_event_listeners(void* data)
-{
-  GArray* event_listeners = data;
-  g_array_free(event_listeners, true);
-}
-
-void
-init_config_events()
-{
-  event_registry =
-    g_hash_table_new_full(g_str_hash, g_str_equal, free, free_event_listeners);
-}
-
-// -----------------------------------------------------------------------------
-// API
+// Events
 // -----------------------------------------------------------------------------
 
 void
-subscribe_config_event(const char* event, const int lua_callback_ref)
+config_events_subscribe(const char* event, const int lua_callback_ref)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 
@@ -59,7 +38,7 @@ subscribe_config_event(const char* event, const int lua_callback_ref)
 }
 
 void
-unsubscribe_config_event(const char* event, const int lua_callback_ref)
+config_events_unsubscribe(const char* event, const int lua_callback_ref)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 
@@ -74,7 +53,7 @@ unsubscribe_config_event(const char* event, const int lua_callback_ref)
 }
 
 void
-clear_config_subscriptions(const char* event)
+config_events_clear_subscriptions(const char* event)
 {
   if (event == NULL) {
     g_hash_table_remove_all(event_registry);
@@ -84,7 +63,7 @@ clear_config_subscriptions(const char* event)
 }
 
 void
-publish_config_event(const char* event)
+config_events_publish(const char* event)
 {
   GArray* event_listeners = g_hash_table_lookup(event_registry, event);
 
@@ -94,8 +73,26 @@ publish_config_event(const char* event)
 
       // TODO: event parameters?
       if (lua_pcall(L, 0, 0, 0) != 0) {
-        g_warning("%s", lua_tostring(L, -1));
+        log_error("%s", lua_tostring(L, -1));
       }
     }
   }
+}
+
+// -----------------------------------------------------------------------------
+// Init
+// -----------------------------------------------------------------------------
+
+static void
+free_event_listeners(void* data)
+{
+  GArray* event_listeners = data;
+  g_array_free(event_listeners, true);
+}
+
+void
+config_events_init()
+{
+  event_registry =
+    g_hash_table_new_full(g_str_hash, g_str_equal, free, free_event_listeners);
 }

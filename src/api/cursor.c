@@ -4,13 +4,6 @@
 #include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
-#include <string.h>
-
-// -----------------------------------------------------------------------------
-// State
-// -----------------------------------------------------------------------------
-
-lua_Ref api_catnip_cursor = LUA_NOREF;
 
 // -----------------------------------------------------------------------------
 // Metatable: catnip.cursor
@@ -70,25 +63,23 @@ api_cursor__newindex(lua_State* L)
 static const struct luaL_Reg api_cursor_metatable[] = {
   {"__index", api_cursor__index},
   {"__newindex", api_cursor__newindex},
-  {NULL, NULL}};
+  {NULL, NULL}
+};
 
 // -----------------------------------------------------------------------------
 // Init
 // -----------------------------------------------------------------------------
 
 void
-init_api_cursor(lua_State* L)
+api_cursor_init(lua_State* L)
 {
   luaL_newmetatable(L, "catnip.cursor");
   luaL_setfuncs(L, api_cursor_metatable, 0);
   lua_pop(L, 1);
 
-  struct lua_window* lua_window = lua_newuserdata(L, 0);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_newuserdata(L, 0);
   luaL_setmetatable(L, "catnip.cursor");
-  api_catnip_cursor = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_catnip_cursor);
   lua_setfield(L, -2, "cursor");
   lua_pop(L, 1);
 }

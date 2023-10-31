@@ -7,14 +7,14 @@
 int
 main(int argc, char* argv[])
 {
-  wlr_log_init(WLR_LOG_LEVEL, NULL);
-
   // TODO CLI (getopt)
 
-  init_server();
-  init_config();
+  wlr_log_init(WLR_LOG_LEVEL, NULL);
 
-  start_server();
+  server_init();
+  config_init();
+
+  server_start();
 
   return 0;
 }

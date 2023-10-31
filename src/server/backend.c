@@ -6,7 +6,7 @@
 struct wlr_backend* server_backend;
 
 void
-init_server_backend()
+server_backend_init()
 {
   server_backend = wlr_backend_autocreate(server_display);
   if (server_backend == NULL) {

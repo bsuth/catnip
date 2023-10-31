@@ -7,7 +7,7 @@
   #define ROOT_DIR "."
   #define WLR_LOG_LEVEL WLR_DEBUG
 #else
-  #define ROOT_DIR "/usr/local"
+  #define ROOT_DIR "/usr/share/catnip"
   #define WLR_LOG_LEVEL WLR_ERROR
 #endif
 

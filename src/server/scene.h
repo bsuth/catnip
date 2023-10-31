@@ -6,6 +6,6 @@
 extern struct wlr_scene* server_scene;
 
 void
-init_server_scene();
+server_scene_init();
 
 #endif

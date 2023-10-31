@@ -6,6 +6,6 @@
 extern struct wlr_backend* server_backend;
 
 void
-init_server_backend();
+server_backend_init();
 
 #endif
