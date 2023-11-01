@@ -1,7 +1,10 @@
 #include "canvas.h"
+#include "server/display.h"
 #include "server/scene.h"
 #include <drm_fourcc.h>
+#include <stdio.h>
 #include <stdlib.h>
+#include <wayland-server-core.h>
 #include <wlr/interfaces/wlr_buffer.h>
 
 // -----------------------------------------------------------------------------
@@ -63,6 +66,52 @@ canvas_create(int width, int height)
   return canvas;
 }
 
+static void
+canvas_refresh_task(void* data)
+{
+  struct catnip_canvas* canvas = data;
+
+  if (canvas == NULL) {
+    // Since the refresh task does not run until the next event loop tick, we
+    // need to make sure that the canvas is still actually valid!
+    return;
+  }
+
+  printf("refresh\n");
+
+  wlr_scene_buffer_set_buffer_with_damage(
+    canvas->scene_buffer,
+    &canvas->buffer,
+    NULL
+  );
+
+  canvas->refresh_task = NULL;
+}
+
+void
+canvas_refresh(struct catnip_canvas* canvas)
+{
+  if (canvas->refresh_task != NULL) {
+    return; // task has already been queued
+  }
+
+  // Refreshing the canvas actually queues the buffer to be fully damaged in
+  // the next event loop tick using Wayland's idle tasks.
+  struct wl_event_loop* loop = wl_display_get_event_loop(server_display);
+  canvas->refresh_task =
+    wl_event_loop_add_idle(loop, canvas_refresh_task, canvas);
+}
+
+void
+canvas_clear(struct catnip_canvas* canvas)
+{
+  cairo_save(canvas->cr);
+  cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(canvas->cr);
+  cairo_restore(canvas->cr);
+  canvas_refresh(canvas);
+}
+
 void
 canvas_move(struct catnip_canvas* canvas, int new_x, int new_y)
 {
@@ -92,11 +141,7 @@ canvas_resize(struct catnip_canvas* canvas, int new_width, int new_height)
   // canvas->scene_buffer->node.visible is updated properly.
   wlr_scene_buffer_set_buffer_with_damage(canvas->scene_buffer, NULL, NULL);
 
-  wlr_scene_buffer_set_buffer_with_damage(
-    canvas->scene_buffer,
-    &canvas->buffer,
-    NULL
-  );
+  canvas_refresh(canvas);
 }
 
 void

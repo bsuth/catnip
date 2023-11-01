@@ -1,6 +1,5 @@
 #include "config/config.h"
 #include "meta.h"
-#include "server/display.h"
 #include "server/server.h"
 #include <wlr/util/log.h>
 

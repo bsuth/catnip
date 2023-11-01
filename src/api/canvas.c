@@ -1,6 +1,8 @@
 #include "canvas.h"
 #include "api/api.h"
 #include "canvas/canvas.h"
+#include "canvas/shapes.h"
+#include "utils/cairo.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <glib.h>
@@ -37,40 +39,37 @@ parse_percent_str(const char* str)
 // -----------------------------------------------------------------------------
 
 static int
-canvas_clear(lua_State* L)
+api_canvas_clear(lua_State* L)
 {
   struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
-  struct catnip_canvas* canvas = *api_canvas;
-
-  cairo_save(canvas->cr);
-  cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint(canvas->cr);
-  cairo_restore(canvas->cr);
-
+  canvas_clear(*api_canvas);
   return 0;
 }
 
 static int
-canvas_rectangle(lua_State* L)
+api_canvas_rectangle(lua_State* L)
 {
   struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
   struct catnip_canvas* canvas = *api_canvas;
 
-  int x = 0;
-  int y = 0;
-  int width = 100;
-  int height = 100;
-  int bg = 0xFF0000;
+  luaL_checktype(L, 6, LUA_TTABLE);
 
-  double r = ((double) ((bg & 0xFF0000) >> 16)) / 0xFF;
-  double g = ((double) ((bg & 0x00FF00) >> 8)) / 0xFF;
-  double b = ((double) (bg & 0x0000FF)) / 0xFF;
+  struct canvas_rectangle rectangle = {
+    .x = luaL_checknumber(L, 2),
+    .y = luaL_checknumber(L, 3),
+    .width = luaL_checknumber(L, 4),
+    .height = luaL_checknumber(L, 5),
+    .bg = lua_hasfield(L, 6, "bg") ? lua_popinteger(L) : -1,
+    .border = lua_hasfield(L, 6, "border") ? lua_popinteger(L) : -1,
+    .opacity = lua_hasfield(L, 6, "opacity") ? lua_popnumber(L) : 1,
+    .radius = lua_hasfield(L, 6, "radius") ? lua_popnumber(L) : 0,
+  };
 
-  cairo_save(canvas->cr);
-  cairo_set_source_rgb(canvas->cr, r, g, b);
-  cairo_rectangle(canvas->cr, x, y, width, height);
-  cairo_fill(canvas->cr);
-  cairo_restore(canvas->cr);
+  rectangle.border_width = lua_hasfield(L, 6, "border_width")
+                             ? lua_popinteger(L)
+                             : (rectangle.border != -1);
+
+  canvas_rectangle(canvas, &rectangle);
 
   return 0;
 }
@@ -103,6 +102,10 @@ api_canvas__index(lua_State* L)
     lua_pushnumber(L, canvas_get_height(canvas));
   } else if (g_str_equal(key, "visible")) {
     lua_pushboolean(L, canvas_get_visible(canvas));
+  } else if (g_str_equal(key, "clear")) {
+    lua_pushcfunction(L, api_canvas_clear);
+  } else if (g_str_equal(key, "rectangle")) {
+    lua_pushcfunction(L, api_canvas_rectangle);
   } else {
     lua_pushnil(L);
   }
@@ -172,13 +175,8 @@ api_canvas_create(lua_State* L)
   bool has_options_table = lua_type(L, 1) == LUA_TTABLE;
 
   if (has_options_table) {
-    if (lua_hasfield(L, 1, "width")) {
-      width = lua_popnumber(L);
-    }
-
-    if (lua_hasfield(L, 1, "height")) {
-      height = lua_popnumber(L);
-    }
+    width = lua_hasfield(L, 1, "width") ? lua_popnumber(L) : width;
+    height = lua_hasfield(L, 1, "height") ? lua_popnumber(L) : height;
   }
 
   struct catnip_canvas* canvas = canvas_create(width, height);
