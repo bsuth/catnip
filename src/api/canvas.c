@@ -2,6 +2,8 @@
 #include "api/api.h"
 #include "canvas/canvas.h"
 #include "canvas/shapes.h"
+#include "canvas/text.h"
+#include "pango/pango-layout.h"
 #include "utils/cairo.h"
 #include "utils/log.h"
 #include "utils/lua.h"
@@ -74,6 +76,96 @@ api_canvas_rectangle(lua_State* L)
   return 0;
 }
 
+static int
+api_canvas_text(lua_State* L)
+{
+  struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
+  struct catnip_canvas* canvas = *api_canvas;
+
+  struct canvas_text text = {
+    .markup = luaL_checkstring(L, 2),
+    .x = 0,
+    .y = 0,
+    .width = -1,
+    .height = -1,
+    .alignment = PANGO_ALIGN_LEFT,
+    .ellipsize = PANGO_ELLIPSIZE_NONE,
+    .wrap = PANGO_WRAP_WORD_CHAR,
+  };
+
+  if (lua_type(L, 3) == LUA_TTABLE) {
+    lua_hasfield(L, 3, "x") && (text.x = lua_popinteger(L));
+    lua_hasfield(L, 3, "y") && (text.y = lua_popinteger(L));
+    lua_hasfield(L, 3, "width")
+      && (text.width = PANGO_SCALE * lua_popinteger(L));
+
+    if (lua_hasfield(L, 3, "height")) {
+      text.height = lua_popinteger(L);
+      (text.height > 0) && (text.height *= PANGO_SCALE);
+    }
+
+    if (lua_hasfield(L, 3, "align")) {
+      const char* alignment = lua_popstring(L);
+
+      if (g_str_equal(alignment, "left")) {
+        text.alignment = PANGO_ALIGN_LEFT;
+      } else if (g_str_equal(alignment, "center")) {
+        text.alignment = PANGO_ALIGN_CENTER;
+      } else if (g_str_equal(alignment, "right")) {
+        text.alignment = PANGO_ALIGN_RIGHT;
+      } else {
+        log_warning("invalid text alignment: %s", alignment);
+      }
+    }
+
+    if (lua_hasfield(L, 3, "ellipsis")) {
+      int ellipsis_type = lua_type(L, -1);
+
+      if (ellipsis_type == LUA_TBOOLEAN) {
+        text.ellipsize =
+          lua_toboolean(L, -1) ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE;
+      } else if (ellipsis_type == LUA_TSTRING) {
+        const char* ellipsis = lua_tostring(L, -1);
+
+        if (g_str_equal(ellipsis, "start")) {
+          text.ellipsize = PANGO_ELLIPSIZE_START;
+        } else if (g_str_equal(ellipsis, "middle")) {
+          text.ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+        } else if (g_str_equal(ellipsis, "end")) {
+          text.ellipsize = PANGO_ELLIPSIZE_END;
+        } else {
+          log_warning("invalid ellipsis: %s", ellipsis);
+        }
+      } else {
+        log_warning(
+          "invalid ellipsis type: %s",
+          lua_typename(L, ellipsis_type)
+        );
+      }
+
+      lua_pop(L, 1);
+    }
+
+    if (lua_hasfield(L, 3, "wrap")) {
+      const char* wrap = lua_popstring(L);
+
+      if (g_str_equal(wrap, "char")) {
+        text.wrap = PANGO_WRAP_CHAR;
+      } else if (g_str_equal(wrap, "word")) {
+        text.wrap = PANGO_WRAP_WORD;
+      } else if (g_str_equal(wrap, "auto")) {
+        text.wrap = PANGO_WRAP_WORD_CHAR;
+      } else {
+        log_warning("invalid wrap: %s", wrap);
+      }
+    }
+  }
+
+  canvas_text(canvas, &text);
+
+  return 0;
+}
+
 // -----------------------------------------------------------------------------
 // Metatable: catnip.canvas
 // -----------------------------------------------------------------------------
@@ -106,6 +198,8 @@ api_canvas__index(lua_State* L)
     lua_pushcfunction(L, api_canvas_clear);
   } else if (g_str_equal(key, "rectangle")) {
     lua_pushcfunction(L, api_canvas_rectangle);
+  } else if (g_str_equal(key, "text")) {
+    lua_pushcfunction(L, api_canvas_text);
   } else {
     lua_pushnil(L);
   }
