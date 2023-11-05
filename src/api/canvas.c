@@ -61,13 +61,13 @@ api_canvas_rectangle(lua_State* L)
     .y = luaL_checknumber(L, 3),
     .width = luaL_checknumber(L, 4),
     .height = luaL_checknumber(L, 5),
-    .bg = lua_hasfield(L, 6, "bg") ? lua_popinteger(L) : -1,
-    .border = lua_hasfield(L, 6, "border") ? lua_popinteger(L) : -1,
-    .opacity = lua_hasfield(L, 6, "opacity") ? lua_popnumber(L) : 1,
-    .radius = lua_hasfield(L, 6, "radius") ? lua_popnumber(L) : 0,
+    .bg = lua_hasnumberfield(L, 6, "bg") ? lua_popinteger(L) : -1,
+    .border = lua_hasnumberfield(L, 6, "border") ? lua_popinteger(L) : -1,
+    .opacity = lua_hasnumberfield(L, 6, "opacity") ? lua_popnumber(L) : 1,
+    .radius = lua_hasnumberfield(L, 6, "radius") ? lua_popnumber(L) : 0,
   };
 
-  rectangle.border_width = lua_hasfield(L, 6, "border_width")
+  rectangle.border_width = lua_hasnumberfield(L, 6, "border_width")
                              ? lua_popinteger(L)
                              : (rectangle.border != -1);
 
@@ -94,17 +94,17 @@ api_canvas_text(lua_State* L)
   };
 
   if (lua_type(L, 3) == LUA_TTABLE) {
-    lua_hasfield(L, 3, "x") && (text.x = lua_popinteger(L));
-    lua_hasfield(L, 3, "y") && (text.y = lua_popinteger(L));
-    lua_hasfield(L, 3, "width")
+    lua_hasnumberfield(L, 3, "x") && (text.x = lua_popinteger(L));
+    lua_hasnumberfield(L, 3, "y") && (text.y = lua_popinteger(L));
+    lua_hasnumberfield(L, 3, "width")
       && (text.width = PANGO_SCALE * lua_popinteger(L));
 
-    if (lua_hasfield(L, 3, "height")) {
+    if (lua_hasnumberfield(L, 3, "height")) {
       text.height = lua_popinteger(L);
       (text.height > 0) && (text.height *= PANGO_SCALE);
     }
 
-    if (lua_hasfield(L, 3, "align")) {
+    if (lua_hasstringfield(L, 3, "align")) {
       const char* alignment = lua_popstring(L);
 
       if (g_str_equal(alignment, "left")) {
@@ -114,7 +114,7 @@ api_canvas_text(lua_State* L)
       } else if (g_str_equal(alignment, "right")) {
         text.alignment = PANGO_ALIGN_RIGHT;
       } else {
-        log_warning("invalid text alignment: %s", alignment);
+        log_warning("%s", lua_field_error_msg(L, "align", "invalid value"));
       }
     }
 
@@ -137,16 +137,13 @@ api_canvas_text(lua_State* L)
           log_warning("invalid ellipsis: %s", ellipsis);
         }
       } else {
-        log_warning(
-          "invalid ellipsis type: %s",
-          lua_typename(L, ellipsis_type)
-        );
+        log_warning("%s", lua_field_error_msg_bad_type(L, "ellipsis", -1));
       }
 
       lua_pop(L, 1);
     }
 
-    if (lua_hasfield(L, 3, "wrap")) {
+    if (lua_hasstringfield(L, 3, "wrap")) {
       const char* wrap = lua_popstring(L);
 
       if (g_str_equal(wrap, "char")) {
@@ -156,7 +153,7 @@ api_canvas_text(lua_State* L)
       } else if (g_str_equal(wrap, "auto")) {
         text.wrap = PANGO_WRAP_WORD_CHAR;
       } else {
-        log_warning("invalid wrap: %s", wrap);
+        log_warning("%s", lua_field_error_msg(L, "wrap", "invalid value"));
       }
     }
   }
@@ -269,15 +266,15 @@ api_canvas_create(lua_State* L)
   bool has_options_table = lua_type(L, 1) == LUA_TTABLE;
 
   if (has_options_table) {
-    width = lua_hasfield(L, 1, "width") ? lua_popnumber(L) : width;
-    height = lua_hasfield(L, 1, "height") ? lua_popnumber(L) : height;
+    lua_hasnumberfield(L, 1, "width") && (width = lua_popinteger(L));
+    lua_hasnumberfield(L, 1, "height") && (height = lua_popinteger(L));
   }
 
   struct catnip_canvas* canvas = canvas_create(width, height);
   *api_canvas = canvas;
 
   if (has_options_table) {
-    if (lua_hasfield(L, 1, "visible")) {
+    if (lua_hasbooleanfield(L, 1, "visible")) {
       canvas_set_visible(canvas, lua_popboolean(L));
     }
   }

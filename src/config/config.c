@@ -33,16 +33,25 @@ config_try_path(const char* path)
     return false;
   }
 
+  char* current_dir = g_get_current_dir();
+  char* config_dir = g_path_get_dirname(path);
+  chdir(config_dir);
+
   L = lua_open();
   luaL_openlibs(L);
   api_init(L);
 
+  free(current_dir);
+  free(config_dir);
+
   if (luaL_loadfile(L, path) || lua_pcall(L, 0, 0, 0)) {
-    log_error("%s", lua_tostring(L, -1));
+    log_error("failed to load config from %s: %s", path, lua_tostring(L, -1));
     lua_close(L);
     L = NULL;
     return false;
   }
+
+  log_info("successfully loaded config from %s", path);
 
   return true;
 }

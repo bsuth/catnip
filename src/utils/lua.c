@@ -1,10 +1,12 @@
 #include "lua.h"
+#include "utils/glib.h"
+#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdbool.h>
 
 // -----------------------------------------------------------------------------
-// Stack Utils
+// Stack Popping
 // -----------------------------------------------------------------------------
 
 int
@@ -79,6 +81,10 @@ lua_popuserdata(lua_State* L)
   return p;
 }
 
+// -----------------------------------------------------------------------------
+// Stack Pulling
+// -----------------------------------------------------------------------------
+
 int
 lua_pullboolean(lua_State* L, int index)
 {
@@ -151,6 +157,10 @@ lua_pulluserdata(lua_State* L, int index)
   return p;
 }
 
+// -----------------------------------------------------------------------------
+// Table Fields
+// -----------------------------------------------------------------------------
+
 bool
 lua_hasfield(lua_State* L, int index, const char* field)
 {
@@ -164,54 +174,138 @@ lua_hasfield(lua_State* L, int index, const char* field)
   }
 }
 
+bool
+lua_hasfieldtype(lua_State* L, int index, const char* field, int type)
+{
+  if (!lua_hasfield(L, index, field)) {
+    return false;
+  } else if (lua_type(L, -1) != type) {
+    log_warning("%s", lua_field_error_msg_expected_type(L, field, -1, type));
+    lua_pop(L, 1);
+    return false;
+  } else {
+    return true;
+  }
+}
+
 // -----------------------------------------------------------------------------
 // Error Messages
 // -----------------------------------------------------------------------------
 
-const char*
-lua_get_arg_error_msg(lua_State* L, const int arg_index, const char* details)
+char*
+lua_error_msg(lua_State* L, const char* details)
 {
   GString* error_msg = g_string_new(NULL);
-
-  lua_Debug callee_info;
   lua_Debug caller_info;
 
-  if (!lua_getstack(L, 0, &callee_info) || !lua_getstack(L, 1, &caller_info)) {
+  if (!lua_getstack(L, 1, &caller_info)) {
+    g_string_printf(error_msg, "%s", details);
+  } else {
+    lua_getinfo(L, "Sl", &caller_info);
+
+    g_string_printf(
+      error_msg,
+      "%s:%d: %s",
+      caller_info.short_src,
+      caller_info.currentline,
+      details
+    );
+  }
+
+  return g_string_free_and_steal(error_msg);
+}
+
+char*
+lua_error_msg_bad_type(lua_State* L, int index)
+{
+  return g_string_free_and_steal(
+    g_string_new_printf("bad type '%s'", luaL_typename(L, index))
+  );
+}
+
+char*
+lua_error_msg_expected_type(lua_State* L, int index, int expected_type)
+{
+  return g_string_free_and_steal(g_string_new_printf(
+    "%s expected, got %s",
+    lua_typename(L, expected_type),
+    luaL_typename(L, index)
+  ));
+}
+
+char*
+lua_arg_error_msg(lua_State* L, int arg_index, const char* details)
+{
+  lua_Debug callee_info;
+
+  if (!lua_getstack(L, 0, &callee_info)) {
+    GString* error_msg = g_string_new(NULL);
     g_string_printf(error_msg, "bad argument #%d (%s)", arg_index, details);
     return g_string_free_and_steal(error_msg);
   }
 
   lua_getinfo(L, "n", &callee_info);
-  lua_getinfo(L, "Sl", &caller_info);
 
-  g_string_printf(
-    error_msg,
-    "%s:%d: bad argument #%d to '%s' (%s)",
-    caller_info.short_src,
-    caller_info.currentline,
+  GString* full_details = g_string_new_printf(
+    "bad argument #%d to '%s' (%s)",
     arg_index,
     callee_info.name ? callee_info.name : "?",
     details
   );
 
-  return g_string_free_and_steal(error_msg);
+  char* error_msg = lua_error_msg(L, full_details->str);
+  g_string_free(full_details, true);
+
+  return error_msg;
 }
 
-const char*
-lua_get_arg_type_error_msg(lua_State* L, int arg_index, const int expected_type)
+char*
+lua_arg_error_msg_bad_type(lua_State* L, int arg_index)
 {
-  GString* details = g_string_new(NULL);
+  char* details = lua_error_msg_bad_type(L, arg_index);
+  char* error_msg = lua_arg_error_msg(L, arg_index, details);
+  free(details);
+  return error_msg;
+}
 
-  g_string_printf(
-    details,
-    "%s expected, got %s",
-    lua_typename(L, expected_type),
-    luaL_typename(L, arg_index)
-  );
+char*
+lua_arg_error_msg_expected_type(lua_State* L, int arg_index, int expected_type)
+{
+  char* details = lua_error_msg_expected_type(L, arg_index, expected_type);
+  char* error_msg = lua_arg_error_msg(L, arg_index, details);
+  free(details);
+  return error_msg;
+}
 
-  const char* error_msg = lua_get_arg_error_msg(L, arg_index, details->str);
+char*
+lua_field_error_msg(lua_State* L, const char* field, const char* details)
+{
+  GString* full_details =
+    g_string_new_printf("bad field '%s' (%s)", field, details);
+  char* error_msg = lua_error_msg(L, full_details->str);
+  g_string_free(full_details, true);
+  return error_msg;
+}
 
-  g_string_free(details, true);
+char*
+lua_field_error_msg_bad_type(lua_State* L, const char* field, int value_index)
+{
+  char* details = lua_error_msg_bad_type(L, value_index);
+  char* error_msg = lua_field_error_msg(L, field, details);
+  free(details);
+  return error_msg;
+}
 
+char*
+lua_field_error_msg_expected_type(
+  lua_State* L,
+  const char* field,
+  int value_index,
+  int expected_type
+)
+{
+  char* details = lua_error_msg_expected_type(L, value_index, expected_type);
+  char* error_msg = lua_field_error_msg(L, field, details);
+  free(details);
   return error_msg;
 }

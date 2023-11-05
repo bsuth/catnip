@@ -63,16 +63,11 @@ api_bind(lua_State* L)
 
   int num_args = lua_gettop(L);
   for (int i = 1; i < num_args - 1; ++i) {
-    if (lua_type(L, i) != LUA_TSTRING) {
-      log_warning("%s", lua_get_arg_type_error_msg(L, i, LUA_TSTRING));
-      return 0;
-    }
-
-    const char* lua_modifier = lua_tostring(L, i);
+    const char* lua_modifier = luaL_checkstring(L, i);
     uint32_t modifier = translate_lua_modifier(lua_modifier);
 
     if (modifier == 0) {
-      log_warning("%s", lua_get_arg_error_msg(L, i, "unknown modifier"));
+      log_warning("%s", lua_arg_error_msg(L, i, "unknown modifier"));
       return 0;
     }
 
@@ -80,24 +75,15 @@ api_bind(lua_State* L)
   }
 
   // TODO: allow numbers as raw key codes?
-  if (lua_type(L, -2) != LUA_TSTRING) {
-    log_warning("%s", lua_get_arg_type_error_msg(L, -2, LUA_TSTRING));
-    return 0;
-  }
-
-  const char* lua_key = lua_tostring(L, -2);
+  const char* lua_key = luaL_checkstring(L, -2);
   xkb_keysym_t keysym = translate_lua_key(lua_key);
 
   if (keysym == XKB_KEY_NoSymbol) {
-    log_warning("%s", lua_get_arg_error_msg(L, -2, "unknown key"));
+    log_warning("%s", lua_arg_error_msg(L, -2, "unknown key"));
     return 0;
   }
 
-  if (lua_type(L, -1) != LUA_TFUNCTION) {
-    log_warning("%s", lua_get_arg_type_error_msg(L, -1, LUA_TFUNCTION));
-    return 0;
-  }
-
+  luaL_checktype(L, -1, LUA_TFUNCTION);
   config_keybindings_bind(modifiers, keysym, luaL_ref(L, LUA_REGISTRYINDEX));
 
   return 0;
@@ -110,16 +96,11 @@ api_unbind(lua_State* L)
 
   int num_args = lua_gettop(L);
   for (int i = 1; i < num_args; ++i) {
-    if (lua_type(L, i) != LUA_TSTRING) {
-      log_warning("%s", lua_get_arg_type_error_msg(L, i, LUA_TSTRING));
-      return 0;
-    }
-
-    const char* lua_modifier = lua_tostring(L, i);
+    const char* lua_modifier = luaL_checkstring(L, i);
     uint32_t modifier = translate_lua_modifier(lua_modifier);
 
     if (modifier == 0) {
-      log_warning("%s", lua_get_arg_error_msg(L, i, "unknown modifier"));
+      log_warning("%s", lua_arg_error_msg(L, i, "unknown modifier"));
       return 0;
     }
 
@@ -127,16 +108,11 @@ api_unbind(lua_State* L)
   }
 
   // TODO: allow numbers as raw key codes?
-  if (lua_type(L, -1) != LUA_TSTRING) {
-    log_warning("%s", lua_get_arg_type_error_msg(L, -1, LUA_TSTRING));
-    return 0;
-  }
-
-  const char* lua_key = lua_tostring(L, -1);
+  const char* lua_key = luaL_checkstring(L, -1);
   xkb_keysym_t keysym = translate_lua_key(lua_key);
 
   if (keysym == XKB_KEY_NoSymbol) {
-    log_warning("%s", lua_get_arg_error_msg(L, -1, "unknown key"));
+    log_warning("%s", lua_arg_error_msg(L, -1, "unknown key"));
     return 0;
   }
 
