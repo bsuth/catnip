@@ -27,4 +27,5 @@ canvas_svg(struct catnip_canvas* canvas, struct canvas_svg* svg)
   }
 
   rsvg_handle_render_document(svg->rsvg, canvas->cr, &viewport, NULL);
+  canvas_refresh(canvas);
 }

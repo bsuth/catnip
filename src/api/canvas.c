@@ -1,6 +1,7 @@
 #include "canvas.h"
 #include "api/api.h"
 #include "canvas/canvas.h"
+#include "canvas/png.h"
 #include "canvas/shapes.h"
 #include "canvas/svg.h"
 #include "canvas/text.h"
@@ -203,6 +204,33 @@ api_canvas_svg(lua_State* L)
   return 0;
 }
 
+static int
+api_canvas_png(lua_State* L)
+{
+  struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
+  struct catnip_canvas* canvas = *api_canvas;
+
+  cairo_surface_t** api_png = luaL_checkudata(L, 2, "catnip.png");
+  luaL_checktype(L, 3, LUA_TTABLE);
+
+  struct canvas_png png = {
+    .cairo_surface = *api_png,
+    .x = 0,
+    .y = 0,
+    .width = -1,
+    .height = -1,
+  };
+
+  lua_hasnumberfield(L, 3, "x") && (png.x = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "y") && (png.y = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "width") && (png.width = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "height") && (png.height = lua_popinteger(L));
+
+  canvas_png(canvas, &png);
+
+  return 0;
+}
+
 // -----------------------------------------------------------------------------
 // Metatable: catnip.canvas
 // -----------------------------------------------------------------------------
@@ -239,6 +267,8 @@ api_canvas__index(lua_State* L)
     lua_pushcfunction(L, api_canvas_text);
   } else if (g_str_equal(key, "svg")) {
     lua_pushcfunction(L, api_canvas_svg);
+  } else if (g_str_equal(key, "png")) {
+    lua_pushcfunction(L, api_canvas_png);
   } else {
     lua_pushnil(L);
   }

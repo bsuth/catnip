@@ -4,6 +4,7 @@
 #include "api/events.h"
 #include "api/keybindings.h"
 #include "api/output.h"
+#include "api/png.h"
 #include "api/svg.h"
 #include "api/window.h"
 #include "config/config.h"
@@ -56,4 +57,5 @@ api_init(lua_State* L)
   api_cursor_init(L);
   api_canvas_init(L);
   api_svg_init(L);
+  api_png_init(L);
 }
