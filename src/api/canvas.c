@@ -2,7 +2,9 @@
 #include "api/api.h"
 #include "canvas/canvas.h"
 #include "canvas/shapes.h"
+#include "canvas/svg.h"
 #include "canvas/text.h"
+#include "librsvg/rsvg.h"
 #include "pango/pango-layout.h"
 #include "utils/cairo.h"
 #include "utils/log.h"
@@ -54,22 +56,33 @@ api_canvas_rectangle(lua_State* L)
   struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
   struct catnip_canvas* canvas = *api_canvas;
 
-  luaL_checktype(L, 6, LUA_TTABLE);
-
   struct canvas_rectangle rectangle = {
     .x = luaL_checknumber(L, 2),
     .y = luaL_checknumber(L, 3),
     .width = luaL_checknumber(L, 4),
     .height = luaL_checknumber(L, 5),
-    .bg = lua_hasnumberfield(L, 6, "bg") ? lua_popinteger(L) : -1,
-    .border = lua_hasnumberfield(L, 6, "border") ? lua_popinteger(L) : -1,
-    .opacity = lua_hasnumberfield(L, 6, "opacity") ? lua_popnumber(L) : 1,
-    .radius = lua_hasnumberfield(L, 6, "radius") ? lua_popnumber(L) : 0,
+    .bg = -1,
+    .border = -1,
+    .border_width = 0,
+    .opacity = 1,
+    .radius = 0,
   };
 
-  rectangle.border_width = lua_hasnumberfield(L, 6, "border_width")
-                             ? lua_popinteger(L)
-                             : (rectangle.border != -1);
+  if (lua_type(L, 6) == LUA_TTABLE) {
+    lua_hasnumberfield(L, 6, "bg") && (rectangle.bg = lua_popinteger(L));
+    lua_hasnumberfield(L, 6, "border")
+      && (rectangle.border = lua_popinteger(L));
+    lua_hasnumberfield(L, 6, "opacity")
+      && (rectangle.opacity = lua_popnumber(L));
+    lua_hasnumberfield(L, 6, "radius")
+      && (rectangle.radius = lua_popinteger(L));
+
+    if (lua_hasnumberfield(L, 6, "border_width")) {
+      rectangle.border_width = lua_popinteger(L);
+    } else if (rectangle.border != -1) {
+      rectangle.border_width = 1;
+    }
+  }
 
   canvas_rectangle(canvas, &rectangle);
 
@@ -163,6 +176,33 @@ api_canvas_text(lua_State* L)
   return 0;
 }
 
+static int
+api_canvas_svg(lua_State* L)
+{
+  struct catnip_canvas** api_canvas = lua_touserdata(L, 1);
+  struct catnip_canvas* canvas = *api_canvas;
+
+  RsvgHandle** api_svg = luaL_checkudata(L, 2, "catnip.svg");
+  luaL_checktype(L, 3, LUA_TTABLE);
+
+  struct canvas_svg svg = {
+    .rsvg = *api_svg,
+    .x = 0,
+    .y = 0,
+    .width = -1,
+    .height = -1,
+  };
+
+  lua_hasnumberfield(L, 3, "x") && (svg.x = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "y") && (svg.y = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "width") && (svg.width = lua_popinteger(L));
+  lua_hasnumberfield(L, 3, "height") && (svg.height = lua_popinteger(L));
+
+  canvas_svg(canvas, &svg);
+
+  return 0;
+}
+
 // -----------------------------------------------------------------------------
 // Metatable: catnip.canvas
 // -----------------------------------------------------------------------------
@@ -197,6 +237,8 @@ api_canvas__index(lua_State* L)
     lua_pushcfunction(L, api_canvas_rectangle);
   } else if (g_str_equal(key, "text")) {
     lua_pushcfunction(L, api_canvas_text);
+  } else if (g_str_equal(key, "svg")) {
+    lua_pushcfunction(L, api_canvas_svg);
   } else {
     lua_pushnil(L);
   }

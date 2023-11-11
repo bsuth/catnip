@@ -3,6 +3,7 @@ EXECUTABLE = catnip
 CC = clang
 
 DEPENDENCIES = \
+	librsvg-2.0 \
 	cairo \
 	pango \
 	pangocairo \
