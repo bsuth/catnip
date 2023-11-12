@@ -1,6 +1,7 @@
 #include "window.h"
 #include "api/api.h"
 #include "config/config.h"
+#include "config/events.h"
 #include "server/window.h"
 #include "utils/log.h"
 #include "utils/wayland.h"
@@ -47,14 +48,10 @@ api_window__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "lx")) {
-    lua_pushnumber(L, server_window_get_lx(server_window));
-  } else if (g_str_equal(key, "ly")) {
-    lua_pushnumber(L, server_window_get_ly(server_window));
-  } else if (g_str_equal(key, "gx")) {
-    lua_pushnumber(L, server_window_get_gx(server_window));
-  } else if (g_str_equal(key, "gy")) {
-    lua_pushnumber(L, server_window_get_gy(server_window));
+  if (g_str_equal(key, "x")) {
+    lua_pushnumber(L, server_window_get_x(server_window));
+  } else if (g_str_equal(key, "y")) {
+    lua_pushnumber(L, server_window_get_y(server_window));
   } else if (g_str_equal(key, "width")) {
     lua_pushnumber(L, server_window_get_width(server_window));
   } else if (g_str_equal(key, "height")) {
@@ -91,14 +88,10 @@ api_window__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "lx")) {
-    server_window_set_lx(server_window, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "ly")) {
-    server_window_set_ly(server_window, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "gx")) {
-    server_window_set_gx(server_window, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "gy")) {
-    server_window_set_gy(server_window, luaL_checknumber(L, 3));
+  if (g_str_equal(key, "x")) {
+    server_window_set_x(server_window, luaL_checknumber(L, 3));
+  } else if (g_str_equal(key, "y")) {
+    server_window_set_y(server_window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "width")) {
     server_window_set_width(server_window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "height")) {
@@ -193,6 +186,7 @@ static void
 on_new_server_window(struct wl_listener* listener, void* data)
 {
   api_window_create(data);
+  config_events_publish("window::new");
 }
 
 void

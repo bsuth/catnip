@@ -2,10 +2,8 @@ local catnip = require('catnip')
 
 catnip.bind('Control', 'w', function()
   local fields = {
-    'lx',
-    'ly',
-    'gx',
-    'gy',
+    'x',
+    'y',
     'width',
     'height',
     'focused',
@@ -29,8 +27,8 @@ catnip.bind('Control', 'k', function()
   for i = 1, #catnip.windows do
     local window = catnip.windows[i]
     window.focused = true
-    window.lx = window.lx + 10
-    window.ly = window.ly + 10
+    window.x = window.x + 10
+    window.y = window.y + 10
   end
 end)
 

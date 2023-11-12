@@ -47,6 +47,7 @@ on_xdg_surface_destroy(struct wl_listener* listener, void* data)
 
   wl_signal_emit_mutable(&window->events.destroy, window);
 
+  wl_list_remove(&window->link);
   wl_list_remove(&window->listeners.map.link);
   wl_list_remove(&window->listeners.unmap.link);
   wl_list_remove(&window->listeners.destroy.link);
@@ -122,6 +123,9 @@ server_window_create(struct wlr_xdg_surface* xdg_surface)
     );
     window->scene_tree->node.data = window;
 
+    window->pending.width = -1;
+    window->pending.height = -1;
+
     wl_signal_init(&window->events.destroy);
 
     wl_setup_listener(
@@ -195,75 +199,35 @@ server_window_get_at(double x, double y, double* nx, double* ny)
 // -----------------------------------------------------------------------------
 
 int
-server_window_get_lx(struct server_window* window)
+server_window_get_x(struct server_window* window)
 {
-  int lx, ly;
-  wlr_scene_node_coords(&window->scene_tree->node, &lx, &ly);
-  return lx;
+  int x, y;
+  wlr_scene_node_coords(&window->scene_tree->node, &x, &y);
+  return x;
 }
 
 int
-server_window_get_ly(struct server_window* window)
+server_window_get_y(struct server_window* window)
 {
-  int lx, ly;
-  wlr_scene_node_coords(&window->scene_tree->node, &lx, &ly);
-  return ly;
-}
-
-int
-server_window_get_gx(struct server_window* window)
-{
-  struct wlr_surface_output* surface_output;
-  struct wl_list* surface_outputs =
-    &window->xdg_surface->surface->current_outputs;
-
-  wl_list_for_each(surface_output, surface_outputs, link)
-  {
-    struct wlr_output_layout_output* layout_output =
-      wlr_output_layout_get(server_output_layout, surface_output->output);
-
-    if (layout_output != NULL) {
-      return layout_output->x + server_window_get_lx(window);
-    }
-  }
-
-  return 0;
-}
-
-int
-server_window_get_gy(struct server_window* window)
-{
-  struct wlr_surface_output* surface_output;
-  struct wl_list* surface_outputs =
-    &window->xdg_surface->surface->current_outputs;
-
-  wl_list_for_each(surface_output, surface_outputs, link)
-  {
-    struct wlr_output_layout_output* layout_output =
-      wlr_output_layout_get(server_output_layout, surface_output->output);
-
-    if (layout_output != NULL) {
-      return layout_output->y + server_window_get_ly(window);
-    }
-  }
-
-  return 0;
+  int x, y;
+  wlr_scene_node_coords(&window->scene_tree->node, &x, &y);
+  return y;
 }
 
 int
 server_window_get_width(struct server_window* window)
 {
-  struct wlr_box box;
-  wlr_xdg_surface_get_geometry(window->xdg_toplevel->base, &box);
-  return box.width;
+  return (window->pending.width != -1)
+           ? window->pending.width
+           : window->xdg_surface->surface->current.width;
 }
 
 int
 server_window_get_height(struct server_window* window)
 {
-  struct wlr_box box;
-  wlr_xdg_surface_get_geometry(window->xdg_toplevel->base, &box);
-  return box.height;
+  return (window->pending.height != -1)
+           ? window->pending.height
+           : window->xdg_surface->surface->current.height;
 }
 
 bool
@@ -292,40 +256,29 @@ server_window_get_fullscreen(struct server_window* window)
 // -----------------------------------------------------------------------------
 
 void
-server_window_set_lx(struct server_window* window, int new_lx)
+server_window_set_x(struct server_window* window, int new_x)
 {
   wlr_scene_node_set_position(
     &window->scene_tree->node,
-    new_lx,
-    server_window_get_ly(window)
+    new_x,
+    server_window_get_y(window)
   );
 }
 
 void
-server_window_set_ly(struct server_window* window, int new_ly)
+server_window_set_y(struct server_window* window, int new_y)
 {
   wlr_scene_node_set_position(
     &window->scene_tree->node,
-    server_window_get_lx(window),
-    new_ly
+    server_window_get_x(window),
+    new_y
   );
-}
-
-void
-server_window_set_gx(struct server_window* window, int new_gx)
-{
-  // TODO
-}
-
-void
-server_window_set_gy(struct server_window* window, int new_gy)
-{
-  // TODO
 }
 
 void
 server_window_set_width(struct server_window* window, int new_width)
 {
+  window->pending.width = new_width;
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
     new_width,
@@ -336,6 +289,7 @@ server_window_set_width(struct server_window* window, int new_width)
 void
 server_window_set_height(struct server_window* window, int new_height)
 {
+  window->pending.height = new_height;
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
     server_window_get_width(window),

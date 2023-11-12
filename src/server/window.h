@@ -22,6 +22,13 @@ struct server_window {
   struct {
     struct wl_signal destroy;
   } events;
+
+  // These properties cannot be updated immediately and must instead _request_
+  // an update. Here, we store the most recent values requested.
+  struct {
+    int width;
+    int height;
+  } pending;
 };
 
 struct server_window_events {
@@ -43,16 +50,10 @@ server_window_get_at(double x, double y, double* nx, double* ny);
 // -----------------------------------------------------------------------------
 
 int
-server_window_get_lx(struct server_window* window);
+server_window_get_x(struct server_window* window);
 
 int
-server_window_get_ly(struct server_window* window);
-
-int
-server_window_get_gx(struct server_window* window);
-
-int
-server_window_get_gy(struct server_window* window);
+server_window_get_y(struct server_window* window);
 
 int
 server_window_get_width(struct server_window* window);
@@ -74,16 +75,10 @@ server_window_get_fullscreen(struct server_window* window);
 // -----------------------------------------------------------------------------
 
 void
-server_window_set_lx(struct server_window* window, int new_lx);
+server_window_set_x(struct server_window* window, int new_x);
 
 void
-server_window_set_ly(struct server_window* window, int new_ly);
-
-void
-server_window_set_gx(struct server_window* window, int new_gx);
-
-void
-server_window_set_gy(struct server_window* window, int new_gy);
+server_window_set_y(struct server_window* window, int new_y);
 
 void
 server_window_set_width(struct server_window* window, int new_width);
