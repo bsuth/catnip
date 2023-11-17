@@ -10,7 +10,4 @@ wl_setup_listener(
   wl_notify_func_t callback
 );
 
-uint32_t
-wlr_get_time_msec();
-
 #endif

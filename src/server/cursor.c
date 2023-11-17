@@ -2,6 +2,7 @@
 #include "server/output_layout.h"
 #include "server/scene.h"
 #include "server/seat.h"
+#include "utils/time.h"
 #include "utils/wayland.h"
 #include <wlr/types/wlr_pointer.h>
 #include <wlr/types/wlr_scene.h>
@@ -242,7 +243,7 @@ server_cursor_set_lx(int new_lx)
     server_cursor_get_gy()
   );
 
-  server_cursor_update(wlr_get_time_msec());
+  server_cursor_update(get_time_msec());
 }
 
 void
@@ -259,19 +260,19 @@ server_cursor_set_ly(int new_ly)
     layout->y + new_ly
   );
 
-  server_cursor_update(wlr_get_time_msec());
+  server_cursor_update(get_time_msec());
 }
 
 void
 server_cursor_set_gx(int new_gx)
 {
   wlr_cursor_warp_closest(server_cursor, NULL, new_gx, server_cursor_get_gy());
-  server_cursor_update(wlr_get_time_msec());
+  server_cursor_update(get_time_msec());
 }
 
 void
 server_cursor_set_gy(int new_gy)
 {
   wlr_cursor_warp_closest(server_cursor, NULL, server_cursor_get_gx(), new_gy);
-  server_cursor_update(wlr_get_time_msec());
+  server_cursor_update(get_time_msec());
 }
