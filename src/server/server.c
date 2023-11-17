@@ -10,7 +10,6 @@
 #include "server/renderer.h"
 #include "server/scene.h"
 #include "server/seat.h"
-#include "server/window.h"
 #include "server/xdg_shell.h"
 #include "utils/log.h"
 #include <stdio.h>
@@ -65,7 +64,6 @@ server_init()
   wlr_data_device_manager_create(server_display);
 
   server_xdg_shell_init();
-  server_window_init();
   server_cursor_init();
   server_seat_init();
 

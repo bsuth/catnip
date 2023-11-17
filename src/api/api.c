@@ -6,9 +6,9 @@
 #include "api/output.h"
 #include "api/png.h"
 #include "api/svg.h"
-#include "api/window.h"
 #include "config/config.h"
 #include "server/server.h"
+#include "window/lua_window.h"
 #include <lauxlib.h>
 
 lua_Ref api_ref = LUA_NOREF;
@@ -50,9 +50,14 @@ api_init(lua_State* L)
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
 
+  lua_catnip_window_init(L);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
+  lua_setfield(L, -2, "windows");
+  lua_pop(L, 1);
+
   api_keybindings_init(L);
   api_events_init(L);
-  api_window_init(L);
   api_output_init(L);
   api_cursor_init(L);
   api_canvas_init(L);

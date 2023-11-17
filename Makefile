@@ -56,7 +56,7 @@ CFLAGS := \
 	-DWLR_USE_UNSTABLE \
 	$(shell pkg-config --cflags $(DEPENDENCIES)) \
 	-I$(PROTOCOLS_BUILD_DIR) \
-	-Isrc
+	-I$(SOURCE_DIR)
 
 OBJECT_BUILD_DIR := $(BUILD_DIR)/objects
 $(shell mkdir -p $(OBJECT_BUILD_DIR))
