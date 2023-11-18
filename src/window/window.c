@@ -1,4 +1,5 @@
 #include "window.h"
+#include "config/config.h"
 #include "lua_window.h"
 #include "properties.h"
 #include "server/scene.h"
@@ -31,26 +32,6 @@ on_unmap(struct wl_listener* listener, void* data)
   // if (toplevel == toplevel->server->grabbed_view) {
   //   reset_cursor_mode(toplevel->server);
   // }
-}
-
-static void
-on_destroy(struct wl_listener* listener, void* data)
-{
-  struct catnip_window* window =
-    wl_container_of(listener, window, listeners.destroy);
-
-  lua_catnip_window_destroy(window);
-
-  wl_list_remove(&window->link);
-  wl_list_remove(&window->listeners.map.link);
-  wl_list_remove(&window->listeners.unmap.link);
-  wl_list_remove(&window->listeners.destroy.link);
-  wl_list_remove(&window->listeners.request_move.link);
-  wl_list_remove(&window->listeners.request_resize.link);
-  wl_list_remove(&window->listeners.request_maximize.link);
-  wl_list_remove(&window->listeners.request_fullscreen.link);
-
-  free(window);
 }
 
 static void
@@ -95,6 +76,28 @@ on_request_fullscreen(struct wl_listener* listener, void* data)
 }
 
 static void
+on_destroy(struct wl_listener* listener, void* data)
+{
+  struct catnip_window* window =
+    wl_container_of(listener, window, listeners.destroy);
+
+  if (L != NULL) {
+    lua_catnip_window_destroy(L, window);
+  }
+
+  wl_list_remove(&window->link);
+  wl_list_remove(&window->listeners.map.link);
+  wl_list_remove(&window->listeners.unmap.link);
+  wl_list_remove(&window->listeners.destroy.link);
+  wl_list_remove(&window->listeners.request_move.link);
+  wl_list_remove(&window->listeners.request_resize.link);
+  wl_list_remove(&window->listeners.request_maximize.link);
+  wl_list_remove(&window->listeners.request_fullscreen.link);
+
+  free(window);
+}
+
+static void
 catnip_window_create(struct wl_listener* listener, void* data)
 {
   struct wlr_xdg_surface* xdg_surface = data;
@@ -133,11 +136,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
       on_unmap
     );
     wl_setup_listener(
-      &window->listeners.destroy,
-      &window->xdg_surface->events.destroy,
-      on_destroy
-    );
-    wl_setup_listener(
       &window->listeners.request_move,
       &window->xdg_toplevel->events.request_move,
       on_request_move
@@ -157,14 +155,22 @@ catnip_window_create(struct wl_listener* listener, void* data)
       &window->xdg_toplevel->events.request_fullscreen,
       on_request_fullscreen
     );
+    wl_setup_listener(
+      &window->listeners.destroy,
+      &window->xdg_surface->events.destroy,
+      on_destroy
+    );
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but
     // it requires the popup parent's scene node. For convenience, we always
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = window->scene_tree;
 
-    lua_catnip_window_create(window);
     wl_list_insert(&catnip_windows, &window->link);
+
+    if (L != NULL) {
+      lua_catnip_window_create(L, window);
+    }
   }
 }
 

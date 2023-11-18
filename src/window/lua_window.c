@@ -1,6 +1,5 @@
 #include "lua_window.h"
 #include "api/api.h"
-#include "config/config.h"
 #include "config/events.h"
 #include "properties.h"
 #include "utils/log.h"
@@ -16,8 +15,9 @@ lua_catnip_window__index(lua_State* L)
   struct catnip_window* window = *lua_window;
 
   if (window == NULL) {
-    // TODO: throw index nil error?
-    log_warning("cannot get field of expired winow");
+    char* error = lua_error_msg(L, "attempt to index outdated window");
+    log_error("%s", error);
+    free(error);
     lua_pushnil(L);
     return 1;
   }
@@ -58,8 +58,9 @@ lua_catnip_window__newindex(lua_State* L)
   struct catnip_window* window = *lua_window;
 
   if (window == NULL) {
-    // TODO: throw index nil error?
-    log_warning("cannot set field of expired window");
+    char* error = lua_error_msg(L, "attempt to index outdated window");
+    log_error("%s", error);
+    free(error);
     return 0;
   }
 
@@ -96,7 +97,7 @@ static int
 lua_catnip_window__gc(lua_State* L)
 {
   struct catnip_window** lua_window = lua_touserdata(L, 1);
-  (*lua_window)->lua_userdata = NULL;
+  (*lua_window)->lua.userdata = NULL;
   return 0;
 }
 
@@ -108,7 +109,7 @@ static const struct luaL_Reg lua_catnip_window_mt[] = {
 };
 
 void
-lua_catnip_window_destroy(struct catnip_window* window)
+lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
   size_t lua_catnip_windows_len = lua_objlen(L, -1);
@@ -129,12 +130,12 @@ lua_catnip_window_destroy(struct catnip_window* window)
 
   config_events_publish("window::destroy");
 
-  *(window->lua_userdata) = NULL;
+  *(window->lua.userdata) = NULL;
   lua_pop(L, 1);
 }
 
 void
-lua_catnip_window_create(struct catnip_window* window)
+lua_catnip_window_create(lua_State* L, struct catnip_window* window)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
 
@@ -143,16 +144,18 @@ lua_catnip_window_create(struct catnip_window* window)
   luaL_setmetatable(L, "catnip.window");
 
   *lua_window = window;
-  window->lua_userdata = lua_window;
-  lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+  window->lua.userdata = lua_window;
 
+  lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);
+
   config_events_publish("window::create");
 }
 
 void
 lua_catnip_window_init(lua_State* L)
 {
+  // TODO: make this table read only from lua
   lua_newtable(L);
   lua_catnip_windows = luaL_ref(L, LUA_REGISTRYINDEX);
 
@@ -163,6 +166,6 @@ lua_catnip_window_init(lua_State* L)
   struct catnip_window* window;
   wl_list_for_each(window, &catnip_windows, link)
   {
-    lua_catnip_window_create(window);
+    lua_catnip_window_create(L, window);
   }
 }

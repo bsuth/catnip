@@ -1,5 +1,5 @@
 #include "cursor.h"
-#include "server/output_layout.h"
+#include "output/output_layout.h"
 #include "server/scene.h"
 #include "server/seat.h"
 #include "utils/time.h"
@@ -69,7 +69,7 @@ static struct wlr_output*
 server_cursor_get_wlr_output()
 {
   return wlr_output_layout_output_at(
-    server_output_layout,
+    catnip_output_layout,
     server_cursor->x,
     server_cursor->y
   );
@@ -153,7 +153,7 @@ server_cursor_init()
   server_cursor_mode = SERVER_CURSOR_MODE_PASSTHROUGH;
 
   server_cursor = wlr_cursor_create();
-  wlr_cursor_attach_output_layout(server_cursor, server_output_layout);
+  wlr_cursor_attach_output_layout(server_cursor, catnip_output_layout);
 
   server_cursor_manager = wlr_xcursor_manager_create(NULL, 24);
   wlr_xcursor_manager_load(server_cursor_manager, 1);
@@ -196,7 +196,7 @@ server_cursor_get_lx()
 
   double lx = server_cursor->x;
   double ly = server_cursor->y;
-  wlr_output_layout_output_coords(server_output_layout, output, &lx, &ly);
+  wlr_output_layout_output_coords(catnip_output_layout, output, &lx, &ly);
 
   return lx;
 }
@@ -208,7 +208,7 @@ server_cursor_get_ly()
 
   double lx = server_cursor->x;
   double ly = server_cursor->y;
-  wlr_output_layout_output_coords(server_output_layout, output, &lx, &ly);
+  wlr_output_layout_output_coords(catnip_output_layout, output, &lx, &ly);
 
   return ly;
 }
@@ -234,7 +234,7 @@ server_cursor_set_lx(int new_lx)
 {
   struct wlr_output* output = server_cursor_get_wlr_output();
   struct wlr_output_layout_output* layout =
-    wlr_output_layout_get(server_output_layout, output);
+    wlr_output_layout_get(catnip_output_layout, output);
 
   wlr_cursor_warp_closest(
     server_cursor,
@@ -251,7 +251,7 @@ server_cursor_set_ly(int new_ly)
 {
   struct wlr_output* output = server_cursor_get_wlr_output();
   struct wlr_output_layout_output* layout =
-    wlr_output_layout_get(server_output_layout, output);
+    wlr_output_layout_get(catnip_output_layout, output);
 
   wlr_cursor_warp_closest(
     server_cursor,

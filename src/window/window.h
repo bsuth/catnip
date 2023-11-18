@@ -10,7 +10,9 @@ struct catnip_window {
   struct wlr_xdg_toplevel* xdg_toplevel;
   struct wlr_scene_tree* scene_tree;
 
-  struct catnip_window** lua_userdata;
+  struct {
+    struct catnip_window** userdata;
+  } lua;
 
   // These properties cannot be updated immediately and must instead _request_
   // an update. Here, we store the most recent values requested.
