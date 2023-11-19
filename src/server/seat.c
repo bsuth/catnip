@@ -1,6 +1,6 @@
 #include "seat.h"
+#include "cursor/cursor.h"
 #include "server/backend.h"
-#include "server/cursor.h"
 #include "server/display.h"
 #include "server/inputs/keyboard.h"
 #include "utils/wayland.h"
@@ -33,7 +33,7 @@ on_new_input(struct wl_listener* listener, void* data)
        * is proxied through wlr_cursor. On another compositor, you might take
        * this opportunity to do libinput configuration on the device to set
        * acceleration, etc. */
-      wlr_cursor_attach_input_device(server_cursor, device);
+      wlr_cursor_attach_input_device(catnip_cursor, device);
       break;
     default:
       break;
@@ -67,7 +67,7 @@ on_request_set_cursor(struct wl_listener* listener, void* data)
      * on the output that it's currently on and continue to do so as the
      * cursor moves between outputs. */
     wlr_cursor_set_surface(
-      server_cursor,
+      catnip_cursor,
       event->surface,
       event->hotspot_x,
       event->hotspot_y

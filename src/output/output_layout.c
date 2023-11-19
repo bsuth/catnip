@@ -1,5 +1,5 @@
 #include "output_layout.h"
-#include "server/cursor.h"
+#include "cursor/cursor.h"
 
 struct wlr_output_layout* catnip_output_layout;
 
@@ -26,7 +26,7 @@ catnip_output_layout_get_focused_output()
 {
   // TODO: maybe this is better to be the output of the currently focused window
   // and default to mouse if there are no windows?
-  return catnip_output_layout_output_at(server_cursor->x, server_cursor->y);
+  return catnip_output_layout_output_at(catnip_cursor->x, catnip_cursor->y);
 }
 
 void

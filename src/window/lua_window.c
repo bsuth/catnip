@@ -2,7 +2,6 @@
 #include "api/api.h"
 #include "config/events.h"
 #include "properties.h"
-#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -15,9 +14,7 @@ lua_catnip_window__index(lua_State* L)
   struct catnip_window* window = *lua_window;
 
   if (window == NULL) {
-    char* error = lua_error_msg(L, "attempt to index outdated window");
-    log_error("%s", error);
-    free(error);
+    lua_log(L, "attempt to index outdated window");
     lua_pushnil(L);
     return 1;
   }
@@ -58,15 +55,13 @@ lua_catnip_window__newindex(lua_State* L)
   struct catnip_window* window = *lua_window;
 
   if (window == NULL) {
-    char* error = lua_error_msg(L, "attempt to index outdated window");
-    log_error("%s", error);
-    free(error);
+    lua_log(L, "attempt to index outdated window");
     return 0;
   }
 
   int key_type = lua_type(L, 2);
   if (key_type != LUA_TSTRING) {
-    log_warning("invalid key type: %s", lua_typename(L, key_type));
+    lua_log(L, "invalid key type: %s", lua_typename(L, key_type));
     return 0;
   }
 
@@ -87,7 +82,7 @@ lua_catnip_window__newindex(lua_State* L)
   } else if (g_str_equal(key, "fullscreen")) {
     catnip_window_set_fullscreen(window, lua_toboolean(L, 3));
   } else {
-    log_warning("invalid key: %s", key);
+    lua_log(L, "invalid key: %s", key);
   }
 
   return 0;

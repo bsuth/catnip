@@ -1,9 +1,9 @@
 #include "config/config.h"
+#include "cursor/cursor.h"
 #include "meta.h"
 #include "output/output.h"
 #include "server/allocator.h"
 #include "server/backend.h"
-#include "server/cursor.h"
 #include "server/display.h"
 #include "server/renderer.h"
 #include "server/scene.h"
@@ -32,7 +32,7 @@ main(int argc, char* argv[])
   catnip_output_init(); // must init after backend
   server_allocator_init(); // must init after renderer
   server_scene_init(); // must init after output
-  server_cursor_init(); // must init after output
+  catnip_cursor_init(); // must init after output
   catnip_window_init(); // must init after xdg_shell
 
   wlr_compositor_create(server_display, server_renderer);

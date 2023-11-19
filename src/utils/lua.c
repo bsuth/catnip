@@ -192,6 +192,27 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type)
 // Error Messages
 // -----------------------------------------------------------------------------
 
+void
+lua_log(lua_State* L, const char* format, ...)
+{
+  char timestamp[9];
+  time_t timer = time(NULL);
+  struct tm* tm = localtime(&timer);
+  strftime(timestamp, sizeof(timestamp), "%H:%M:%S", tm);
+
+  GString* message = g_string_new(NULL);
+  va_list varargs;
+  va_start(varargs, format);
+  g_string_vprintf(message, format, varargs);
+  va_end(varargs);
+
+  char* lua_message = lua_error_msg(L, message->str);
+  printf("[%s] %s\n", timestamp, lua_message);
+
+  g_string_free(message, true);
+  free(lua_message);
+}
+
 char*
 lua_error_msg(lua_State* L, const char* details)
 {

@@ -99,6 +99,9 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type);
 // Error Messages
 // -----------------------------------------------------------------------------
 
+void
+lua_log(lua_State* L, const char* format, ...);
+
 char*
 lua_error_msg(lua_State* L, const char* details);
 

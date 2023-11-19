@@ -1,7 +1,6 @@
 #include "lua_output_mode.h"
 #include "config/config.h"
 #include "output/properties.h"
-#include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -12,9 +11,7 @@ lua_catnip_output_mode__index(lua_State* L)
   struct wlr_output_mode* mode = *lua_mode;
 
   if (mode == NULL) {
-    char* error = lua_error_msg(L, "attempt to index outdated output mode");
-    log_error("%s", error);
-    free(error);
+    lua_log(L, "attempt to index outdated output mode");
     lua_pushnil(L);
     return 1;
   }

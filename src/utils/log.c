@@ -17,5 +17,5 @@ log_log(const char* label, const char* format, ...)
   vsnprintf(message, sizeof(message), format, argp);
   va_end(argp);
 
-  printf("%s %s: %s\n", timestamp, label, message);
+  printf("%s [%s] %s\n", label, timestamp, message);
 }

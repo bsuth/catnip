@@ -1,11 +1,11 @@
 #include "api.h"
 #include "api/canvas.h"
-#include "api/cursor.h"
 #include "api/events.h"
 #include "api/keybindings.h"
 #include "api/png.h"
 #include "api/svg.h"
 #include "config/config.h"
+#include "cursor/lua_cursor.h"
 #include "output/lua_output.h"
 #include "server/server.h"
 #include "window/lua_window.h"
@@ -62,9 +62,14 @@ api_init(lua_State* L)
   lua_setfield(L, -2, "outputs");
   lua_pop(L, 1);
 
+  lua_catnip_cursor_init(L);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor);
+  lua_setfield(L, -2, "cursor");
+  lua_pop(L, 1);
+
   api_keybindings_init(L);
   api_events_init(L);
-  api_cursor_init(L);
   api_canvas_init(L);
   api_svg_init(L);
   api_png_init(L);
