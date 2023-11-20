@@ -1,7 +1,7 @@
 #include "cursor.h"
+#include "input/seat.h"
 #include "output/output_layout.h"
-#include "server/scene.h"
-#include "server/seat.h"
+#include "scene.h"
 #include "utils/time.h"
 #include "utils/wayland.h"
 #include <wlr/types/wlr_xcursor_manager.h>
@@ -54,7 +54,7 @@ on_button(struct wl_listener* listener, void* data)
   struct wlr_pointer_button_event* event = data;
 
   wlr_seat_pointer_notify_button(
-    server_seat,
+    catnip_seat,
     event->time_msec,
     event->button,
     event->state
@@ -71,7 +71,7 @@ on_axis(struct wl_listener* listener, void* data)
   struct wlr_pointer_axis_event* event = data;
 
   wlr_seat_pointer_notify_axis(
-    server_seat,
+    catnip_seat,
     event->time_msec,
     event->orientation,
     event->delta,
@@ -83,7 +83,7 @@ on_axis(struct wl_listener* listener, void* data)
 static void
 on_frame(struct wl_listener* listener, void* data)
 {
-  wlr_seat_pointer_notify_frame(server_seat);
+  wlr_seat_pointer_notify_frame(catnip_seat);
 }
 
 void
@@ -123,7 +123,7 @@ catnip_cursor_update(uint32_t time_msec)
   double sy = 0;
 
   struct wlr_scene_node* target_node = wlr_scene_node_at(
-    &server_scene->tree.node,
+    &catnip_scene->tree.node,
     catnip_cursor->x,
     catnip_cursor->y,
     &sx,
@@ -131,7 +131,7 @@ catnip_cursor_update(uint32_t time_msec)
   );
 
   if (target_node == NULL || target_node->type != WLR_SCENE_NODE_BUFFER) {
-    wlr_seat_pointer_clear_focus(server_seat);
+    wlr_seat_pointer_clear_focus(catnip_seat);
     wlr_xcursor_manager_set_cursor_image(
       catnip_cursor_manager,
       "left_ptr",
@@ -146,13 +146,13 @@ catnip_cursor_update(uint32_t time_msec)
 
     if (target_scene_surface != NULL) {
       wlr_seat_pointer_notify_enter(
-        server_seat,
+        catnip_seat,
         target_scene_surface->surface,
         sx,
         sy
       );
     }
 
-    wlr_seat_pointer_notify_motion(server_seat, time_msec, sx, sy);
+    wlr_seat_pointer_notify_motion(catnip_seat, time_msec, sx, sy);
   }
 }

@@ -1,6 +1,6 @@
 #include "canvas.h"
-#include "server/display.h"
-#include "server/scene.h"
+#include "display.h"
+#include "scene.h"
 #include <drm_fourcc.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -59,7 +59,7 @@ canvas_create(int width, int height)
   canvas->cr = cairo_create(canvas->cairo_surface);
 
   wlr_buffer_init(&canvas->buffer, &canvas_buffer_impl, width, height);
-  canvas->scene_tree = wlr_scene_tree_create(&server_scene->tree);
+  canvas->scene_tree = wlr_scene_tree_create(&catnip_scene->tree);
   canvas->scene_buffer =
     wlr_scene_buffer_create(canvas->scene_tree, &canvas->buffer);
 
@@ -96,7 +96,7 @@ canvas_refresh(struct catnip_canvas* canvas)
 
   // Refreshing the canvas actually queues the buffer to be fully damaged in
   // the next event loop tick using Wayland's idle tasks.
-  struct wl_event_loop* loop = wl_display_get_event_loop(server_display);
+  struct wl_event_loop* loop = wl_display_get_event_loop(catnip_display);
   canvas->refresh_task =
     wl_event_loop_add_idle(loop, canvas_refresh_task, canvas);
 }

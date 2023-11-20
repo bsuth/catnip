@@ -1,7 +1,6 @@
 #include "keyboard.h"
 #include "config/keybindings.h"
-#include "server/display.h"
-#include "server/seat.h"
+#include "seat.h"
 #include "utils/wayland.h"
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +8,7 @@
 #include <unistd.h>
 #include <xkbcommon/xkbcommon.h>
 
-struct wl_list server_keyboards;
+struct wl_list catnip_keyboards;
 
 // -----------------------------------------------------------------------------
 // Create
@@ -18,15 +17,15 @@ struct wl_list server_keyboards;
 static void
 on_keyboard_modifiers(struct wl_listener* listener, void* data)
 {
-  struct server_keyboard* keyboard =
+  struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.modifiers);
 
   // Wayland only allows a single keyboard per seat. Thus, we assign all
   // keyboards to the same seat, swapping them out on key events.
-  wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
+  wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
 
   wlr_seat_keyboard_notify_modifiers(
-    server_seat,
+    catnip_seat,
     &keyboard->wlr_keyboard->modifiers
   );
 }
@@ -34,7 +33,7 @@ on_keyboard_modifiers(struct wl_listener* listener, void* data)
 static void
 on_keyboard_key(struct wl_listener* listener, void* data)
 {
-  struct server_keyboard* keyboard =
+  struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.key);
 
   struct wlr_keyboard_key_event* event = data;
@@ -54,11 +53,11 @@ on_keyboard_key(struct wl_listener* listener, void* data)
 
   // Wayland only allows a single keyboard per seat. Thus, we assign all
   // keyboards to the same seat, swapping them out on key events.
-  wlr_seat_set_keyboard(server_seat, keyboard->wlr_keyboard);
+  wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
 
   // Forward the key event to clients
   wlr_seat_keyboard_notify_key(
-    server_seat,
+    catnip_seat,
     event->time_msec,
     event->keycode,
     event->state
@@ -68,7 +67,7 @@ on_keyboard_key(struct wl_listener* listener, void* data)
 static void
 on_keyboard_destroy(struct wl_listener* listener, void* data)
 {
-  struct server_keyboard* keyboard =
+  struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.destroy);
 
   wl_list_remove(&keyboard->listeners.modifiers.link);
@@ -80,11 +79,11 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
 }
 
 void
-server_keyboard_create(struct wlr_input_device* device)
+catnip_keyboard_create(struct wlr_input_device* device)
 {
   struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
 
-  struct server_keyboard* keyboard = calloc(1, sizeof(struct server_keyboard));
+  struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
 
   keyboard->wlr_input_device = device;
   keyboard->wlr_keyboard = wlr_keyboard;
@@ -117,7 +116,7 @@ server_keyboard_create(struct wlr_input_device* device)
     on_keyboard_destroy
   );
 
-  wl_list_insert(&server_keyboards, &keyboard->link);
+  wl_list_insert(&catnip_keyboards, &keyboard->link);
 }
 
 // -----------------------------------------------------------------------------
@@ -125,7 +124,7 @@ server_keyboard_create(struct wlr_input_device* device)
 // -----------------------------------------------------------------------------
 
 void
-server_keyboard_init()
+catnip_keyboard_init()
 {
-  wl_list_init(&server_keyboards);
+  wl_list_init(&catnip_keyboards);
 }

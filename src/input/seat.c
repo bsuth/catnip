@@ -1,23 +1,19 @@
 #include "seat.h"
+#include "backend.h"
 #include "cursor/cursor.h"
-#include "server/backend.h"
-#include "server/display.h"
-#include "server/inputs/keyboard.h"
+#include "display.h"
+#include "keyboard.h"
 #include "utils/wayland.h"
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
-struct wlr_seat* server_seat;
+struct wlr_seat* catnip_seat;
 
 static struct {
   struct wl_listener new_input;
   struct wl_listener request_set_cursor;
   struct wl_listener request_set_selection;
 } listeners;
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
 
 static void
 on_new_input(struct wl_listener* listener, void* data)
@@ -26,7 +22,7 @@ on_new_input(struct wl_listener* listener, void* data)
 
   switch (device->type) {
     case WLR_INPUT_DEVICE_KEYBOARD:
-      server_keyboard_create(device);
+      catnip_keyboard_create(device);
       break;
     case WLR_INPUT_DEVICE_POINTER:
       /* We don't do anything special with pointers. All of our pointer handling
@@ -44,11 +40,11 @@ on_new_input(struct wl_listener* listener, void* data)
    * there are no pointer devices, so we always include that capability. */
   uint32_t capabilities = WL_SEAT_CAPABILITY_POINTER;
 
-  if (!wl_list_empty(&server_keyboards)) {
+  if (!wl_list_empty(&catnip_keyboards)) {
     capabilities |= WL_SEAT_CAPABILITY_KEYBOARD;
   }
 
-  wlr_seat_set_capabilities(server_seat, capabilities);
+  wlr_seat_set_capabilities(catnip_seat, capabilities);
 }
 
 static void
@@ -57,7 +53,7 @@ on_request_set_cursor(struct wl_listener* listener, void* data)
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
   struct wlr_seat_client* focused_client =
-    server_seat->pointer_state.focused_client;
+    catnip_seat->pointer_state.focused_client;
 
   /* This can be sent by any client, so we check to make sure this one is
    * actually has pointer focus first. */
@@ -79,28 +75,29 @@ static void
 on_request_set_selection(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_request_set_selection_event* event = data;
-  wlr_seat_set_selection(server_seat, event->source, event->serial);
+  wlr_seat_set_selection(catnip_seat, event->source, event->serial);
 }
 
 void
-server_seat_init()
+catnip_seat_init()
 {
-  server_seat = wlr_seat_create(server_display, "seat0");
-  server_keyboard_init();
+  catnip_seat = wlr_seat_create(catnip_display, "seat0");
+
+  catnip_keyboard_init();
 
   wl_setup_listener(
     &listeners.new_input,
-    &server_backend->events.new_input,
+    &catnip_backend->events.new_input,
     on_new_input
   );
   wl_setup_listener(
     &listeners.request_set_cursor,
-    &server_seat->events.request_set_cursor,
+    &catnip_seat->events.request_set_cursor,
     on_request_set_cursor
   );
   wl_setup_listener(
     &listeners.request_set_selection,
-    &server_seat->events.request_set_selection,
+    &catnip_seat->events.request_set_selection,
     on_request_set_selection
   );
 }

@@ -1,9 +1,9 @@
-#ifndef CATNIP_SERVER_INPUTS_KEYBOARD_H
-#define CATNIP_SERVER_INPUTS_KEYBOARD_H
+#ifndef CATNIP_KEYBOARD_H
+#define CATNIP_KEYBOARD_H
 
 #include <wlr/types/wlr_seat.h>
 
-struct server_keyboard {
+struct catnip_keyboard {
   struct wl_list link;
 
   struct wlr_input_device* wlr_input_device;
@@ -16,12 +16,12 @@ struct server_keyboard {
   } listeners;
 };
 
-extern struct wl_list server_keyboards;
+extern struct wl_list catnip_keyboards;
 
 void
-server_keyboard_create(struct wlr_input_device* device);
+catnip_keyboard_create(struct wlr_input_device* device);
 
 void
-server_keyboard_init();
+catnip_keyboard_init();
 
 #endif

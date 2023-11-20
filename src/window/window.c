@@ -2,9 +2,9 @@
 #include "config/config.h"
 #include "lua_window.h"
 #include "properties.h"
-#include "server/scene.h"
-#include "server/xdg_shell.h"
+#include "scene.h"
 #include "utils/wayland.h"
+#include "xdg_shell.h"
 #include <stdlib.h>
 
 struct wl_list catnip_windows;
@@ -117,7 +117,7 @@ catnip_window_create(struct wl_listener* listener, void* data)
     window->xdg_toplevel = xdg_surface->toplevel;
 
     window->scene_tree = wlr_scene_xdg_surface_create(
-      &server_scene->tree,
+      &catnip_scene->tree,
       window->xdg_toplevel->base
     );
     window->scene_tree->node.data = window;
@@ -181,7 +181,7 @@ catnip_window_init()
 
   wl_setup_listener(
     &listeners.new_xdg_surface,
-    &server_xdg_shell->events.new_surface,
+    &catnip_xdg_shell->events.new_surface,
     catnip_window_create
   );
 }

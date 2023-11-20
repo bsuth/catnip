@@ -1,5 +1,5 @@
 #include "properties.h"
-#include "server/seat.h"
+#include "input/seat.h"
 #include <wlr/types/wlr_scene.h>
 
 int
@@ -82,7 +82,7 @@ bool
 catnip_window_get_focused(struct catnip_window* window)
 {
   return window->xdg_toplevel->base->surface
-         == server_seat->keyboard_state.focused_surface;
+         == catnip_seat->keyboard_state.focused_surface;
 }
 
 void
@@ -92,16 +92,16 @@ catnip_window_set_focused(struct catnip_window* window, bool new_focused)
     return; // nothing to do
   } else if (new_focused == false) {
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, false);
-    wlr_seat_keyboard_notify_clear_focus(server_seat);
+    wlr_seat_keyboard_notify_clear_focus(catnip_seat);
   } else {
     wlr_scene_node_raise_to_top(&window->scene_tree->node);
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, true);
 
-    struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(server_seat);
+    struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
 
     if (keyboard != NULL) {
       wlr_seat_keyboard_notify_enter(
-        server_seat,
+        catnip_seat,
         window->xdg_toplevel->base->surface,
         keyboard->keycodes,
         keyboard->num_keycodes,

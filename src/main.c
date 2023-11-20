@@ -1,17 +1,16 @@
+#include "allocator.h"
+#include "backend.h"
 #include "config/config.h"
 #include "cursor/cursor.h"
+#include "display.h"
+#include "input/seat.h"
 #include "meta.h"
 #include "output/output.h"
-#include "server/allocator.h"
-#include "server/backend.h"
-#include "server/display.h"
-#include "server/renderer.h"
-#include "server/scene.h"
-#include "server/seat.h"
-#include "server/server.h"
-#include "server/xdg_shell.h"
+#include "renderer.h"
+#include "scene.h"
 #include "utils/log.h"
 #include "window/window.h"
+#include "xdg_shell.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -24,29 +23,29 @@ main(int argc, char* argv[])
 
   wlr_log_init(WLR_LOG_LEVEL, NULL);
 
-  server_display_init();
-  server_backend_init(); // must init after display
-  server_xdg_shell_init(); // must init after display
-  server_seat_init(); // must init after backend
-  server_renderer_init(); // must init after backend
+  catnip_display_init();
+  catnip_backend_init(); // must init after display
+  catnip_xdg_shell_init(); // must init after display
+  catnip_seat_init(); // must init after backend
+  catnip_renderer_init(); // must init after backend
   catnip_output_init(); // must init after backend
-  server_allocator_init(); // must init after renderer
-  server_scene_init(); // must init after output
+  catnip_allocator_init(); // must init after renderer
+  catnip_scene_init(); // must init after output
   catnip_cursor_init(); // must init after output
   catnip_window_init(); // must init after xdg_shell
 
-  wlr_compositor_create(server_display, server_renderer);
-  wlr_subcompositor_create(server_display);
-  wlr_data_device_manager_create(server_display);
+  wlr_compositor_create(catnip_display, catnip_renderer);
+  wlr_subcompositor_create(catnip_display);
+  wlr_data_device_manager_create(catnip_display);
 
   config_init();
 
-  // This must be set AFTER `init_server_backend()`, since internally
+  // This must be set AFTER `catnip_backend_init()`, since internally
   // `wlr_backend_autocreate()` checks this variable when creating the backend.
-  setenv("WAYLAND_DISPLAY", server_display_socket, true);
+  setenv("WAYLAND_DISPLAY", catnip_display_socket, true);
 
-  if (!wlr_backend_start(server_backend)) {
-    log_error("failed to start server_backend");
+  if (!wlr_backend_start(catnip_backend)) {
+    log_error("failed to start backend");
     exit(EXIT_FAILURE);
   }
 
@@ -55,7 +54,7 @@ main(int argc, char* argv[])
   // will be unable to access them from their config.
   config_load();
 
-  wl_display_run(server_display);
+  wl_display_run(catnip_display);
 
   return 0;
 }

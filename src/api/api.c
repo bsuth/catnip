@@ -5,9 +5,10 @@
 #include "api/png.h"
 #include "api/svg.h"
 #include "config/config.h"
+#include "config/events.h"
 #include "cursor/lua_cursor.h"
+#include "display.h"
 #include "output/lua_output.h"
-#include "server/server.h"
 #include "window/lua_window.h"
 #include <lauxlib.h>
 
@@ -20,7 +21,8 @@ lua_Ref api_ref = LUA_NOREF;
 static int
 api_quit(lua_State* L)
 {
-  server_stop();
+  config_events_publish("quit");
+  wl_display_terminate(catnip_display);
   return 0;
 }
 

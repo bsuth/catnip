@@ -1,7 +1,7 @@
 #include "layer_shell.h"
-#include "server/display.h"
+#include "display.h"
 
-struct wlr_layer_shell_v1* server_layer_shell;
+struct wlr_layer_shell_v1* catnip_layer_shell;
 
 // static void
 // create_layer_surface(struct wl_listener* listener, void* data)
@@ -63,8 +63,8 @@ struct wlr_layer_shell_v1* server_layer_shell;
 // }
 
 void
-server_layer_shell_init()
+catnip_layer_shell_init()
 {
-  server_layer_shell = wlr_layer_shell_v1_create(server_display);
+  catnip_layer_shell = wlr_layer_shell_v1_create(catnip_display);
   // wl_signal_add(&layer_shell->events.new_surface, &new_layer_shell_surface);
 }

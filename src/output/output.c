@@ -1,11 +1,11 @@
 #include "output.h"
+#include "allocator.h"
+#include "backend.h"
 #include "config/config.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
-#include "server/allocator.h"
-#include "server/backend.h"
-#include "server/renderer.h"
-#include "server/scene.h"
+#include "renderer.h"
+#include "scene.h"
 #include "utils/log.h"
 #include "utils/wayland.h"
 #include <stdlib.h>
@@ -23,7 +23,7 @@ on_frame(struct wl_listener* listener, void* data)
     wl_container_of(listener, output, listeners.frame);
 
   struct wlr_scene_output* scene_output =
-    wlr_scene_get_scene_output(server_scene, output->wlr_output);
+    wlr_scene_get_scene_output(catnip_scene, output->wlr_output);
 
   wlr_scene_output_commit(scene_output);
 
@@ -53,7 +53,7 @@ catnip_output_create(struct wl_listener* listener, void* data)
 {
   struct wlr_output* wlr_output = data;
 
-  wlr_output_init_render(wlr_output, server_allocator, server_renderer);
+  wlr_output_init_render(wlr_output, catnip_allocator, catnip_renderer);
 
   if (!wl_list_empty(&wlr_output->modes)) {
     // Use the preferred mode as the default.
@@ -101,7 +101,7 @@ catnip_output_init()
 
   wl_setup_listener(
     &listeners.new_wlr_output,
-    &server_backend->events.new_output,
+    &catnip_backend->events.new_output,
     catnip_output_create
   );
 }
