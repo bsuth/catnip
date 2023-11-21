@@ -2,20 +2,10 @@
 #include "config/keybindings.h"
 #include "seat.h"
 #include "utils/wayland.h"
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <xkbcommon/xkbcommon.h>
-
-struct wl_list catnip_keyboards;
-
-// -----------------------------------------------------------------------------
-// Create
-// -----------------------------------------------------------------------------
 
 static void
-on_keyboard_modifiers(struct wl_listener* listener, void* data)
+on_modifiers(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.modifiers);
@@ -31,13 +21,15 @@ on_keyboard_modifiers(struct wl_listener* listener, void* data)
 }
 
 static void
-on_keyboard_key(struct wl_listener* listener, void* data)
+on_key(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.key);
 
   struct wlr_keyboard_key_event* event = data;
 
+  // TODO: call lua callback here. allow lua to choose whether to propagate the
+  // event to clients or not
   if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
     uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard);
     uint32_t xkb_keycode = event->keycode + 8; // libinput -> xkbcommon
@@ -65,7 +57,7 @@ on_keyboard_key(struct wl_listener* listener, void* data)
 }
 
 static void
-on_keyboard_destroy(struct wl_listener* listener, void* data)
+on_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.destroy);
@@ -73,7 +65,6 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
   wl_list_remove(&keyboard->listeners.modifiers.link);
   wl_list_remove(&keyboard->listeners.key.link);
   wl_list_remove(&keyboard->listeners.destroy.link);
-  wl_list_remove(&keyboard->link);
 
   free(keyboard);
 }
@@ -81,16 +72,15 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
 void
 catnip_keyboard_create(struct wlr_input_device* device)
 {
-  struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
-
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
 
-  keyboard->wlr_input_device = device;
+  struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
+  wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
   keyboard->wlr_keyboard = wlr_keyboard;
 
   // TODO: look into this more
-  /* We need to prepare an XKB keymap and assign it to the keyboard. This
-   * assumes the defaults (e.g. layout = "us"). */
+  // We need to prepare an XKB keymap and assign it to the keyboard. This
+  // assumes the defaults (e.g. layout = "us").
   struct xkb_context* context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
   struct xkb_keymap* keymap =
     xkb_keymap_new_from_names(context, NULL, XKB_KEYMAP_COMPILE_NO_FLAGS);
@@ -98,33 +88,19 @@ catnip_keyboard_create(struct wlr_input_device* device)
   xkb_keymap_unref(keymap);
   xkb_context_unref(context);
 
-  wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
-
   wl_setup_listener(
     &keyboard->listeners.modifiers,
     &wlr_keyboard->events.modifiers,
-    on_keyboard_modifiers
+    on_modifiers
   );
   wl_setup_listener(
     &keyboard->listeners.key,
     &wlr_keyboard->events.key,
-    on_keyboard_key
+    on_key
   );
   wl_setup_listener(
     &keyboard->listeners.destroy,
     &device->events.destroy,
-    on_keyboard_destroy
+    on_destroy
   );
-
-  wl_list_insert(&catnip_keyboards, &keyboard->link);
-}
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-void
-catnip_keyboard_init()
-{
-  wl_list_init(&catnip_keyboards);
 }
