@@ -1,8 +1,11 @@
 #include "allocator.h"
 #include "backend.h"
 #include "config/config.h"
+#include "config/events.h"
+#include "config/keybindings.h"
 #include "cursor/cursor.h"
 #include "display.h"
+#include "events/event_loop.h"
 #include "input/seat.h"
 #include "meta.h"
 #include "output/output.h"
@@ -24,6 +27,7 @@ main(int argc, char* argv[])
   wlr_log_init(WLR_LOG_LEVEL, NULL);
 
   catnip_display_init();
+  catnip_event_loop_init(); // must init after display
   catnip_backend_init(); // must init after display
   catnip_xdg_shell_init(); // must init after display
   catnip_seat_init(); // must init after backend
@@ -38,7 +42,9 @@ main(int argc, char* argv[])
   wlr_subcompositor_create(catnip_display);
   wlr_data_device_manager_create(catnip_display);
 
-  config_init();
+  // TODO: remove these, should live entirely in Lua
+  config_keybindings_init();
+  config_events_init();
 
   // This must be set AFTER `catnip_backend_init()`, since internally
   // `wlr_backend_autocreate()` checks this variable when creating the backend.
@@ -49,10 +55,13 @@ main(int argc, char* argv[])
     exit(EXIT_FAILURE);
   }
 
-  // Load config AFTER the backend has started. Otherwise, the Wayland objects
+  // Init config AFTER the backend has started. Otherwise, the Wayland objects
   // (outputs, windows, etc) will not have been initialized yet and the user
   // will be unable to access them from their config.
-  config_load();
+  //
+  // TODO: allow CLI `-c, --config` option to set `catnip_config_path`
+  catnip_config_path = NULL;
+  catnip_config_init();
 
   wl_display_run(catnip_display);
 

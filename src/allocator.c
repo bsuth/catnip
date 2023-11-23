@@ -4,7 +4,7 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-struct wlr_allocator* catnip_allocator;
+struct wlr_allocator* catnip_allocator = NULL;
 
 void
 catnip_allocator_init()

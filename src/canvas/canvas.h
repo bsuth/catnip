@@ -12,6 +12,7 @@ struct catnip_canvas {
   cairo_surface_t* cairo_surface;
   cairo_t* cr;
 
+  // TODO: update this message
   // Use a flag to indicate whether the canvas needs to refresh (i.e. by
   // damaging the entire buffer). Using a flag allows us to manipulate the
   // canvas buffer as much as we want before actually telling Wayland to update

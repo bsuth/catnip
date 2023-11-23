@@ -3,7 +3,7 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-struct wlr_backend* catnip_backend;
+struct wlr_backend* catnip_backend = NULL;
 
 void
 catnip_backend_init()

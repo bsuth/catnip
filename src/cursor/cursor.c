@@ -6,9 +6,9 @@
 #include "utils/wayland.h"
 #include <wlr/types/wlr_xcursor_manager.h>
 
-struct wlr_cursor* catnip_cursor;
-enum catnip_cursor_mode catnip_cursor_mode;
-static struct wlr_xcursor_manager* catnip_cursor_manager;
+struct wlr_cursor* catnip_cursor = NULL;
+enum catnip_cursor_mode catnip_cursor_mode = CATNIP_CURSOR_MODE_PASSTHROUGH;
+static struct wlr_xcursor_manager* catnip_cursor_manager = NULL;
 
 static struct {
   struct wl_listener motion;
@@ -89,8 +89,6 @@ on_frame(struct wl_listener* listener, void* data)
 void
 catnip_cursor_init()
 {
-  catnip_cursor_mode = CATNIP_CURSOR_MODE_PASSTHROUGH;
-
   catnip_cursor = wlr_cursor_create();
   wlr_cursor_attach_output_layout(catnip_cursor, catnip_output_layout);
 

@@ -81,8 +81,8 @@ on_destroy(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.destroy);
 
-  if (L != NULL) {
-    lua_catnip_window_destroy(L, window);
+  if (catnip_L != NULL) {
+    lua_catnip_window_destroy(catnip_L, window);
   }
 
   wl_list_remove(&window->link);
@@ -168,8 +168,8 @@ catnip_window_create(struct wl_listener* listener, void* data)
 
     wl_list_insert(&catnip_windows, &window->link);
 
-    if (L != NULL) {
-      lua_catnip_window_create(L, window);
+    if (catnip_L != NULL) {
+      lua_catnip_window_create(catnip_L, window);
     }
   }
 }

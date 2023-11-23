@@ -7,7 +7,7 @@
 #include <stdlib.h>
 #include <wlr/types/wlr_keyboard.h>
 
-static GHashTable* config_keybindings;
+static GHashTable* config_keybindings = NULL;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -36,7 +36,7 @@ config_keybindings_bind(
     g_hash_table_lookup(config_keybindings, &key);
 
   if (user_keybinding != NULL) {
-    luaL_unref(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+    luaL_unref(catnip_L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
     user_keybinding->lua_callback_ref = lua_callback_ref;
   } else {
     gint64* persistent_key = malloc(sizeof(gint64));
@@ -82,16 +82,10 @@ config_keybinding_handle(uint32_t modifiers, xkb_keysym_t keysym)
     return false;
   }
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
+  lua_rawgeti(catnip_L, LUA_REGISTRYINDEX, user_keybinding->lua_callback_ref);
 
-  if (lua_pcall(L, 0, 0, 0) != 0) {
-    log_error("%s", lua_tostring(L, -1));
-  }
-
-  if (config_reload_requested) {
-    // TODO: do this in the event loop...
-    config_reload_requested = false;
-    config_reload();
+  if (lua_pcall(catnip_L, 0, 0, 0) != 0) {
+    log_error("%s", lua_tostring(catnip_L, -1));
   }
 
   return true;
@@ -105,7 +99,7 @@ static void
 free_config_keybinding(void* data)
 {
   struct config_keybinding* keybinding = data;
-  luaL_unref(L, LUA_REGISTRYINDEX, keybinding->lua_callback_ref);
+  luaL_unref(catnip_L, LUA_REGISTRYINDEX, keybinding->lua_callback_ref);
   free(keybinding);
 }
 

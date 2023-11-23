@@ -1,35 +1,23 @@
 #include "config.h"
-#include "api/api.h"
 #include "config/events.h"
 #include "config/keybindings.h"
+#include "config/lua_catnip.h"
 #include "meta.h"
 #include "utils/log.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
+#include <stdio.h>
 #include <unistd.h>
 
-lua_State* L;
-
-bool config_reload_requested = false;
-
-// TODO: Allow the user to manipulate this. This should be settable both via the
-// CLI and via the Lua API. In the latter case, this will be especially useful
-// for dynamically switching the theme.
-//
-// 1. Bash: `catnip -c my_custom_config.lua`
-// 2. Lua: `require('catnip').reload("my_custom_config.lua")`
-// 3. Lua: `require('catnip').reload("")` -- let catnip auto detect
-static char* config_path;
-
-// -----------------------------------------------------------------------------
-// Helpers
-// -----------------------------------------------------------------------------
+lua_State* catnip_L = NULL;
+char* catnip_config_path = NULL;
+bool catnip_config_loading = false;
 
 static bool
-config_try_path(const char* path)
+catnip_config_try(const char* path)
 {
-  if (path == NULL || path[0] == '\0' || access(path, R_OK) == -1) {
+  if (access(path, R_OK) == -1) {
     return false;
   }
 
@@ -37,77 +25,79 @@ config_try_path(const char* path)
   char* config_dir = g_path_get_dirname(path);
   chdir(config_dir);
 
-  L = lua_open();
-  luaL_openlibs(L);
-  api_init(L);
+  lua_State* new_catnip_L = lua_open();
+  luaL_openlibs(new_catnip_L);
+  lua_catnip_init(new_catnip_L);
 
+  catnip_config_loading = true;
+  bool loaded =
+    !luaL_loadfile(new_catnip_L, path) && !lua_pcall(new_catnip_L, 0, 0, 0);
+  catnip_config_loading = false;
+
+  chdir(current_dir);
   free(current_dir);
   free(config_dir);
 
-  if (luaL_loadfile(L, path) || lua_pcall(L, 0, 0, 0)) {
-    log_error("failed to load config from %s: %s", path, lua_tostring(L, -1));
-    lua_close(L);
-    L = NULL;
+  if (!loaded) {
+    log_error("failed to load %s (%s)", path, lua_tostring(new_catnip_L, -1));
+    lua_close(new_catnip_L);
     return false;
   }
 
-  log_info("successfully loaded config from %s", path);
+  if (catnip_L != NULL) {
+    lua_close(catnip_L);
+  }
 
+  catnip_L = new_catnip_L;
   return true;
 }
 
-// -----------------------------------------------------------------------------
-// Config
-// -----------------------------------------------------------------------------
-
-void
-config_load()
+static bool
+catnip_config_load()
 {
-  if (config_try_path(config_path)) {
-    return;
+  if (catnip_config_path != NULL && catnip_config_try(catnip_config_path)) {
+    return true;
   }
 
-  gchar* default_config_path;
-  const char* env_xdg_config_home = getenv("XDG_CONFIG_HOME");
-  if (env_xdg_config_home != NULL && env_xdg_config_home[0] != '\0') {
-    default_config_path =
-      g_strconcat(env_xdg_config_home, "/catnip/init.lua", NULL);
-  } else {
-    const char* env_home = getenv("HOME");
-    if (env_home != NULL && env_home[0] != '\0') {
-      default_config_path =
-        g_strconcat(env_home, "/.config/catnip/init.lua", NULL);
+  const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+
+  if (xdg_config_home != NULL && xdg_config_home[0] != '\0') {
+    gchar* path = g_strconcat(xdg_config_home, "/catnip/init.lua", NULL);
+    bool loaded = catnip_config_try(path);
+    g_free(path);
+
+    if (loaded) {
+      return true;
     }
   }
 
-  if (!config_try_path(default_config_path)) {
-    config_try_path(ROOT_DIR "/lua/fallback.lua");
+  const char* home = getenv("HOME");
+
+  if (home != NULL && home[0] != '\0') {
+    gchar* path = g_strconcat(home, "/.config/catnip/init.lua", NULL);
+    bool loaded = catnip_config_try(path);
+    g_free(path);
+
+    if (loaded) {
+      return true;
+    }
   }
 
-  g_free(default_config_path);
+  return false;
 }
 
 void
-config_reload()
+catnip_config_init()
 {
-  config_events_publish("reload");
+  if (!catnip_config_load()) {
+    catnip_config_try(ROOT_DIR "/lua/fallback.lua");
+  }
+}
 
+void
+catnip_config_reload()
+{
   config_keybindings_clear();
   config_events_clear_subscriptions(NULL);
-
-  lua_close(L);
-  L = NULL;
-
-  config_load();
-}
-
-// -----------------------------------------------------------------------------
-// Init
-// -----------------------------------------------------------------------------
-
-void
-config_init()
-{
-  config_keybindings_init();
-  config_events_init();
+  catnip_config_load();
 }

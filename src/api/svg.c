@@ -1,8 +1,9 @@
 #include "svg.h"
-#include "api/api.h"
+#include "config/lua_catnip.h"
 #include "utils/log.h"
 #include <lauxlib.h>
 #include <librsvg/rsvg.h>
+#include <stdbool.h>
 
 // -----------------------------------------------------------------------------
 // Metatable: catnip.svg
@@ -90,7 +91,7 @@ api_svg_init(lua_State* L)
   luaL_setfuncs(L, api_svg_metatable, 0);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
   lua_pushcfunction(L, api_svg_create);
   lua_setfield(L, -2, "svg");
   lua_pop(L, 1);

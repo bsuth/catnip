@@ -1,5 +1,6 @@
 #include "canvas.h"
 #include "display.h"
+#include "events/event_loop.h"
 #include "scene.h"
 #include <drm_fourcc.h>
 #include <stdio.h>
@@ -67,7 +68,7 @@ canvas_create(int width, int height)
 }
 
 static void
-canvas_refresh_task(void* data)
+__canvas_refresh(void* data)
 {
   struct catnip_canvas* canvas = data;
 
@@ -91,14 +92,10 @@ void
 canvas_refresh(struct catnip_canvas* canvas)
 {
   if (canvas->refresh_task != NULL) {
-    return; // task has already been queued
+    return; // already queued
   }
 
-  // Refreshing the canvas actually queues the buffer to be fully damaged in
-  // the next event loop tick using Wayland's idle tasks.
-  struct wl_event_loop* loop = wl_display_get_event_loop(catnip_display);
-  canvas->refresh_task =
-    wl_event_loop_add_idle(loop, canvas_refresh_task, canvas);
+  canvas->refresh_task = catnip_event_loop_once(__canvas_refresh, canvas);
 }
 
 void

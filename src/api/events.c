@@ -1,6 +1,6 @@
 #include "events.h"
-#include "api/api.h"
 #include "config/events.h"
+#include "config/lua_catnip.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
@@ -44,7 +44,7 @@ api_unsubscribe(lua_State* L)
 void
 api_events_init(lua_State* L)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
 
   lua_pushcfunction(L, api_publish);
   lua_setfield(L, -2, "publish");

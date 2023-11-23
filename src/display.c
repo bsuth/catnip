@@ -2,8 +2,8 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-struct wl_display* catnip_display;
-const char* catnip_display_socket;
+struct wl_display* catnip_display = NULL;
+const char* catnip_display_socket = NULL;
 
 void
 catnip_display_init()

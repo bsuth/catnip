@@ -1,5 +1,5 @@
 #include "png.h"
-#include "api/api.h"
+#include "config/lua_catnip.h"
 #include "utils/log.h"
 #include <cairo.h>
 #include <lauxlib.h>
@@ -55,7 +55,7 @@ api_png_init(lua_State* L)
   luaL_setfuncs(L, api_png_metatable, 0);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
   lua_pushcfunction(L, api_png_create);
   lua_setfield(L, -2, "png");
   lua_pop(L, 1);

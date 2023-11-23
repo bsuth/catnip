@@ -10,7 +10,7 @@
 #include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
-struct wlr_seat* catnip_seat;
+struct wlr_seat* catnip_seat = NULL;
 
 static struct {
   struct wl_listener new_input;

@@ -1,10 +1,10 @@
 #include "canvas.h"
-#include "api/api.h"
 #include "canvas/canvas.h"
 #include "canvas/png.h"
 #include "canvas/shapes.h"
 #include "canvas/svg.h"
 #include "canvas/text.h"
+#include "config/lua_catnip.h"
 #include "librsvg/rsvg.h"
 #include "pango/pango-layout.h"
 #include "utils/cairo.h"
@@ -365,7 +365,7 @@ api_canvas_init(lua_State* L)
   luaL_setfuncs(L, api_canvas_metatable, 0);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, api_ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
   lua_pushcfunction(L, api_canvas_create);
   lua_setfield(L, -2, "canvas");
   lua_pop(L, 1);

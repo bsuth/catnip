@@ -199,7 +199,7 @@ lua_catnip_output_init(lua_State* L)
 
   lua_catnip_output_mode_init(L);
 
-  struct catnip_output* output;
+  struct catnip_output* output = NULL;
   wl_list_for_each(output, &catnip_outputs, link)
   {
     lua_catnip_output_create(L, output);

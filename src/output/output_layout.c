@@ -1,7 +1,7 @@
 #include "output_layout.h"
 #include "cursor/cursor.h"
 
-struct wlr_output_layout* catnip_output_layout;
+struct wlr_output_layout* catnip_output_layout = NULL;
 
 struct catnip_output*
 catnip_output_layout_output_at(double x, double y)
@@ -9,7 +9,7 @@ catnip_output_layout_output_at(double x, double y)
   struct wlr_output* wlr_output =
     wlr_output_layout_output_at(catnip_output_layout, x, y);
 
-  struct catnip_output* output;
+  struct catnip_output* output = NULL;
 
   wl_list_for_each(output, &catnip_outputs, link)
   {

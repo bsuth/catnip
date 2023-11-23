@@ -1,7 +1,7 @@
 #include "scene.h"
 #include "output/output_layout.h"
 
-struct wlr_scene* catnip_scene;
+struct wlr_scene* catnip_scene = NULL;
 
 void
 catnip_scene_init()

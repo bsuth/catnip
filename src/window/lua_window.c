@@ -1,5 +1,4 @@
 #include "lua_window.h"
-#include "api/api.h"
 #include "config/events.h"
 #include "properties.h"
 #include <glib.h>
@@ -158,7 +157,7 @@ lua_catnip_window_init(lua_State* L)
   luaL_setfuncs(L, lua_catnip_window_mt, 0);
   lua_pop(L, 1);
 
-  struct catnip_window* window;
+  struct catnip_window* window = NULL;
   wl_list_for_each(window, &catnip_windows, link)
   {
     lua_catnip_window_create(L, window);

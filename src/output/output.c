@@ -38,8 +38,8 @@ on_destroy(struct wl_listener* listener, void* data)
   struct catnip_output* output =
     wl_container_of(listener, output, listeners.destroy);
 
-  if (L != NULL) {
-    lua_catnip_output_destroy(L, output);
+  if (catnip_L != NULL) {
+    lua_catnip_output_destroy(catnip_L, output);
   }
 
   wl_list_remove(&output->listeners.frame.link);
@@ -87,8 +87,8 @@ catnip_output_create(struct wl_listener* listener, void* data)
 
   wl_list_insert(&catnip_outputs, &output->link);
 
-  if (L != NULL) {
-    lua_catnip_output_create(L, output);
+  if (catnip_L != NULL) {
+    lua_catnip_output_create(catnip_L, output);
   }
 }
 

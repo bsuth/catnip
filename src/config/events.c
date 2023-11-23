@@ -6,7 +6,7 @@
 #include <stdbool.h>
 #include <string.h>
 
-static GHashTable* event_registry;
+static GHashTable* event_registry = NULL;
 
 // -----------------------------------------------------------------------------
 // Helpers
@@ -16,7 +16,7 @@ static void
 free_lua_callback_ref(void* data)
 {
   const int* lua_callback_ref = data;
-  luaL_unref(L, LUA_REGISTRYINDEX, *lua_callback_ref);
+  luaL_unref(catnip_L, LUA_REGISTRYINDEX, *lua_callback_ref);
 }
 
 // -----------------------------------------------------------------------------
@@ -69,11 +69,15 @@ config_events_publish(const char* event)
 
   if (event_listeners != NULL) {
     for (int i = 0; i < event_listeners->len; ++i) {
-      lua_rawgeti(L, LUA_REGISTRYINDEX, g_array_index(event_listeners, int, i));
+      lua_rawgeti(
+        catnip_L,
+        LUA_REGISTRYINDEX,
+        g_array_index(event_listeners, int, i)
+      );
 
       // TODO: event parameters?
-      if (lua_pcall(L, 0, 0, 0) != 0) {
-        log_error("%s", lua_tostring(L, -1));
+      if (lua_pcall(catnip_L, 0, 0, 0) != 0) {
+        log_error("%s", lua_tostring(catnip_L, -1));
       }
     }
   }

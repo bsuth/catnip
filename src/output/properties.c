@@ -10,7 +10,7 @@ catnip_output_get_matching_mode(
   int refresh
 )
 {
-  struct wlr_output_mode* mode;
+  struct wlr_output_mode* mode = NULL;
 
   wl_list_for_each(mode, &output->wlr_output->modes, link)
   {

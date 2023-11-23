@@ -1,7 +1,7 @@
 #include "layer_shell.h"
 #include "display.h"
 
-struct wlr_layer_shell_v1* catnip_layer_shell;
+struct wlr_layer_shell_v1* catnip_layer_shell = NULL;
 
 // static void
 // create_layer_surface(struct wl_listener* listener, void* data)

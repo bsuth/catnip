@@ -48,7 +48,7 @@ lua_catnip_output_modes_create(lua_State* L, struct catnip_output* output)
   // TODO: make this table read only from lua
   lua_newtable(L);
 
-  struct wlr_output_mode* mode;
+  struct wlr_output_mode* mode = NULL;
   struct wl_list* modes = catnip_output_get_modes(output);
   int i = 0;
 

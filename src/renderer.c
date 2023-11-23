@@ -4,7 +4,7 @@
 #include "utils/log.h"
 #include <stdlib.h>
 
-struct wlr_renderer* catnip_renderer;
+struct wlr_renderer* catnip_renderer = NULL;
 
 void
 catnip_renderer_init()
