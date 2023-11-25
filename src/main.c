@@ -1,7 +1,6 @@
 #include "allocator.h"
 #include "backend.h"
 #include "config/config.h"
-#include "config/events.h"
 #include "config/keybindings.h"
 #include "cursor/cursor.h"
 #include "display.h"
@@ -44,7 +43,6 @@ main(int argc, char* argv[])
 
   // TODO: remove these, should live entirely in Lua
   config_keybindings_init();
-  config_events_init();
 
   // This must be set AFTER `catnip_backend_init()`, since internally
   // `wlr_backend_autocreate()` checks this variable when creating the backend.

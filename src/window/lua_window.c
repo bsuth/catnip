@@ -1,5 +1,5 @@
 #include "lua_window.h"
-#include "config/events.h"
+#include "events/lua_events.h"
 #include "properties.h"
 #include <glib.h>
 #include <lauxlib.h>
@@ -122,7 +122,10 @@ lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
   lua_pushnil(L);
   lua_rawseti(L, -2, lua_catnip_windows_len);
 
-  config_events_publish("window::destroy");
+  // TODO: add local event
+  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_pushstring(L, "window::destroy");
+  lua_call(L, 1, 0);
 
   *(window->lua.userdata) = NULL;
   lua_pop(L, 1);
@@ -143,7 +146,9 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
   lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);
 
-  config_events_publish("window::create");
+  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_pushstring(L, "window::create");
+  lua_call(L, 1, 0);
 }
 
 void

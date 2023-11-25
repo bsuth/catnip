@@ -1,14 +1,13 @@
 #include "lua_catnip.h"
 #include "api/canvas.h"
-#include "api/events.h"
 #include "api/keybindings.h"
 #include "api/png.h"
 #include "api/svg.h"
 #include "config/config.h"
-#include "config/events.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
 #include "events/event_loop.h"
+#include "events/lua_events.h"
 #include "output/lua_output.h"
 #include "utils/log.h"
 #include "window/lua_window.h"
@@ -25,16 +24,21 @@ static void
 __lua_catnip_quit()
 {
   quit_event_source = NULL;
-  config_events_publish("quit");
   wl_display_terminate(catnip_display);
 }
 
 static int
 lua_catnip_quit(lua_State* L)
 {
-  if (quit_event_source == NULL) {
-    quit_event_source = catnip_event_loop_once(__lua_catnip_quit, NULL);
+  if (quit_event_source != NULL) {
+    return 0;
   }
+
+  quit_event_source = catnip_event_loop_once(__lua_catnip_quit, NULL);
+
+  lua_pushcfunction(catnip_L, catnip_lua_events_publish);
+  lua_pushstring(catnip_L, "quit");
+  lua_call(catnip_L, 1, 0);
 
   return 0;
 }
@@ -43,21 +47,24 @@ static void
 __lua_catnip_reload()
 {
   reload_event_source = NULL;
-  config_events_publish("reload");
   catnip_config_reload();
 }
 
 static int
 lua_catnip_reload(lua_State* L)
 {
+  if (reload_event_source != NULL) {
+    return 0;
+  }
+
   if (catnip_config_loading) {
     log_warning("attempted to reload during startup, ignoring...");
     return 0;
   }
 
-  if (reload_event_source == NULL) {
-    reload_event_source = catnip_event_loop_once(__lua_catnip_reload, NULL);
-  }
+  lua_pushcfunction(catnip_L, catnip_lua_events_publish);
+  lua_pushstring(catnip_L, "reload");
+  lua_call(catnip_L, 1, 0);
 
   return 0;
 }
@@ -68,35 +75,39 @@ static const struct luaL_Reg lua_catnip_lib[] =
 void
 lua_catnip_init(lua_State* L)
 {
-  luaL_newlib(L, lua_catnip_lib);
-  lua_catnip = luaL_ref(L, LUA_REGISTRYINDEX);
-
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
+
+  luaL_newlib(L, lua_catnip_lib);
+
+  // TODO: remove this? dont actually need to store reference to lua_catnip
+  lua_pushvalue(L, -1);
+  lua_catnip = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  catnip_lua_events_init(L);
+  lua_pushcfunction(L, catnip_lua_events_subscribe);
+  lua_setfield(L, -2, "subscribe");
+  lua_pushcfunction(L, catnip_lua_events_unsubscribe);
+  lua_setfield(L, -2, "unsubscribe");
+  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_setfield(L, -2, "publish");
+
+  lua_catnip_window_init(L); // must init after events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
+  lua_setfield(L, -2, "windows");
+
+  lua_catnip_output_init(L); // must init after events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
+  lua_setfield(L, -2, "outputs");
+
+  lua_catnip_cursor_init(L);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor);
+  lua_setfield(L, -2, "cursor");
+
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
 
-  lua_catnip_window_init(L);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
-  lua_setfield(L, -2, "windows");
-  lua_pop(L, 1);
-
-  lua_catnip_output_init(L);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
-  lua_setfield(L, -2, "outputs");
-  lua_pop(L, 1);
-
-  lua_catnip_cursor_init(L);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor);
-  lua_setfield(L, -2, "cursor");
-  lua_pop(L, 1);
-
   api_keybindings_init(L);
-  api_events_init(L);
   api_canvas_init(L);
   api_svg_init(L);
   api_png_init(L);

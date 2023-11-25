@@ -1,5 +1,4 @@
 #include "config.h"
-#include "config/events.h"
 #include "config/keybindings.h"
 #include "config/lua_catnip.h"
 #include "meta.h"
@@ -98,6 +97,5 @@ void
 catnip_config_reload()
 {
   config_keybindings_clear();
-  config_events_clear_subscriptions(NULL);
   catnip_config_load();
 }

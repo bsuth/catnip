@@ -1,5 +1,5 @@
 #include "utils/lua.h"
-#include "config/events.h"
+#include "events/lua_events.h"
 #include "output.h"
 #include "output/lua_output_mode.h"
 #include "output/properties.h"
@@ -135,10 +135,6 @@ static const struct luaL_Reg lua_catnip_output_mt[] = {
 void
 lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
 {
-  if (L == NULL) {
-    return;
-  }
-
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
   size_t lua_catnip_outputs_len = lua_objlen(L, -1);
   bool found_lua_output = false;
@@ -156,7 +152,10 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   lua_pushnil(L);
   lua_rawseti(L, -2, lua_catnip_outputs_len);
 
-  config_events_publish("window::destroy");
+  // TODO: add local event
+  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_pushstring(L, "output::destroy");
+  lua_call(L, 1, 0);
 
   lua_catnip_output_modes_destroy(L, output);
   *(output->lua.userdata) = NULL;
@@ -166,10 +165,6 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
 void
 lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 {
-  if (L == NULL) {
-    return;
-  }
-
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
 
   struct catnip_output** lua_output =
@@ -183,7 +178,9 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
   lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);
 
-  config_events_publish("output::create");
+  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_pushstring(L, "output::create");
+  lua_call(L, 1, 0);
 }
 
 void
