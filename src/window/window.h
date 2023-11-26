@@ -1,6 +1,7 @@
 #ifndef CATNIP_WINDOW_H
 #define CATNIP_WINDOW_H
 
+#include "utils/lua.h"
 #include <wlr/types/wlr_xdg_shell.h>
 
 struct catnip_window {
@@ -12,6 +13,8 @@ struct catnip_window {
 
   struct {
     struct catnip_window** userdata;
+    lua_Ref ref;
+    lua_Ref subscriptions;
   } lua;
 
   // These properties cannot be updated immediately and must instead _request_

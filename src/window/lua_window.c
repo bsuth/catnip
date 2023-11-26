@@ -1,6 +1,7 @@
 #include "lua_window.h"
 #include "events/lua_events.h"
 #include "properties.h"
+#include "window/lua_window_events.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -40,6 +41,12 @@ lua_catnip_window__index(lua_State* L)
     lua_pushboolean(L, catnip_window_get_maximized(window));
   } else if (g_str_equal(key, "fullscreen")) {
     lua_pushboolean(L, catnip_window_get_fullscreen(window));
+  } else if (g_str_equal(key, "subscribe")) {
+    lua_pushcfunction(L, lua_catnip_window_subscribe);
+  } else if (g_str_equal(key, "unsubscribe")) {
+    lua_pushcfunction(L, lua_catnip_window_unsubscribe);
+  } else if (g_str_equal(key, "publish")) {
+    lua_pushcfunction(L, lua_catnip_window_publish);
   } else {
     lua_pushnil(L);
   }
@@ -122,12 +129,14 @@ lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
   lua_pushnil(L);
   lua_rawseti(L, -2, lua_catnip_windows_len);
 
-  // TODO: add local event
-  lua_pushcfunction(L, catnip_lua_events_publish);
-  lua_pushstring(L, "window::destroy");
-  lua_call(L, 1, 0);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
+  lua_catnip_events_call_publish(L, "window::destroy", 1);
+  lua_catnip_window_call_publish(L, window, "destroy", 0);
 
   *(window->lua.userdata) = NULL;
+  luaL_unref(L, LUA_REGISTRYINDEX, window->lua.ref);
+  luaL_unref(L, LUA_REGISTRYINDEX, window->lua.subscriptions);
+
   lua_pop(L, 1);
 }
 
@@ -143,12 +152,17 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
   *lua_window = window;
   window->lua.userdata = lua_window;
 
+  lua_pushvalue(L, -1);
+  window->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_newtable(L);
+  window->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+
   lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);
 
-  lua_pushcfunction(L, catnip_lua_events_publish);
-  lua_pushstring(L, "window::create");
-  lua_call(L, 1, 0);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
+  lua_catnip_events_call_publish(L, "window::create", 1);
 }
 
 void

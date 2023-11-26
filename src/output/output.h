@@ -10,6 +10,8 @@ struct catnip_output {
 
   struct {
     struct catnip_output** userdata;
+    lua_Ref ref;
+    lua_Ref subscriptions;
     lua_Ref modes;
   } lua;
 

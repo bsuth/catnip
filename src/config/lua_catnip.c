@@ -36,7 +36,7 @@ lua_catnip_quit(lua_State* L)
 
   quit_event_source = catnip_event_loop_once(__lua_catnip_quit, NULL);
 
-  lua_pushcfunction(catnip_L, catnip_lua_events_publish);
+  lua_pushcfunction(catnip_L, catnip_lua_events_global_publish);
   lua_pushstring(catnip_L, "quit");
   lua_call(catnip_L, 1, 0);
 
@@ -62,7 +62,7 @@ lua_catnip_reload(lua_State* L)
     return 0;
   }
 
-  lua_pushcfunction(catnip_L, catnip_lua_events_publish);
+  lua_pushcfunction(catnip_L, catnip_lua_events_global_publish);
   lua_pushstring(catnip_L, "reload");
   lua_call(catnip_L, 1, 0);
 
@@ -85,11 +85,11 @@ lua_catnip_init(lua_State* L)
   lua_catnip = luaL_ref(L, LUA_REGISTRYINDEX);
 
   catnip_lua_events_init(L);
-  lua_pushcfunction(L, catnip_lua_events_subscribe);
+  lua_pushcfunction(L, catnip_lua_events_global_subscribe);
   lua_setfield(L, -2, "subscribe");
-  lua_pushcfunction(L, catnip_lua_events_unsubscribe);
+  lua_pushcfunction(L, catnip_lua_events_global_unsubscribe);
   lua_setfield(L, -2, "unsubscribe");
-  lua_pushcfunction(L, catnip_lua_events_publish);
+  lua_pushcfunction(L, catnip_lua_events_global_publish);
   lua_setfield(L, -2, "publish");
 
   lua_catnip_window_init(L); // must init after events

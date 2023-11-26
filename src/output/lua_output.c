@@ -1,6 +1,7 @@
 #include "utils/lua.h"
 #include "events/lua_events.h"
 #include "output.h"
+#include "output/lua_output_events.h"
 #include "output/lua_output_mode.h"
 #include "output/properties.h"
 #include <glib.h>
@@ -68,6 +69,12 @@ lua_catnip_output__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.modes);
   } else if (g_str_equal(key, "scale")) {
     lua_pushnumber(L, catnip_output_get_scale(output));
+  } else if (g_str_equal(key, "subscribe")) {
+    lua_pushcfunction(L, lua_catnip_output_subscribe);
+  } else if (g_str_equal(key, "unsubscribe")) {
+    lua_pushcfunction(L, lua_catnip_output_unsubscribe);
+  } else if (g_str_equal(key, "publish")) {
+    lua_pushcfunction(L, lua_catnip_output_publish);
   } else {
     lua_pushnil(L);
   }
@@ -152,13 +159,15 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   lua_pushnil(L);
   lua_rawseti(L, -2, lua_catnip_outputs_len);
 
-  // TODO: add local event
-  lua_pushcfunction(L, catnip_lua_events_publish);
-  lua_pushstring(L, "output::destroy");
-  lua_call(L, 1, 0);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
+  lua_catnip_events_call_publish(L, "output::destroy", 1);
+  lua_catnip_output_call_publish(L, output, "destroy", 0);
 
-  lua_catnip_output_modes_destroy(L, output);
   *(output->lua.userdata) = NULL;
+  luaL_unref(L, LUA_REGISTRYINDEX, output->lua.ref);
+  luaL_unref(L, LUA_REGISTRYINDEX, output->lua.subscriptions);
+  lua_catnip_output_modes_destroy(L, output);
+
   lua_pop(L, 1);
 }
 
@@ -175,12 +184,17 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
   output->lua.userdata = lua_output;
   lua_catnip_output_modes_create(L, output);
 
+  lua_pushvalue(L, -1);
+  output->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_newtable(L);
+  output->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+
   lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);
 
-  lua_pushcfunction(L, catnip_lua_events_publish);
-  lua_pushstring(L, "output::create");
-  lua_call(L, 1, 0);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
+  lua_catnip_events_call_publish(L, "output::create", 1);
 }
 
 void
