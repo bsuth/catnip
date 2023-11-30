@@ -49,7 +49,7 @@ catnip_output_get_x(struct catnip_output* output)
 void
 catnip_output_set_x(struct catnip_output* output, int new_x)
 {
-  wlr_output_layout_move(
+  wlr_output_layout_add(
     catnip_output_layout,
     output->wlr_output,
     new_x,
@@ -66,7 +66,7 @@ catnip_output_get_y(struct catnip_output* output)
 void
 catnip_output_set_y(struct catnip_output* output, int new_y)
 {
-  wlr_output_layout_move(
+  wlr_output_layout_add(
     catnip_output_layout,
     output->wlr_output,
     catnip_output_get_x(output),

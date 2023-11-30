@@ -33,7 +33,7 @@ on_pointer_destroy(struct wl_listener* listener, void* data)
 
   if (capability_counters.pointer == 0) {
     // no more pointer devices, hide the cursor
-    wlr_cursor_set_image(catnip_cursor, NULL, 0, 0, 0, 0, 0, 0);
+    wlr_cursor_set_buffer(catnip_cursor, NULL, 0, 0, 0);
   }
 }
 

@@ -6,7 +6,6 @@
 #include "output/output_layout.h"
 #include "renderer.h"
 #include "scene.h"
-#include "utils/log.h"
 #include "utils/wayland.h"
 #include <stdlib.h>
 
@@ -25,11 +24,18 @@ on_frame(struct wl_listener* listener, void* data)
   struct wlr_scene_output* scene_output =
     wlr_scene_get_scene_output(catnip_scene, output->wlr_output);
 
-  wlr_scene_output_commit(scene_output);
+  wlr_scene_output_commit(scene_output, NULL);
 
   struct timespec now;
   clock_gettime(CLOCK_MONOTONIC, &now);
   wlr_scene_output_send_frame_done(scene_output, &now);
+}
+
+static void
+on_request_state(struct wl_listener* listener, void* data)
+{
+  struct wlr_output_event_request_state* event = data;
+  wlr_output_commit_state(event->output, event->state);
 }
 
 static void
@@ -45,6 +51,9 @@ on_destroy(struct wl_listener* listener, void* data)
   wl_list_remove(&output->listeners.frame.link);
   wl_list_remove(&output->listeners.destroy.link);
 
+  wlr_output_layout_remove(catnip_output_layout, output->wlr_output);
+  wlr_scene_output_destroy(output->scene_output);
+
   free(output);
 }
 
@@ -54,30 +63,39 @@ catnip_output_create(struct wl_listener* listener, void* data)
   struct wlr_output* wlr_output = data;
 
   wlr_output_init_render(wlr_output, catnip_allocator, catnip_renderer);
+  wlr_output_enable(wlr_output, true);
 
-  if (!wl_list_empty(&wlr_output->modes)) {
-    // Use the preferred mode as the default.
-    struct wlr_output_mode* mode = wlr_output_preferred_mode(wlr_output);
+  struct wlr_output_mode* preferred_mode =
+    wlr_output_preferred_mode(wlr_output);
 
-    wlr_output_set_mode(wlr_output, mode);
-    wlr_output_enable(wlr_output, true);
-
-    if (!wlr_output_commit(wlr_output)) {
-      log_error("failed to init output %s", wlr_output->name);
-      return;
-    }
+  if (preferred_mode != NULL) {
+    wlr_output_set_mode(wlr_output, preferred_mode);
   }
 
-  wlr_output_layout_add_auto(catnip_output_layout, wlr_output);
+  wlr_output_commit(wlr_output);
 
   struct catnip_output* output = calloc(1, sizeof(struct catnip_output));
 
   output->wlr_output = wlr_output;
+  output->layout_output =
+    wlr_output_layout_add_auto(catnip_output_layout, wlr_output);
+  output->scene_output = wlr_scene_output_create(catnip_scene, wlr_output);
+
+  wlr_scene_output_layout_add_output(
+    catnip_scene_output_layout,
+    output->layout_output,
+    output->scene_output
+  );
 
   wl_setup_listener(
     &output->listeners.frame,
     &wlr_output->events.frame,
     on_frame
+  );
+  wl_setup_listener(
+    &output->listeners.request_state,
+    &wlr_output->events.request_state,
+    on_request_state
   );
   wl_setup_listener(
     &output->listeners.destroy,

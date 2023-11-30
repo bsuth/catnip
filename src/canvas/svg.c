@@ -1,5 +1,4 @@
 #include "svg.h"
-#include "utils/log.h"
 #include <librsvg/rsvg.h>
 
 void

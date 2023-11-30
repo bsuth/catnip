@@ -182,13 +182,14 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 
   *lua_output = output;
   output->lua.userdata = lua_output;
-  lua_catnip_output_modes_create(L, output);
 
   lua_pushvalue(L, -1);
   output->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   lua_newtable(L);
   output->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_catnip_output_modes_create(L, output);
 
   lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
   lua_pop(L, 1);

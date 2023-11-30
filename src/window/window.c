@@ -104,7 +104,7 @@ catnip_window_create(struct wl_listener* listener, void* data)
 
   if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_POPUP) {
     struct wlr_xdg_surface* parent =
-      wlr_xdg_surface_from_wlr_surface(xdg_surface->popup->parent);
+      wlr_xdg_surface_try_from_wlr_surface(xdg_surface->popup->parent);
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but
     // it requires the popup parent's scene node. For convenience, we always
@@ -127,12 +127,12 @@ catnip_window_create(struct wl_listener* listener, void* data)
 
     wl_setup_listener(
       &window->listeners.map,
-      &window->xdg_surface->events.map,
+      &window->xdg_surface->surface->events.map,
       on_map
     );
     wl_setup_listener(
       &window->listeners.unmap,
-      &window->xdg_surface->events.unmap,
+      &window->xdg_surface->surface->events.unmap,
       on_unmap
     );
     wl_setup_listener(

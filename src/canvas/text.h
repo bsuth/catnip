@@ -3,7 +3,6 @@
 
 #include "canvas/canvas.h"
 #include "pango/pango-layout.h"
-#include "pango/pango.h"
 
 struct canvas_text {
   const char* markup;

@@ -2,7 +2,6 @@
 #include "input/seat.h"
 #include "output/output_layout.h"
 #include "scene.h"
-#include "utils/time.h"
 #include "utils/wayland.h"
 #include <wlr/types/wlr_xcursor_manager.h>
 
@@ -130,17 +129,13 @@ catnip_cursor_update(uint32_t time_msec)
 
   if (target_node == NULL || target_node->type != WLR_SCENE_NODE_BUFFER) {
     wlr_seat_pointer_clear_focus(catnip_seat);
-    wlr_xcursor_manager_set_cursor_image(
-      catnip_cursor_manager,
-      "left_ptr",
-      catnip_cursor
-    );
+    wlr_cursor_set_xcursor(catnip_cursor, catnip_cursor_manager, "default");
   } else {
     struct wlr_scene_buffer* target_buffer =
       wlr_scene_buffer_from_node(target_node);
 
     struct wlr_scene_surface* target_scene_surface =
-      wlr_scene_surface_from_buffer(target_buffer);
+      wlr_scene_surface_try_from_buffer(target_buffer);
 
     if (target_scene_surface != NULL) {
       wlr_seat_pointer_notify_enter(

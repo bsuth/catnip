@@ -1,5 +1,4 @@
 #include "canvas.h"
-#include "display.h"
 #include "events/event_loop.h"
 #include "scene.h"
 #include <drm_fourcc.h>

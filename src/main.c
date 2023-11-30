@@ -18,6 +18,9 @@
 #include <wlr/types/wlr_subcompositor.h>
 #include <wlr/util/log.h>
 
+// Match latest from wlroots (see wlroots/types/wlr_compositor.c)
+#define COMPOSITOR_VERSION 6
+
 int
 main(int argc, char* argv[])
 {
@@ -26,18 +29,18 @@ main(int argc, char* argv[])
   wlr_log_init(WLR_LOG_LEVEL, NULL);
 
   catnip_display_init();
+  catnip_scene_init();
   catnip_event_loop_init(); // must init after display
   catnip_backend_init(); // must init after display
   catnip_xdg_shell_init(); // must init after display
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
-  catnip_output_init(); // must init after backend
   catnip_allocator_init(); // must init after renderer
-  catnip_scene_init(); // must init after output
-  catnip_cursor_init(); // must init after output
   catnip_window_init(); // must init after xdg_shell
+  catnip_output_init(); // must init after backend + scene
+  catnip_cursor_init(); // must init after output
 
-  wlr_compositor_create(catnip_display, catnip_renderer);
+  wlr_compositor_create(catnip_display, COMPOSITOR_VERSION, catnip_renderer);
   wlr_subcompositor_create(catnip_display);
   wlr_data_device_manager_create(catnip_display);
 
@@ -58,7 +61,6 @@ main(int argc, char* argv[])
   // will be unable to access them from their config.
   //
   // TODO: allow CLI `-c, --config` option to set `catnip_config_path`
-  catnip_config_path = NULL;
   catnip_config_init();
 
   wl_display_run(catnip_display);

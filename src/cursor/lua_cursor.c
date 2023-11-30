@@ -1,5 +1,4 @@
 #include "lua_cursor.h"
-#include "cursor.h"
 #include "properties.h"
 #include <glib.h>
 #include <lauxlib.h>

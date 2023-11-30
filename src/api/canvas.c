@@ -7,7 +7,6 @@
 #include "config/lua_catnip.h"
 #include "librsvg/rsvg.h"
 #include "pango/pango-layout.h"
-#include "utils/cairo.h"
 #include "utils/log.h"
 #include "utils/lua.h"
 #include <glib.h>

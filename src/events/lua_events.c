@@ -157,13 +157,10 @@ catnip_lua_events_global_publish(lua_State* L)
 void
 lua_catnip_events_call_publish(lua_State* L, const char* event, int nargs)
 {
-  int call_index = -1 - nargs;
   lua_pushcfunction(L, catnip_lua_events_global_publish);
-  lua_insert(L, call_index);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
-  lua_insert(L, call_index);
+  lua_insert(L, -1 - nargs);
   lua_pushstring(L, event);
-  lua_insert(L, call_index);
+  lua_insert(L, -1 - nargs);
   lua_call(L, nargs + 1, 0);
 }
 

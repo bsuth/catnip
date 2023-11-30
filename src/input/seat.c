@@ -4,7 +4,6 @@
 #include "display.h"
 #include "keyboard.h"
 #include "seat_capabilities.h"
-#include "utils/time.h"
 #include "utils/wayland.h"
 #include <wayland-util.h>
 #include <wlr/types/wlr_cursor.h>

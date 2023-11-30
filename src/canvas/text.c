@@ -1,5 +1,4 @@
 #include "text.h"
-#include "utils/cairo.h"
 #include <pango/pangocairo.h>
 
 void

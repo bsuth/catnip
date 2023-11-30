@@ -1,5 +1,4 @@
 #include "lua_output_mode.h"
-#include "config/config.h"
 #include "output/properties.h"
 #include <glib.h>
 #include <lauxlib.h>
