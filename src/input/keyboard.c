@@ -1,5 +1,5 @@
 #include "keyboard.h"
-#include "config/keybindings.h"
+#include "input/lua_key_event.h"
 #include "seat.h"
 #include "utils/wayland.h"
 #include <stdlib.h>
@@ -26,34 +26,36 @@ on_key(struct wl_listener* listener, void* data)
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.key);
 
-  struct wlr_keyboard_key_event* event = data;
+  struct wlr_keyboard_key_event* wlr_event = data;
 
-  // TODO: call lua callback here. allow lua to choose whether to propagate the
-  // event to clients or not
-  if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-    uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard);
-    uint32_t xkb_keycode = event->keycode + 8; // libinput -> xkbcommon
+  struct catnip_key_event* event = malloc(sizeof(struct catnip_key_event));
 
-    xkb_keysym_t keysym =
-      xkb_state_key_get_one_sym(keyboard->wlr_keyboard->xkb_state, xkb_keycode);
-
-    if (config_keybinding_handle(modifiers, keysym)) {
-      // Do not forward key events that have been handled by the compositor
-      return;
-    }
-  }
-
-  // Wayland only allows a single keyboard per seat. Thus, we assign all
-  // keyboards to the same seat, swapping them out on key events.
-  wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
-
-  // Forward the key event to clients
-  wlr_seat_keyboard_notify_key(
-    catnip_seat,
-    event->time_msec,
-    event->keycode,
-    event->state
+  event->wlr_event = wlr_event;
+  event->prevent_notify = false;
+  event->modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard);
+  event->xkb_keycode = wlr_event->keycode + 8; // libinput -> xkbcommon
+  event->keysym = xkb_state_key_get_one_sym(
+    keyboard->wlr_keyboard->xkb_state,
+    event->xkb_keycode
   );
+
+  // TODO: do not publish event if key is just modifier
+  // TODO: make keys more user friendly (provide chars when available)
+  lua_catnip_publish_key_event(event);
+
+  if (!event->prevent_notify) {
+    // Wayland only allows a single keyboard per seat. Thus, we assign all
+    // keyboards to the same seat, swapping them out on key events.
+    wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
+
+    // Forward the key event to clients
+    wlr_seat_keyboard_notify_key(
+      catnip_seat,
+      wlr_event->time_msec,
+      wlr_event->keycode,
+      wlr_event->state
+    );
+  }
 }
 
 static void

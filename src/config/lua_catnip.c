@@ -1,6 +1,5 @@
 #include "lua_catnip.h"
 #include "api/canvas.h"
-#include "api/keybindings.h"
 #include "api/png.h"
 #include "api/svg.h"
 #include "config/config.h"
@@ -8,6 +7,7 @@
 #include "display.h"
 #include "events/event_loop.h"
 #include "events/lua_events.h"
+#include "input/lua_key_event.h"
 #include "output/lua_output.h"
 #include "utils/log.h"
 #include "window/lua_window.h"
@@ -92,6 +92,8 @@ lua_catnip_init(lua_State* L)
   lua_pushcfunction(L, catnip_lua_events_global_publish);
   lua_setfield(L, -2, "publish");
 
+  lua_catnip_key_event_init(L);
+
   lua_catnip_window_init(L); // must init after events
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
   lua_setfield(L, -2, "windows");
@@ -107,7 +109,6 @@ lua_catnip_init(lua_State* L)
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
 
-  api_keybindings_init(L);
   api_canvas_init(L);
   api_svg_init(L);
   api_png_init(L);

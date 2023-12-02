@@ -1,5 +1,4 @@
 #include "config.h"
-#include "config/keybindings.h"
 #include "config/lua_catnip.h"
 #include "meta.h"
 #include "utils/log.h"
@@ -96,6 +95,5 @@ catnip_config_init()
 void
 catnip_config_reload()
 {
-  config_keybindings_clear();
   catnip_config_load();
 }

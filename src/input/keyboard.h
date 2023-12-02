@@ -13,6 +13,21 @@ struct catnip_keyboard {
   } listeners;
 };
 
+struct catnip_modifier_event {
+  bool prevent_notify;
+  uint32_t modifiers;
+  uint32_t xkb_keycode;
+  xkb_keysym_t keysym;
+};
+
+struct catnip_key_event {
+  struct wlr_keyboard_key_event* wlr_event;
+  bool prevent_notify;
+  uint32_t modifiers;
+  uint32_t xkb_keycode;
+  xkb_keysym_t keysym;
+};
+
 void
 catnip_keyboard_create(struct wlr_input_device* device);
 

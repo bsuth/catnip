@@ -1,7 +1,6 @@
 #include "allocator.h"
 #include "backend.h"
 #include "config/config.h"
-#include "config/keybindings.h"
 #include "cursor/cursor.h"
 #include "display.h"
 #include "events/event_loop.h"
@@ -43,9 +42,6 @@ main(int argc, char* argv[])
   wlr_compositor_create(catnip_display, COMPOSITOR_VERSION, catnip_renderer);
   wlr_subcompositor_create(catnip_display);
   wlr_data_device_manager_create(catnip_display);
-
-  // TODO: remove these, should live entirely in Lua
-  config_keybindings_init();
 
   // This must be set AFTER `catnip_backend_init()`, since internally
   // `wlr_backend_autocreate()` checks this variable when creating the backend.
