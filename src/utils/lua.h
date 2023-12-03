@@ -38,37 +38,6 @@ void*
 lua_popuserdata(lua_State* L);
 
 // -----------------------------------------------------------------------------
-// Stack Pulling
-// -----------------------------------------------------------------------------
-
-int
-lua_pullboolean(lua_State* L, int index);
-
-lua_CFunction
-lua_pullcfunction(lua_State* L, int index);
-
-lua_Integer
-lua_pullinteger(lua_State* L, int index);
-
-const char*
-lua_pulllstring(lua_State* L, int index, size_t* len);
-
-lua_Number
-lua_pullnumber(lua_State* L, int index);
-
-const void*
-lua_pullpointer(lua_State* L, int index);
-
-const char*
-lua_pullstring(lua_State* L, int index);
-
-lua_State*
-lua_pullthread(lua_State* L, int index);
-
-void*
-lua_pulluserdata(lua_State* L, int index);
-
-// -----------------------------------------------------------------------------
 // Table Fields
 // -----------------------------------------------------------------------------
 

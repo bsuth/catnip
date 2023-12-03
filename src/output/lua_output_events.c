@@ -6,25 +6,29 @@ int
 lua_catnip_output_subscribe(lua_State* L)
 {
   struct catnip_output** lua_output = luaL_checkudata(L, 1, "catnip.output");
-  return catnip_lua_events_local_subscribe(L, (*lua_output)->lua.subscriptions);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, (*lua_output)->lua.subscriptions);
+  lua_replace(L, 1);
+  return catnip_lua_events_subscribe(L);
 }
 
 int
 lua_catnip_output_unsubscribe(lua_State* L)
 {
   struct catnip_output** lua_output = luaL_checkudata(L, 1, "catnip.output");
-  return catnip_lua_events_local_unsubscribe(
-    L,
-    (*lua_output)->lua.subscriptions
-  );
+  lua_rawgeti(L, LUA_REGISTRYINDEX, (*lua_output)->lua.subscriptions);
+  lua_replace(L, 1);
+  return catnip_lua_events_unsubscribe(L);
 }
 
 int
 lua_catnip_output_publish(lua_State* L)
 {
   struct catnip_output** lua_output = luaL_checkudata(L, 1, "catnip.output");
-  lua_Ref subscriptions = (*lua_output)->lua.subscriptions;
-  return catnip_lua_events_local_publish(L, (*lua_output)->lua.subscriptions);
+  lua_pushvalue(L, 1);
+  lua_insert(L, 3);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, (*lua_output)->lua.subscriptions);
+  lua_replace(L, 1);
+  return catnip_lua_events_publish(L);
 }
 
 void

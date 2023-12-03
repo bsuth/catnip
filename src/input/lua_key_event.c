@@ -1,6 +1,7 @@
 #include "lua_key_event.h"
 #include "config/config.h"
 #include "events/lua_events.h"
+#include "utils/lua.h"
 #include <glib.h>
 #include <lauxlib.h>
 #include <stdlib.h>

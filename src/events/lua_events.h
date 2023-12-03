@@ -1,22 +1,22 @@
 #ifndef CATNIP_LUA_EVENTS_H
 #define CATNIP_LUA_EVENTS_H
 
-#include "utils/lua.h"
+#include <lua.h>
 
 int
-catnip_lua_events_local_subscribe(lua_State* L, lua_Ref subscriptions);
+catnip_lua_events_subscribe(lua_State* L);
 
 int
 catnip_lua_events_global_subscribe(lua_State* L);
 
 int
-catnip_lua_events_local_unsubscribe(lua_State* L, lua_Ref subscriptions);
+catnip_lua_events_unsubscribe(lua_State* L);
 
 int
 catnip_lua_events_global_unsubscribe(lua_State* L);
 
 int
-catnip_lua_events_local_publish(lua_State* L, lua_Ref subscriptions);
+catnip_lua_events_publish(lua_State* L);
 
 int
 catnip_lua_events_global_publish(lua_State* L);
