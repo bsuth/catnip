@@ -9,6 +9,6 @@ void
 lua_catnip_key_event_init(lua_State* L);
 
 void
-lua_catnip_publish_key_event(struct catnip_key_event* event);
+lua_catnip_publish_key_event(struct catnip_key_event* key_event);
 
 #endif

@@ -27,13 +27,15 @@ lua_catnip_key_event__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (g_str_equal(key, "code")) {
-    lua_pushnumber(L, key_event->keysym);
+    lua_pushnumber(L, key_event->xkb_keysym);
+  } else if (g_str_equal(key, "name")) {
+    lua_pushstring(L, key_event->xkb_name);
   } else if (g_str_equal(key, "shift")) {
-    lua_pushboolean(catnip_L, key_event->modifiers & WLR_MODIFIER_SHIFT);
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_SHIFT);
   } else if (g_str_equal(key, "ctrl")) {
-    lua_pushboolean(catnip_L, key_event->modifiers & WLR_MODIFIER_CTRL);
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_CTRL);
   } else if (g_str_equal(key, "alt")) {
-    lua_pushboolean(catnip_L, key_event->modifiers & WLR_MODIFIER_ALT);
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_ALT);
   } else {
     lua_pushnil(L);
   }
@@ -69,18 +71,9 @@ lua_catnip_key_event__newindex(lua_State* L)
   return 0;
 }
 
-static int
-lua_catnip_key_event__gc(lua_State* L)
-{
-  struct catnip_key_event** lua_key_event = lua_touserdata(L, 1);
-  *lua_key_event = NULL;
-  return 0;
-}
-
 static const struct luaL_Reg lua_catnip_key_event_mt[] = {
   {"__index", lua_catnip_key_event__index},
   {"__newindex", lua_catnip_key_event__newindex},
-  {"__gc", lua_catnip_key_event__gc},
   {NULL, NULL}
 };
 
@@ -93,15 +86,15 @@ lua_catnip_key_event_init(lua_State* L)
 }
 
 void
-lua_catnip_publish_key_event(struct catnip_key_event* event)
+lua_catnip_publish_key_event(struct catnip_key_event* key_event)
 {
-  struct catnip_key_event** lua_event =
+  struct catnip_key_event** lua_key_event =
     lua_newuserdata(catnip_L, sizeof(struct catnip_key_event*));
   luaL_setmetatable(catnip_L, "catnip.key.event");
 
-  *lua_event = event;
+  *lua_key_event = key_event;
 
-  event->wlr_event->state == WL_KEYBOARD_KEY_STATE_PRESSED
+  key_event->state == WL_KEYBOARD_KEY_STATE_PRESSED
     ? lua_catnip_events_call_publish(catnip_L, "keydown", 1)
     : lua_catnip_events_call_publish(catnip_L, "keyup", 1);
 }
