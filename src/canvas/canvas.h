@@ -25,59 +25,25 @@ struct catnip_canvas {
 // -----------------------------------------------------------------------------
 
 struct catnip_canvas*
-canvas_create(int width, int height);
+catnip_canvas_create(int width, int height);
 
 void
-canvas_refresh(struct catnip_canvas* canvas);
+catnip_canvas_refresh(struct catnip_canvas* canvas);
 
 void
-canvas_clear(struct catnip_canvas* canvas);
+catnip_canvas_clear(struct catnip_canvas* canvas);
 
 void
-canvas_move(struct catnip_canvas* canvas, int new_x, int new_y);
+catnip_canvas_move(struct catnip_canvas* canvas, int new_x, int new_y);
 
 void
-canvas_resize(struct catnip_canvas* canvas, int new_width, int new_height);
+catnip_canvas_resize(
+  struct catnip_canvas* canvas,
+  int new_width,
+  int new_height
+);
 
 void
-canvas_destroy(struct catnip_canvas* canvas);
-
-// -----------------------------------------------------------------------------
-// Getters
-// -----------------------------------------------------------------------------
-
-int
-canvas_get_x(struct catnip_canvas* canvas);
-
-int
-canvas_get_y(struct catnip_canvas* canvas);
-
-int
-canvas_get_width(struct catnip_canvas* canvas);
-
-int
-canvas_get_height(struct catnip_canvas* canvas);
-
-bool
-canvas_get_visible(struct catnip_canvas* canvas);
-
-// -----------------------------------------------------------------------------
-// Setters
-// -----------------------------------------------------------------------------
-
-void
-canvas_set_x(struct catnip_canvas* canvas, int new_x);
-
-void
-canvas_set_y(struct catnip_canvas* canvas, int new_y);
-
-void
-canvas_set_width(struct catnip_canvas* canvas, int new_width);
-
-void
-canvas_set_height(struct catnip_canvas* canvas, int new_height);
-
-void
-canvas_set_visible(struct catnip_canvas* canvas, bool new_visible);
+catnip_canvas_destroy(struct catnip_canvas* canvas);
 
 #endif

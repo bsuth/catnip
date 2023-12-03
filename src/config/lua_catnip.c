@@ -1,7 +1,7 @@
 #include "lua_catnip.h"
-#include "api/canvas.h"
-#include "api/png.h"
-#include "api/svg.h"
+#include "canvas/lua_canvas.h"
+#include "canvas/lua_png.h"
+#include "canvas/lua_svg.h"
 #include "config/config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
@@ -14,8 +14,6 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
-
-lua_Ref lua_catnip = LUA_NOREF;
 
 static struct wl_event_source* quit_event_source = NULL;
 static struct wl_event_source* reload_event_source = NULL;
@@ -80,10 +78,6 @@ lua_catnip_init(lua_State* L)
 
   luaL_newlib(L, lua_catnip_lib);
 
-  // TODO: remove this? dont actually need to store reference to lua_catnip
-  lua_pushvalue(L, -1);
-  lua_catnip = luaL_ref(L, LUA_REGISTRYINDEX);
-
   catnip_lua_events_init(L);
   lua_pushcfunction(L, catnip_lua_events_global_subscribe);
   lua_setfield(L, -2, "subscribe");
@@ -106,10 +100,18 @@ lua_catnip_init(lua_State* L)
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor);
   lua_setfield(L, -2, "cursor");
 
+  lua_catnip_canvas_init(L);
+  lua_pushcfunction(L, lua_catnip_canvas_create);
+  lua_setfield(L, -2, "canvas");
+
+  lua_catnip_png_init(L);
+  lua_pushcfunction(L, lua_catnip_png_create);
+  lua_setfield(L, -2, "png");
+
+  lua_catnip_svg_init(L);
+  lua_pushcfunction(L, lua_catnip_svg_create);
+  lua_setfield(L, -2, "svg");
+
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
-
-  api_canvas_init(L);
-  api_svg_init(L);
-  api_png_init(L);
 }

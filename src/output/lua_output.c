@@ -1,9 +1,8 @@
 #include "utils/lua.h"
 #include "events/lua_events.h"
-#include "output.h"
 #include "output/lua_output_events.h"
 #include "output/lua_output_mode.h"
-#include "output/properties.h"
+#include "output/output_properties.h"
 #include <glib.h>
 #include <lauxlib.h>
 

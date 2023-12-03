@@ -1,9 +1,9 @@
 #include "window.h"
 #include "config/config.h"
-#include "lua_window.h"
-#include "properties.h"
 #include "scene.h"
 #include "utils/wayland.h"
+#include "window/lua_window.h"
+#include "window/window_properties.h"
 #include "xdg_shell.h"
 #include <stdlib.h>
 

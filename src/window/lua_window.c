@@ -1,7 +1,7 @@
 #include "lua_window.h"
 #include "events/lua_events.h"
-#include "properties.h"
 #include "window/lua_window_events.h"
+#include "window/window_properties.h"
 #include <glib.h>
 #include <lauxlib.h>
 

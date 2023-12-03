@@ -1,4 +1,4 @@
-#include "properties.h"
+#include "output_properties.h"
 #include "output/output_layout.h"
 #include <wlr/types/wlr_output.h>
 

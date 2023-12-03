@@ -1,5 +1,5 @@
-#include "properties.h"
-#include "cursor.h"
+#include "cursor_properties.h"
+#include "cursor/cursor.h"
 #include "utils/time.h"
 #include <wlr/types/wlr_xcursor_manager.h>
 
