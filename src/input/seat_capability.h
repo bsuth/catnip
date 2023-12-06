@@ -1,5 +1,5 @@
-#ifndef CATNIP_SEAT_CAPABILITIES_H
-#define CATNIP_SEAT_CAPABILITIES_H
+#ifndef CATNIP_SEAT_CAPABILITY_H
+#define CATNIP_SEAT_CAPABILITY_H
 
 #include <wlr/types/wlr_seat.h>
 

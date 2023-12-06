@@ -1,5 +1,5 @@
 #include "lua_cursor.h"
-#include "cursor/cursor_properties.h"
+#include "cursor/cursor.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -19,10 +19,10 @@ lua_catnip_cursor__index(lua_State* L)
     lua_pushnumber(L, catnip_cursor_get_x());
   } else if (g_str_equal(key, "y")) {
     lua_pushnumber(L, catnip_cursor_get_y());
-  } else if (g_str_equal(key, "size")) {
-    lua_pushnumber(L, catnip_cursor_get_size());
   } else if (g_str_equal(key, "name")) {
     lua_pushstring(L, catnip_cursor_get_name());
+  } else if (g_str_equal(key, "size")) {
+    lua_pushnumber(L, catnip_cursor_get_size());
   } else if (g_str_equal(key, "theme")) {
     lua_pushstring(L, catnip_cursor_get_theme());
   } else {
@@ -47,10 +47,10 @@ lua_catnip_cursor__newindex(lua_State* L)
     catnip_cursor_set_x(luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "y")) {
     catnip_cursor_set_y(luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "size")) {
-    catnip_cursor_set_size(luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "name")) {
     catnip_cursor_set_name(luaL_checkstring(L, 3));
+  } else if (g_str_equal(key, "size")) {
+    catnip_cursor_set_size(luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "theme")) {
     catnip_cursor_set_theme(luaL_checkstring(L, 3));
   } else {
