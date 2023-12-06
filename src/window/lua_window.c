@@ -168,7 +168,6 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
 void
 lua_catnip_window_init(lua_State* L)
 {
-  // TODO: make this table read only from lua
   lua_newtable(L);
   lua_catnip_windows = luaL_ref(L, LUA_REGISTRYINDEX);
 

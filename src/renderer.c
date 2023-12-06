@@ -10,6 +10,7 @@ void
 catnip_renderer_init()
 {
   catnip_renderer = wlr_renderer_autocreate(catnip_backend);
+
   if (catnip_renderer == NULL) {
     log_error("failed to create renderer");
     exit(1);

@@ -1,4 +1,5 @@
 #include "cursor.h"
+#include "cursor/cursor_properties.h"
 #include "input/seat.h"
 #include "output/output_layout.h"
 #include "scene.h"
@@ -6,8 +7,7 @@
 #include <wlr/types/wlr_xcursor_manager.h>
 
 struct wlr_cursor* catnip_cursor = NULL;
-enum catnip_cursor_mode catnip_cursor_mode = CATNIP_CURSOR_MODE_PASSTHROUGH;
-static struct wlr_xcursor_manager* catnip_cursor_manager = NULL;
+struct wlr_xcursor_manager* catnip_cursor_manager = NULL;
 
 static struct {
   struct wl_listener motion;
@@ -58,10 +58,6 @@ on_button(struct wl_listener* listener, void* data)
     event->button,
     event->state
   );
-
-  if (event->state == WLR_BUTTON_RELEASED) {
-    catnip_cursor_mode = CATNIP_CURSOR_MODE_PASSTHROUGH;
-  }
 }
 
 static void
@@ -92,7 +88,9 @@ catnip_cursor_init()
   wlr_cursor_attach_output_layout(catnip_cursor, catnip_output_layout);
 
   catnip_cursor_manager = wlr_xcursor_manager_create(NULL, 24);
+  // TODO load all scales
   wlr_xcursor_manager_load(catnip_cursor_manager, 1);
+  catnip_cursor_set_name("default");
 
   wl_setup_listener(
     &listeners.motion,
@@ -129,7 +127,6 @@ catnip_cursor_update(uint32_t time_msec)
 
   if (target_node == NULL || target_node->type != WLR_SCENE_NODE_BUFFER) {
     wlr_seat_pointer_clear_focus(catnip_seat);
-    wlr_cursor_set_xcursor(catnip_cursor, catnip_cursor_manager, "default");
   } else {
     struct wlr_scene_buffer* target_buffer =
       wlr_scene_buffer_from_node(target_node);

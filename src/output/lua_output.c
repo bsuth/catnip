@@ -200,7 +200,6 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 void
 lua_catnip_output_init(lua_State* L)
 {
-  // TODO: make this table read only from lua
   lua_newtable(L);
   lua_catnip_outputs = luaL_ref(L, LUA_REGISTRYINDEX);
 

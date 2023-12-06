@@ -2,15 +2,10 @@
 #define CATNIP_CURSOR_H
 
 #include <wlr/types/wlr_cursor.h>
-
-enum catnip_cursor_mode {
-  CATNIP_CURSOR_MODE_PASSTHROUGH,
-  CATNIP_CURSOR_MODE_MOVE,
-  CATNIP_CURSOR_MODE_RESIZE,
-};
+#include <wlr/types/wlr_xcursor_manager.h>
 
 extern struct wlr_cursor* catnip_cursor;
-extern enum catnip_cursor_mode catnip_cursor_mode;
+extern struct wlr_xcursor_manager* catnip_cursor_manager;
 
 void
 catnip_cursor_init();
