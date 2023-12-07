@@ -27,7 +27,7 @@ on_new_input(struct wl_listener* listener, void* data)
   // support other device types.
   if (device->type == WLR_INPUT_DEVICE_POINTER) {
     catnip_seat_capability_register_pointer(device);
-    catnip_cursor_attach_pointer(device);
+    wlr_cursor_attach_input_device(catnip_cursor, device);
   } else if (device->type == WLR_INPUT_DEVICE_KEYBOARD) {
     catnip_seat_capability_register_keyboard(device);
     catnip_keyboard_create(device);

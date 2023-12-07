@@ -14,7 +14,7 @@ static struct {
 } listeners;
 
 static void
-on_map(struct wl_listener* listener, void* data)
+catnip_window_map(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.map);
@@ -22,7 +22,7 @@ on_map(struct wl_listener* listener, void* data)
 }
 
 static void
-on_unmap(struct wl_listener* listener, void* data)
+catnip_window_unmap(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.unmap);
@@ -35,7 +35,7 @@ on_unmap(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_move(struct wl_listener* listener, void* data)
+catnip_window_request_move(struct wl_listener* listener, void* data)
 {
   // TODO check the provided serial against a list of button press serials sent
   // to this client, to prevent the client from requesting this whenever they
@@ -46,7 +46,7 @@ on_request_move(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_resize(struct wl_listener* listener, void* data)
+catnip_window_request_resize(struct wl_listener* listener, void* data)
 {
   // TODO check the provided serial against a list of button press serials sent
   // to this client, to prevent the client from requesting this whenever they
@@ -58,7 +58,7 @@ on_request_resize(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_maximize(struct wl_listener* listener, void* data)
+catnip_window_request_maximize(struct wl_listener* listener, void* data)
 {
   // TODO support maximization
   struct catnip_window* window =
@@ -67,7 +67,7 @@ on_request_maximize(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_fullscreen(struct wl_listener* listener, void* data)
+catnip_window_request_fullscreen(struct wl_listener* listener, void* data)
 {
   // TODO support fullscreen
   struct catnip_window* window =
@@ -76,7 +76,7 @@ on_request_fullscreen(struct wl_listener* listener, void* data)
 }
 
 static void
-on_destroy(struct wl_listener* listener, void* data)
+catnip_window_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.destroy);
@@ -128,37 +128,37 @@ catnip_window_create(struct wl_listener* listener, void* data)
     wl_setup_listener(
       &window->listeners.map,
       &window->xdg_surface->surface->events.map,
-      on_map
+      catnip_window_map
     );
     wl_setup_listener(
       &window->listeners.unmap,
       &window->xdg_surface->surface->events.unmap,
-      on_unmap
+      catnip_window_unmap
     );
     wl_setup_listener(
       &window->listeners.request_move,
       &window->xdg_toplevel->events.request_move,
-      on_request_move
+      catnip_window_request_move
     );
     wl_setup_listener(
       &window->listeners.request_resize,
       &window->xdg_toplevel->events.request_resize,
-      on_request_resize
+      catnip_window_request_resize
     );
     wl_setup_listener(
       &window->listeners.request_maximize,
       &window->xdg_toplevel->events.request_maximize,
-      on_request_maximize
+      catnip_window_request_maximize
     );
     wl_setup_listener(
       &window->listeners.request_fullscreen,
       &window->xdg_toplevel->events.request_fullscreen,
-      on_request_fullscreen
+      catnip_window_request_fullscreen
     );
     wl_setup_listener(
       &window->listeners.destroy,
       &window->xdg_surface->events.destroy,
-      on_destroy
+      catnip_window_destroy
     );
 
     // wlroots provides a helper for adding xdg popups to the scene graph, but

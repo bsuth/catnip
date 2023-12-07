@@ -15,28 +15,27 @@
 #include <stdlib.h>
 #include <string.h>
 
-static struct wl_event_source* quit_event_source = NULL;
-static struct wl_event_source* reload_event_source = NULL;
+static struct wl_event_source* lua_catnip_quit_event_source = NULL;
+static struct wl_event_source* lua_catnip_reload_event_source = NULL;
 
 static void
 __lua_catnip_quit()
 {
-  quit_event_source = NULL;
+  lua_catnip_quit_event_source = NULL;
   wl_display_terminate(catnip_display);
 }
 
 static int
 lua_catnip_quit(lua_State* L)
 {
-  if (quit_event_source != NULL) {
+  if (lua_catnip_quit_event_source != NULL) {
     return 0;
   }
 
-  quit_event_source = catnip_event_loop_once(__lua_catnip_quit, NULL);
+  lua_catnip_quit_event_source =
+    catnip_event_loop_once(__lua_catnip_quit, NULL);
 
-  lua_pushcfunction(catnip_L, catnip_lua_events_global_publish);
-  lua_pushstring(catnip_L, "quit");
-  lua_call(catnip_L, 1, 0);
+  lua_catnip_events_call_publish(L, "quit", 0);
 
   return 0;
 }
@@ -44,14 +43,14 @@ lua_catnip_quit(lua_State* L)
 static void
 __lua_catnip_reload()
 {
-  reload_event_source = NULL;
+  lua_catnip_reload_event_source = NULL;
   catnip_config_reload();
 }
 
 static int
 lua_catnip_reload(lua_State* L)
 {
-  if (reload_event_source != NULL) {
+  if (lua_catnip_reload_event_source != NULL) {
     return 0;
   }
 
@@ -60,9 +59,10 @@ lua_catnip_reload(lua_State* L)
     return 0;
   }
 
-  lua_pushcfunction(catnip_L, catnip_lua_events_global_publish);
-  lua_pushstring(catnip_L, "reload");
-  lua_call(catnip_L, 1, 0);
+  lua_catnip_reload_event_source =
+    catnip_event_loop_once(__lua_catnip_reload, NULL);
+
+  lua_catnip_events_call_publish(L, "reload", 0);
 
   return 0;
 }
@@ -78,12 +78,12 @@ lua_catnip_init(lua_State* L)
 
   luaL_newlib(L, lua_catnip_lib);
 
-  catnip_lua_events_init(L);
-  lua_pushcfunction(L, catnip_lua_events_global_subscribe);
+  lua_catnip_events_init(L);
+  lua_pushcfunction(L, lua_catnip_events_global_subscribe);
   lua_setfield(L, -2, "subscribe");
-  lua_pushcfunction(L, catnip_lua_events_global_unsubscribe);
+  lua_pushcfunction(L, lua_catnip_events_global_unsubscribe);
   lua_setfield(L, -2, "unsubscribe");
-  lua_pushcfunction(L, catnip_lua_events_global_publish);
+  lua_pushcfunction(L, lua_catnip_events_global_publish);
   lua_setfield(L, -2, "publish");
 
   lua_catnip_key_event_init(L);

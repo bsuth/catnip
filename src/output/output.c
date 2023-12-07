@@ -2,6 +2,7 @@
 #include "allocator.h"
 #include "backend.h"
 #include "config/config.h"
+#include "cursor/cursor.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
 #include "renderer.h"
@@ -12,11 +13,11 @@
 struct wl_list catnip_outputs;
 
 static struct {
-  struct wl_listener new_wlr_output;
+  struct wl_listener new_output;
 } listeners;
 
 static void
-on_frame(struct wl_listener* listener, void* data)
+catnip_output_frame(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
     wl_container_of(listener, output, listeners.frame);
@@ -32,14 +33,14 @@ on_frame(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_state(struct wl_listener* listener, void* data)
+catnip_output_request_state(struct wl_listener* listener, void* data)
 {
   struct wlr_output_event_request_state* event = data;
   wlr_output_commit_state(event->output, event->state);
 }
 
 static void
-on_destroy(struct wl_listener* listener, void* data)
+catnip_output_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
     wl_container_of(listener, output, listeners.destroy);
@@ -90,17 +91,17 @@ catnip_output_create(struct wl_listener* listener, void* data)
   wl_setup_listener(
     &output->listeners.frame,
     &wlr_output->events.frame,
-    on_frame
+    catnip_output_frame
   );
   wl_setup_listener(
     &output->listeners.request_state,
     &wlr_output->events.request_state,
-    on_request_state
+    catnip_output_request_state
   );
   wl_setup_listener(
     &output->listeners.destroy,
     &wlr_output->events.destroy,
-    on_destroy
+    catnip_output_destroy
   );
 
   wl_list_insert(&catnip_outputs, &output->link);
@@ -108,6 +109,9 @@ catnip_output_create(struct wl_listener* listener, void* data)
   if (catnip_L != NULL) {
     lua_catnip_output_create(catnip_L, output);
   }
+
+  // Ensure we have loaded a scaled cursor theme for the new output's scale
+  wlr_xcursor_manager_load(catnip_xcursor_manager, wlr_output->scale);
 }
 
 void
@@ -118,7 +122,7 @@ catnip_output_init()
   wl_list_init(&catnip_outputs);
 
   wl_setup_listener(
-    &listeners.new_wlr_output,
+    &listeners.new_output,
     &catnip_backend->events.new_output,
     catnip_output_create
   );

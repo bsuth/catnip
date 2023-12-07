@@ -3,10 +3,10 @@
 #include "utils/lua.h"
 #include <lauxlib.h>
 
-lua_Ref lua_catnip_subscriptions = LUA_NOREF;
+static lua_Ref lua_catnip_subscriptions = LUA_NOREF;
 
 int
-catnip_lua_events_subscribe(lua_State* L)
+lua_catnip_events_subscribe(lua_State* L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
   const char* event = luaL_checkstring(L, 2);
@@ -40,15 +40,15 @@ catnip_lua_events_subscribe(lua_State* L)
 }
 
 int
-catnip_lua_events_global_subscribe(lua_State* L)
+lua_catnip_events_global_subscribe(lua_State* L)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
   lua_insert(L, 1);
-  return catnip_lua_events_subscribe(L);
+  return lua_catnip_events_subscribe(L);
 }
 
 int
-catnip_lua_events_unsubscribe(lua_State* L)
+lua_catnip_events_unsubscribe(lua_State* L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
   const char* event = luaL_checkstring(L, 2);
@@ -81,15 +81,15 @@ catnip_lua_events_unsubscribe(lua_State* L)
 }
 
 int
-catnip_lua_events_global_unsubscribe(lua_State* L)
+lua_catnip_events_global_unsubscribe(lua_State* L)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
   lua_insert(L, 1);
-  return catnip_lua_events_unsubscribe(L);
+  return lua_catnip_events_unsubscribe(L);
 }
 
 int
-catnip_lua_events_publish(lua_State* L)
+lua_catnip_events_publish(lua_State* L)
 {
   luaL_checktype(L, 1, LUA_TTABLE);
   const char* event = luaL_checkstring(L, 2);
@@ -117,17 +117,17 @@ catnip_lua_events_publish(lua_State* L)
 }
 
 int
-catnip_lua_events_global_publish(lua_State* L)
+lua_catnip_events_global_publish(lua_State* L)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
   lua_insert(L, 1);
-  return catnip_lua_events_publish(L);
+  return lua_catnip_events_publish(L);
 }
 
 void
 lua_catnip_events_call_publish(lua_State* L, const char* event, int nargs)
 {
-  lua_pushcfunction(L, catnip_lua_events_global_publish);
+  lua_pushcfunction(L, lua_catnip_events_global_publish);
   lua_insert(L, -1 - nargs);
   lua_pushstring(L, event);
   lua_insert(L, -1 - nargs);
@@ -135,7 +135,7 @@ lua_catnip_events_call_publish(lua_State* L, const char* event, int nargs)
 }
 
 void
-catnip_lua_events_init(lua_State* L)
+lua_catnip_events_init(lua_State* L)
 {
   lua_newtable(L);
   lua_catnip_subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
