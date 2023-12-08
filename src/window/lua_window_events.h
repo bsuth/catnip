@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_WINDOW_EVENTS_H
 #define CATNIP_LUA_WINDOW_EVENTS_H
 
-#include "window.h"
+#include "window/window.h"
 #include <lua.h>
 
 int

@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_OUTPUT_H
 #define CATNIP_LUA_OUTPUT_H
 
-#include "output.h"
+#include "output/output.h"
 #include "utils/lua.h"
 
 extern lua_Ref lua_catnip_outputs;

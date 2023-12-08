@@ -1,7 +1,7 @@
 #ifndef CATNIP_OUTPUT_PROPERTIES_H
 #define CATNIP_OUTPUT_PROPERTIES_H
 
-#include "output.h"
+#include "output/output.h"
 
 int
 catnip_output_get_x(struct catnip_output* output);

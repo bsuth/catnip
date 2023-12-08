@@ -12,6 +12,16 @@ struct catnip_window {
   struct wlr_scene_tree* scene_tree;
 
   struct {
+    struct wl_listener map;
+    struct wl_listener unmap;
+    struct wl_listener destroy;
+    struct wl_listener request_move;
+    struct wl_listener request_resize;
+    struct wl_listener request_maximize;
+    struct wl_listener request_fullscreen;
+  } listeners;
+
+  struct {
     struct catnip_window** userdata;
     lua_Ref ref;
     lua_Ref subscriptions;
@@ -23,16 +33,6 @@ struct catnip_window {
     int width;
     int height;
   } pending;
-
-  struct {
-    struct wl_listener map;
-    struct wl_listener unmap;
-    struct wl_listener destroy;
-    struct wl_listener request_move;
-    struct wl_listener request_resize;
-    struct wl_listener request_maximize;
-    struct wl_listener request_fullscreen;
-  } listeners;
 };
 
 extern struct wl_list catnip_windows;

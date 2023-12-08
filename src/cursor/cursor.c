@@ -1,7 +1,8 @@
 #include "cursor.h"
-#include "input/seat.h"
+#include "backend.h"
 #include "output/output_layout.h"
 #include "scene.h"
+#include "seat/seat.h"
 #include "utils/wayland.h"
 #include <string.h>
 
@@ -15,6 +16,7 @@ static struct {
   struct wl_listener button;
   struct wl_listener axis;
   struct wl_listener frame;
+  struct wl_listener new_input;
   struct wl_listener request_set_cursor;
 } listeners;
 
@@ -83,6 +85,18 @@ catnip_cursor_frame(struct wl_listener* listener, void* data)
 }
 
 static void
+catnip_cursor_new_input(struct wl_listener* listener, void* data)
+{
+  struct wlr_input_device* device = data;
+
+  if (device->type != WLR_INPUT_DEVICE_POINTER) {
+    return;
+  }
+
+  wlr_cursor_attach_input_device(catnip_cursor, device);
+}
+
+static void
 catnip_cursor_request_set_cursor(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
@@ -139,6 +153,11 @@ catnip_cursor_init()
     &listeners.frame,
     &catnip_cursor->events.frame,
     catnip_cursor_frame
+  );
+  wl_setup_listener(
+    &listeners.new_input,
+    &catnip_backend->events.new_input,
+    catnip_cursor_new_input
   );
   wl_setup_listener(
     &listeners.request_set_cursor,

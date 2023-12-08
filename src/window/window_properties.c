@@ -1,5 +1,5 @@
 #include "window_properties.h"
-#include "input/seat.h"
+#include "seat/seat.h"
 #include <wlr/types/wlr_scene.h>
 
 int

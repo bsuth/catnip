@@ -1,18 +1,14 @@
 #include "seat.h"
 #include "backend.h"
-#include "cursor/cursor.h"
 #include "display.h"
-#include "keyboard.h"
 #include "seat_capability.h"
 #include "utils/wayland.h"
-#include <wlr/types/wlr_cursor.h>
 #include <wlr/types/wlr_data_device.h>
 
 struct wlr_seat* catnip_seat = NULL;
 
 static struct {
   struct wl_listener new_input;
-  struct wl_listener request_set_cursor;
   struct wl_listener request_set_selection;
 } listeners;
 
@@ -27,10 +23,8 @@ on_new_input(struct wl_listener* listener, void* data)
   // support other device types.
   if (device->type == WLR_INPUT_DEVICE_POINTER) {
     catnip_seat_capability_register_pointer(device);
-    wlr_cursor_attach_input_device(catnip_cursor, device);
   } else if (device->type == WLR_INPUT_DEVICE_KEYBOARD) {
     catnip_seat_capability_register_keyboard(device);
-    catnip_keyboard_create(device);
   }
 }
 

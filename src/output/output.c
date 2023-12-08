@@ -1,7 +1,7 @@
 #include "output.h"
 #include "allocator.h"
 #include "backend.h"
-#include "config/config.h"
+#include "config.h"
 #include "cursor/cursor.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
@@ -49,6 +49,7 @@ catnip_output_destroy(struct wl_listener* listener, void* data)
     lua_catnip_output_destroy(catnip_L, output);
   }
 
+  wl_list_remove(&output->link);
   wl_list_remove(&output->listeners.frame.link);
   wl_list_remove(&output->listeners.destroy.link);
 

@@ -162,9 +162,13 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   lua_catnip_events_call_publish(L, "output::destroy", 1);
   lua_catnip_output_call_publish(L, output, "destroy", 0);
 
-  *(output->lua.userdata) = NULL;
+  if (output->lua.userdata != NULL) {
+    *(output->lua.userdata) = NULL;
+  }
+
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.ref);
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.subscriptions);
+
   lua_catnip_output_modes_destroy(L, output);
 
   lua_pop(L, 1);

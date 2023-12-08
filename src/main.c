@@ -1,14 +1,15 @@
 #include "allocator.h"
 #include "backend.h"
-#include "config/config.h"
+#include "config.h"
 #include "cursor/cursor.h"
 #include "display.h"
 #include "events/event_loop.h"
-#include "input/seat.h"
+#include "keyboard/keyboard.h"
 #include "meta.h"
 #include "output/output.h"
 #include "renderer.h"
 #include "scene.h"
+#include "seat/seat.h"
 #include "utils/log.h"
 #include "window/window.h"
 #include "xdg_shell.h"
@@ -34,6 +35,7 @@ main(int argc, char* argv[])
   catnip_xdg_shell_init(); // must init after display
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
+  catnip_keyboard_init(); // must init after backend
   catnip_allocator_init(); // must init after renderer
   catnip_window_init(); // must init after xdg_shell
   catnip_output_init(); // must init after backend + scene

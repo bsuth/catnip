@@ -1,5 +1,5 @@
 #include "window.h"
-#include "config/config.h"
+#include "config.h"
 #include "scene.h"
 #include "utils/wayland.h"
 #include "window/lua_window.h"

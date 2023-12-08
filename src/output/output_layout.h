@@ -1,7 +1,7 @@
 #ifndef CATNIP_OUTPUT_LAYOUT_H
 #define CATNIP_OUTPUT_LAYOUT_H
 
-#include "output.h"
+#include "output/output.h"
 #include <wlr/types/wlr_output_layout.h>
 
 extern struct wlr_output_layout* catnip_output_layout;

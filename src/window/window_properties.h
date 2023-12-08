@@ -1,7 +1,7 @@
 #ifndef CATNIP_WINDOW_PROPERTIES_H
 #define CATNIP_WINDOW_PROPERTIES_H
 
-#include "window.h"
+#include "window/window.h"
 
 int
 catnip_window_get_x(struct catnip_window* window);

@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_OUTPUT_MODE_H
 #define CATNIP_LUA_OUTPUT_MODE_H
 
-#include "output.h"
+#include "output/output.h"
 #include <lua.h>
 
 void

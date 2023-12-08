@@ -12,17 +12,17 @@ struct catnip_output {
   struct wlr_scene_output* scene_output;
 
   struct {
+    struct wl_listener frame;
+    struct wl_listener request_state;
+    struct wl_listener destroy;
+  } listeners;
+
+  struct {
     struct catnip_output** userdata;
     lua_Ref ref;
     lua_Ref subscriptions;
     lua_Ref modes;
   } lua;
-
-  struct {
-    struct wl_listener frame;
-    struct wl_listener request_state;
-    struct wl_listener destroy;
-  } listeners;
 };
 
 extern struct wl_list catnip_outputs;

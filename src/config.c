@@ -1,5 +1,5 @@
 #include "config.h"
-#include "config/lua_catnip.h"
+#include "lua_catnip.h"
 #include "meta.h"
 #include "utils/log.h"
 #include <glib.h>

@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_WINDOW_H
 #define CATNIP_LUA_WINDOW_H
 
-#include "window.h"
+#include "window/window.h"
 
 extern lua_Ref lua_catnip_windows;
 

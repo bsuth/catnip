@@ -2,12 +2,12 @@
 #include "canvas/lua_canvas.h"
 #include "canvas/lua_png.h"
 #include "canvas/lua_svg.h"
-#include "config/config.h"
+#include "config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
 #include "events/event_loop.h"
 #include "events/lua_events.h"
-#include "input/lua_key_event.h"
+#include "keyboard/lua_keyboard.h"
 #include "output/lua_output.h"
 #include "utils/log.h"
 #include "window/lua_window.h"
@@ -86,7 +86,9 @@ lua_catnip_init(lua_State* L)
   lua_pushcfunction(L, lua_catnip_events_global_publish);
   lua_setfield(L, -2, "publish");
 
-  lua_catnip_key_event_init(L);
+  lua_catnip_keyboard_init(L); // must init after events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
+  lua_setfield(L, -2, "keyboards");
 
   lua_catnip_window_init(L); // must init after events
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
