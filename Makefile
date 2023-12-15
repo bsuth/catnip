@@ -21,13 +21,25 @@ SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
 BUILD_DIR := build
 $(shell mkdir -p $(BUILD_DIR))
 
+INSTALL_DIR := /usr/share/catnip
+
 .PHONY = clean dev
 
 # ------------------------------------------------------------------------------
-# Default
+# Builds
 # ------------------------------------------------------------------------------
 
+default: CFLAGS += \
+	-DWLR_LOG_ERROR \
+	-DCATNIP_INSTALL_DIR=\"$(INSTALL_DIR)\"
+
 default: $(BUILD_DIR)/$(EXECUTABLE)
+
+dev: CFLAGS += -g \
+	-DWLR_LOG_DEBUG
+
+dev: $(BUILD_DIR)/$(EXECUTABLE)
+	@$(BUILD_DIR)/$(EXECUTABLE)
 
 # ------------------------------------------------------------------------------
 # Wayland Protocols
@@ -66,7 +78,7 @@ $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
 	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ $<
 
 # ------------------------------------------------------------------------------
-# Catnip
+# Executable
 # ------------------------------------------------------------------------------
 
 LIBS := \
@@ -81,14 +93,6 @@ PROTOCOL_HEADERS = \
 
 $(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)
 	$(CC) $(FLAGS) $(LIBS) $(OBJECTS) -o $@
-
-# ------------------------------------------------------------------------------
-# Dev
-# ------------------------------------------------------------------------------
-
-dev: CFLAGS += -g -DDEV_MODE
-dev: $(BUILD_DIR)/$(EXECUTABLE)
-	@$(BUILD_DIR)/$(EXECUTABLE)
 
 # ------------------------------------------------------------------------------
 # Clean

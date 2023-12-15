@@ -88,7 +88,7 @@ void
 catnip_config_init()
 {
   if (!catnip_config_load()) {
-    catnip_config_try(ROOT_DIR "/lua/fallback.lua");
+    catnip_config_try(CATNIP_INSTALL_DIR "/lua/fallback.lua");
   }
 }
 
