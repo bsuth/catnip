@@ -12,14 +12,23 @@ static struct {
 static void
 catnip_seat_capability_update()
 {
+  int new_seat_capability = 0;
+
+  if (catnip_seat_capability_counters.keyboard > 0) {
+    new_seat_capability |= WL_SEAT_CAPABILITY_KEYBOARD;
+  }
+
+  if (catnip_seat_capability_counters.pointer > 0) {
+    new_seat_capability |= WL_SEAT_CAPABILITY_POINTER;
+  }
+
+  if (catnip_seat_capability_counters.touch > 0) {
+    new_seat_capability |= WL_SEAT_CAPABILITY_TOUCH;
+  }
+
   // Fire this unconditionally, since wlroots already checks if the new
   // capability is the same as the old one for us (noop).
-  wlr_seat_set_capabilities(
-    catnip_seat,
-    (catnip_seat_capability_counters.keyboard > 0 && WL_SEAT_CAPABILITY_KEYBOARD
-    ) | (catnip_seat_capability_counters.pointer > 0 && WL_SEAT_CAPABILITY_POINTER)
-      | (catnip_seat_capability_counters.touch > 0 && WL_SEAT_CAPABILITY_TOUCH)
-  );
+  wlr_seat_set_capabilities(catnip_seat, new_seat_capability);
 }
 
 static void
