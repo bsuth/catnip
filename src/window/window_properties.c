@@ -90,24 +90,38 @@ catnip_window_set_focused(struct catnip_window* window, bool new_focused)
 {
   if (catnip_window_get_focused(window) == new_focused) {
     return; // nothing to do
-  } else if (new_focused == false) {
+  }
+
+  if (new_focused == false) {
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, false);
     wlr_seat_keyboard_notify_clear_focus(catnip_seat);
-  } else {
-    wlr_scene_node_raise_to_top(&window->scene_tree->node);
-    wlr_xdg_toplevel_set_activated(window->xdg_toplevel, true);
+    return;
+  }
 
-    struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
-
-    if (keyboard != NULL) {
-      wlr_seat_keyboard_notify_enter(
-        catnip_seat,
-        window->xdg_toplevel->base->surface,
-        keyboard->keycodes,
-        keyboard->num_keycodes,
-        &keyboard->modifiers
+  if (catnip_seat->keyboard_state.focused_surface != NULL) {
+    struct wlr_xdg_toplevel* focused_toplevel =
+      wlr_xdg_toplevel_try_from_wlr_surface(
+        catnip_seat->keyboard_state.focused_surface
       );
+
+    if (focused_toplevel != NULL) {
+      wlr_xdg_toplevel_set_activated(focused_toplevel, false);
     }
+  }
+
+  wlr_scene_node_raise_to_top(&window->scene_tree->node);
+  wlr_xdg_toplevel_set_activated(window->xdg_toplevel, true);
+
+  struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
+
+  if (keyboard != NULL) {
+    wlr_seat_keyboard_notify_enter(
+      catnip_seat,
+      window->xdg_toplevel->base->surface,
+      keyboard->keycodes,
+      keyboard->num_keycodes,
+      &keyboard->modifiers
+    );
   }
 }
 
