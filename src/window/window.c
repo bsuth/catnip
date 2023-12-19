@@ -18,7 +18,13 @@ catnip_window_map(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.map);
-  catnip_window_set_focused(window, true);
+
+  catnip_window_set_active(window, true);
+
+  if (catnip_L != NULL) {
+    // Do not create the window in Lua until it has actually been mapped
+    lua_catnip_window_create(catnip_L, window);
+  }
 }
 
 static void
@@ -167,10 +173,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
     xdg_surface->data = window->scene_tree;
 
     wl_list_insert(&catnip_windows, &window->link);
-
-    if (catnip_L != NULL) {
-      lua_catnip_window_create(catnip_L, window);
-    }
   }
 }
 

@@ -28,10 +28,16 @@ void
 catnip_window_set_height(struct catnip_window* window, int new_height);
 
 bool
-catnip_window_get_focused(struct catnip_window* window);
+catnip_window_get_visible(struct catnip_window* window);
 
 void
-catnip_window_set_focused(struct catnip_window* window, bool new_focused);
+catnip_window_set_visible(struct catnip_window* window, bool new_visible);
+
+bool
+catnip_window_get_active(struct catnip_window* window);
+
+void
+catnip_window_set_active(struct catnip_window* window, bool new_active);
 
 bool
 catnip_window_get_maximized(struct catnip_window* window);

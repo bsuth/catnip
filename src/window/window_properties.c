@@ -79,20 +79,32 @@ catnip_window_set_height(struct catnip_window* window, int new_height)
 }
 
 bool
-catnip_window_get_focused(struct catnip_window* window)
+catnip_window_get_visible(struct catnip_window* window)
+{
+  return window->scene_tree->node.enabled;
+}
+
+void
+catnip_window_set_visible(struct catnip_window* window, bool new_visible)
+{
+  wlr_scene_node_set_enabled(&window->scene_tree->node, new_visible);
+}
+
+bool
+catnip_window_get_active(struct catnip_window* window)
 {
   return window->xdg_toplevel->base->surface
          == catnip_seat->keyboard_state.focused_surface;
 }
 
 void
-catnip_window_set_focused(struct catnip_window* window, bool new_focused)
+catnip_window_set_active(struct catnip_window* window, bool new_active)
 {
-  if (catnip_window_get_focused(window) == new_focused) {
+  if (catnip_window_get_active(window) == new_active) {
     return; // nothing to do
   }
 
-  if (new_focused == false) {
+  if (new_active == false) {
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, false);
     wlr_seat_keyboard_notify_clear_focus(catnip_seat);
     return;
