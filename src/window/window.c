@@ -8,6 +8,7 @@
 #include <stdlib.h>
 
 struct wl_list catnip_windows;
+static int catnip_window_id_counter = 1;
 
 static struct {
   struct wl_listener new_xdg_surface;
@@ -118,6 +119,7 @@ catnip_window_create(struct wl_listener* listener, void* data)
     xdg_surface->data = wlr_scene_xdg_surface_create(parent->data, xdg_surface);
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
     struct catnip_window* window = calloc(1, sizeof(struct catnip_window));
+    window->id = catnip_window_id_counter++;
 
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;

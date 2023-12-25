@@ -5,6 +5,7 @@
 #include <wlr/types/wlr_seat.h>
 
 struct catnip_keyboard {
+  int id;
   struct wl_list link;
 
   struct wlr_keyboard* wlr_keyboard;

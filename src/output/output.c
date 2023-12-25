@@ -11,6 +11,7 @@
 #include <stdlib.h>
 
 struct wl_list catnip_outputs;
+static int catnip_output_id_counter = 1;
 
 static struct {
   struct wl_listener new_output;
@@ -77,6 +78,7 @@ catnip_output_create(struct wl_listener* listener, void* data)
   wlr_output_commit(wlr_output);
 
   struct catnip_output* output = calloc(1, sizeof(struct catnip_output));
+  output->id = catnip_output_id_counter++;
 
   output->wlr_output = wlr_output;
   output->layout_output =

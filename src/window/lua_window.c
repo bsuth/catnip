@@ -27,7 +27,9 @@ lua_catnip_window__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (g_str_equal(key, "id")) {
+    lua_pushnumber(L, window->id);
+  } else if (g_str_equal(key, "x")) {
     lua_pushnumber(L, catnip_window_get_x(window));
   } else if (g_str_equal(key, "y")) {
     lua_pushnumber(L, catnip_window_get_y(window));
@@ -117,34 +119,20 @@ void
 lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
-  size_t lua_catnip_windows_len = lua_objlen(L, -1);
-  bool found_lua_window = false;
-
-  for (int i = 1; i <= lua_catnip_windows_len; ++i) {
-    if (found_lua_window) {
-      lua_rawgeti(L, -1, i);
-      lua_rawseti(L, -2, i - 1);
-    } else {
-      lua_rawgeti(L, -1, i);
-      found_lua_window = window == *(struct catnip_window**) lua_popuserdata(L);
-    }
-  }
-
   lua_pushnil(L);
-  lua_rawseti(L, -2, lua_catnip_windows_len);
+  lua_rawseti(L, -2, window->id);
+  lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
   lua_catnip_events_call_publish(L, "window::destroy", 1);
   lua_catnip_window_call_publish(L, window, "destroy", 0);
 
-  if (window->lua.userdata != NULL) {
-    *(window->lua.userdata) = NULL;
-  }
-
   luaL_unref(L, LUA_REGISTRYINDEX, window->lua.ref);
   luaL_unref(L, LUA_REGISTRYINDEX, window->lua.subscriptions);
 
-  lua_pop(L, 1);
+  if (window->lua.userdata != NULL) {
+    *(window->lua.userdata) = NULL;
+  }
 }
 
 void
@@ -165,7 +153,7 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
   lua_newtable(L);
   window->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+  lua_rawseti(L, -2, window->id);
   lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);

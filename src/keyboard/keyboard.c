@@ -10,6 +10,7 @@
 #include <xkbcommon/xkbcommon.h>
 
 struct wl_list catnip_keyboards;
+static int catnip_keybound_id_counter = 1;
 
 static struct {
   struct wl_listener new_input;
@@ -115,6 +116,7 @@ catnip_keyboard_create(struct wl_listener* listener, void* data)
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
+  keyboard->id = catnip_keybound_id_counter++;
   keyboard->wlr_keyboard = wlr_keyboard;
 
   keyboard->xkb_keymap_event_source = NULL;

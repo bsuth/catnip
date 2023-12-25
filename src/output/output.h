@@ -5,6 +5,7 @@
 #include <wlr/types/wlr_output.h>
 
 struct catnip_output {
+  int id;
   struct wl_list link;
 
   struct wlr_output* wlr_output;

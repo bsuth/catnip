@@ -27,7 +27,9 @@ lua_catnip_keyboard__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "name")) {
+  if (g_str_equal(key, "id")) {
+    lua_pushnumber(L, keyboard->id);
+  } else if (g_str_equal(key, "name")) {
     lua_pushstring(L, keyboard->wlr_keyboard->base.name);
   } else if (g_str_equal(key, "xkb_rules")) {
     keyboard->xkb_rule_names.rules == NULL
@@ -122,22 +124,9 @@ void
 lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
-  size_t lua_catnip_keyboards_len = lua_objlen(L, -1);
-  bool found_lua_keyboard = false;
-
-  for (int i = 1; i <= lua_catnip_keyboards_len; ++i) {
-    if (found_lua_keyboard) {
-      lua_rawgeti(L, -1, i);
-      lua_rawseti(L, -2, i - 1);
-    } else {
-      lua_rawgeti(L, -1, i);
-      found_lua_keyboard =
-        keyboard == *(struct catnip_keyboard**) lua_popuserdata(L);
-    }
-  }
-
   lua_pushnil(L);
-  lua_rawseti(L, -2, lua_catnip_keyboards_len);
+  lua_rawseti(L, -2, keyboard->id);
+  lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
   lua_catnip_events_call_publish(L, "keyboard::destroy", 1);
@@ -149,8 +138,6 @@ lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
   if (keyboard->lua.userdata != NULL) {
     *(keyboard->lua.userdata) = NULL;
   }
-
-  lua_pop(L, 1);
 }
 
 void
@@ -171,7 +158,7 @@ lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
   lua_newtable(L);
   keyboard->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+  lua_rawseti(L, -2, keyboard->id);
   lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);

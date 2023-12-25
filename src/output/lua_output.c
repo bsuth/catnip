@@ -52,7 +52,9 @@ lua_catnip_output__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (g_str_equal(key, "id")) {
+    lua_pushnumber(L, output->id);
+  } else if (g_str_equal(key, "x")) {
     lua_pushnumber(L, catnip_output_get_x(output));
   } else if (g_str_equal(key, "y")) {
     lua_pushnumber(L, catnip_output_get_y(output));
@@ -142,21 +144,9 @@ void
 lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
 {
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
-  size_t lua_catnip_outputs_len = lua_objlen(L, -1);
-  bool found_lua_output = false;
-
-  for (int i = 1; i <= lua_catnip_outputs_len; ++i) {
-    if (found_lua_output) {
-      lua_rawgeti(L, -1, i);
-      lua_rawseti(L, -2, i - 1);
-    } else {
-      lua_rawgeti(L, -1, i);
-      found_lua_output = output == *(struct catnip_output**) lua_popuserdata(L);
-    }
-  }
-
   lua_pushnil(L);
-  lua_rawseti(L, -2, lua_catnip_outputs_len);
+  lua_rawseti(L, -2, output->id);
+  lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
   lua_catnip_events_call_publish(L, "output::destroy", 1);
@@ -170,8 +160,6 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.subscriptions);
 
   lua_catnip_output_modes_destroy(L, output);
-
-  lua_pop(L, 1);
 }
 
 void
@@ -194,7 +182,7 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 
   lua_catnip_output_modes_create(L, output);
 
-  lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+  lua_rawseti(L, -2, output->id);
   lua_pop(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
