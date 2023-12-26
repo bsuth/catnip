@@ -105,18 +105,9 @@ lua_catnip_keyboard__newindex(lua_State* L)
   return 0;
 }
 
-static int
-lua_catnip_keyboard__gc(lua_State* L)
-{
-  struct catnip_keyboard** lua_keyboard = lua_touserdata(L, 1);
-  (*lua_keyboard)->lua.userdata = NULL;
-  return 0;
-}
-
 static const struct luaL_Reg lua_catnip_keyboard_mt[] = {
   {"__index", lua_catnip_keyboard__index},
   {"__newindex", lua_catnip_keyboard__newindex},
-  {"__gc", lua_catnip_keyboard__gc},
   {NULL, NULL}
 };
 
@@ -132,12 +123,9 @@ lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
   lua_catnip_events_call_publish(L, "keyboard::destroy", 1);
   lua_catnip_keyboard_call_publish(L, keyboard, "destroy", 0);
 
+  *(keyboard->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
   luaL_unref(L, LUA_REGISTRYINDEX, keyboard->lua.subscriptions);
-
-  if (keyboard->lua.userdata != NULL) {
-    *(keyboard->lua.userdata) = NULL;
-  }
 }
 
 void

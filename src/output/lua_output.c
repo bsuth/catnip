@@ -125,18 +125,9 @@ lua_catnip_output__newindex(lua_State* L)
   return 0;
 }
 
-static int
-lua_catnip_output__gc(lua_State* L)
-{
-  struct catnip_output** lua_output = lua_touserdata(L, 1);
-  (*lua_output)->lua.userdata = NULL;
-  return 0;
-}
-
 static const struct luaL_Reg lua_catnip_output_mt[] = {
   {"__index", lua_catnip_output__index},
   {"__newindex", lua_catnip_output__newindex},
-  {"__gc", lua_catnip_output__gc},
   {NULL, NULL}
 };
 
@@ -152,10 +143,7 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   lua_catnip_events_call_publish(L, "output::destroy", 1);
   lua_catnip_output_call_publish(L, output, "destroy", 0);
 
-  if (output->lua.userdata != NULL) {
-    *(output->lua.userdata) = NULL;
-  }
-
+  *(output->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.ref);
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.subscriptions);
 

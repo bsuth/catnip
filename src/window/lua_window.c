@@ -100,18 +100,9 @@ lua_catnip_window__newindex(lua_State* L)
   return 0;
 }
 
-static int
-lua_catnip_window__gc(lua_State* L)
-{
-  struct catnip_window** lua_window = lua_touserdata(L, 1);
-  (*lua_window)->lua.userdata = NULL;
-  return 0;
-}
-
 static const struct luaL_Reg lua_catnip_window_mt[] = {
   {"__index", lua_catnip_window__index},
   {"__newindex", lua_catnip_window__newindex},
-  {"__gc", lua_catnip_window__gc},
   {NULL, NULL}
 };
 
@@ -127,12 +118,9 @@ lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
   lua_catnip_events_call_publish(L, "window::destroy", 1);
   lua_catnip_window_call_publish(L, window, "destroy", 0);
 
+  *(window->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, window->lua.ref);
   luaL_unref(L, LUA_REGISTRYINDEX, window->lua.subscriptions);
-
-  if (window->lua.userdata != NULL) {
-    *(window->lua.userdata) = NULL;
-  }
 }
 
 void
