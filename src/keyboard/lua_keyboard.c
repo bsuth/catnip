@@ -182,6 +182,8 @@ lua_catnip_keyboard_publish_key_event(
     lua_catnip_keyboard_call_publish(L, keyboard, "keyup", 1);
   }
 
+  *lua_event = NULL;
+
   lua_pop(L, 1);
 }
 

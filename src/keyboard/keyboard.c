@@ -5,7 +5,6 @@
 #include "keyboard/lua_keyboard.h"
 #include "seat/seat.h"
 #include "utils/wayland.h"
-#include "utils/xkbcommon.h"
 #include <stdlib.h>
 #include <xkbcommon/xkbcommon.h>
 
@@ -51,10 +50,6 @@ catnip_keyboard_key(struct wl_listener* listener, void* data)
 
   for (int i = 0; i < xkb_keysyms_len; ++i) {
     xkb_keysym_t xkb_keysym = xkb_keysyms[i];
-
-    if (xkb_is_modifier(xkb_keysym)) {
-      continue; // do not publish key events for modifiers.
-    }
 
     char xkb_name[64];
     xkb_keysym_get_name(xkb_keysym, xkb_name, 64);

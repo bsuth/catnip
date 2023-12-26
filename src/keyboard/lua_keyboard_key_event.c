@@ -33,8 +33,16 @@ lua_catnip_keyboard_key_event__index(lua_State* L)
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_SHIFT);
   } else if (g_str_equal(key, "ctrl")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_CTRL);
-  } else if (g_str_equal(key, "alt")) {
+  } else if (g_str_equal(key, "mod1")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_ALT);
+  } else if (g_str_equal(key, "mod2")) {
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD2);
+  } else if (g_str_equal(key, "mod3")) {
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD3);
+  } else if (g_str_equal(key, "mod4")) {
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_LOGO);
+  } else if (g_str_equal(key, "mod5")) {
+    lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD5);
   } else {
     lua_pushnil(L);
   }
