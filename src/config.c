@@ -20,24 +20,29 @@ catnip_config_try(const char* path)
   }
 
   char* current_dir = g_get_current_dir();
+
   char* config_dir = g_path_get_dirname(path);
   chdir(config_dir);
+  free(config_dir);
 
   lua_State* new_catnip_L = lua_open();
   luaL_openlibs(new_catnip_L);
   lua_catnip_init(new_catnip_L);
 
+  char* config_basename = g_path_get_basename(path);
   catnip_config_loading = true;
-  bool loaded =
-    !luaL_loadfile(new_catnip_L, path) && !lua_pcall(new_catnip_L, 0, 0, 0);
+
+  bool loaded = !luaL_loadfile(new_catnip_L, config_basename)
+                && !lua_pcall(new_catnip_L, 0, 0, 0);
+
   catnip_config_loading = false;
+  free(config_basename);
 
   chdir(current_dir);
   free(current_dir);
-  free(config_dir);
 
   if (!loaded) {
-    log_error("failed to load %s (%s)", path, lua_tostring(new_catnip_L, -1));
+    log_error("%s: %s", path, lua_tostring(new_catnip_L, -1));
     lua_close(new_catnip_L);
     return false;
   }
