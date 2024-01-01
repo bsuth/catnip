@@ -32,6 +32,10 @@ catnip_canvas_destroy(struct catnip_canvas* canvas)
   wlr_scene_node_destroy(&canvas->scene_buffer->node);
   wlr_scene_node_destroy(&canvas->scene_tree->node);
 
+  if (canvas->refresh_task != NULL) {
+    wl_event_source_remove(canvas->refresh_task);
+  }
+
   free(canvas);
 }
 
