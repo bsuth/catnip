@@ -104,6 +104,10 @@ catnip_window_set_active(struct catnip_window* window, bool new_active)
     return; // nothing to do
   }
 
+  if (!window->xdg_surface->initialized) {
+    return; // do not configure uninitialized surfaces (wlroots error)
+  }
+
   if (new_active == false) {
     wlr_xdg_toplevel_set_activated(window->xdg_toplevel, false);
     wlr_seat_keyboard_notify_clear_focus(catnip_seat);
@@ -116,7 +120,7 @@ catnip_window_set_active(struct catnip_window* window, bool new_active)
         catnip_seat->keyboard_state.focused_surface
       );
 
-    if (focused_toplevel != NULL) {
+    if (focused_toplevel != NULL && focused_toplevel->base->initialized) {
       wlr_xdg_toplevel_set_activated(focused_toplevel, false);
     }
   }
