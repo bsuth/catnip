@@ -1,5 +1,7 @@
 #include "cursor.h"
 #include "backend.h"
+#include "config.h"
+#include "cursor/lua_cursor.h"
 #include "output/output_layout.h"
 #include "scene.h"
 #include "seat/seat.h"
@@ -61,6 +63,8 @@ catnip_cursor_button(struct wl_listener* listener, void* data)
     event->button,
     event->state
   );
+
+  lua_catnip_cursor_publish_button_event(catnip_L, event);
 }
 
 static void

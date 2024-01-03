@@ -1,9 +1,11 @@
 #include "lua_cursor.h"
 #include "cursor/cursor_properties.h"
+#include "cursor/lua_cursor_events.h"
 #include <glib.h>
 #include <lauxlib.h>
 
 lua_Ref lua_catnip_cursor = LUA_NOREF;
+lua_Ref lua_catnip_cursor_subscriptions = LUA_NOREF;
 
 static int
 lua_catnip_cursor__index(lua_State* L)
@@ -25,6 +27,12 @@ lua_catnip_cursor__index(lua_State* L)
     lua_pushnumber(L, catnip_cursor_get_size());
   } else if (g_str_equal(key, "theme")) {
     lua_pushstring(L, catnip_cursor_get_theme());
+  } else if (g_str_equal(key, "subscribe")) {
+    lua_pushcfunction(L, lua_catnip_cursor_subscribe);
+  } else if (g_str_equal(key, "unsubscribe")) {
+    lua_pushcfunction(L, lua_catnip_cursor_unsubscribe);
+  } else if (g_str_equal(key, "publish")) {
+    lua_pushcfunction(L, lua_catnip_cursor_publish);
   } else {
     lua_pushnil(L);
   }
@@ -67,6 +75,21 @@ static const struct luaL_Reg lua_catnip_cursor_mt[] = {
 };
 
 void
+lua_catnip_cursor_publish_button_event(
+  lua_State* L,
+  struct wlr_pointer_button_event* event
+)
+{
+  lua_pushnumber(L, event->button);
+
+  if (event->state == WLR_BUTTON_PRESSED) {
+    lua_catnip_cursor_call_publish(L, "button::press", 1);
+  } else {
+    lua_catnip_cursor_call_publish(L, "button::release", 1);
+  }
+}
+
+void
 lua_catnip_cursor_init(lua_State* L)
 {
   luaL_newmetatable(L, "catnip.cursor");
@@ -76,4 +99,7 @@ lua_catnip_cursor_init(lua_State* L)
   lua_newuserdata(L, 0);
   luaL_setmetatable(L, "catnip.cursor");
   lua_catnip_cursor = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_newtable(L);
+  lua_catnip_cursor_subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 }
