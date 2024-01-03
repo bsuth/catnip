@@ -1,6 +1,7 @@
 #include "lua_window.h"
 #include "events/lua_events.h"
 #include "window/lua_window_events.h"
+#include "window/lua_window_methods.h"
 #include "window/window_properties.h"
 #include <glib.h>
 #include <lauxlib.h>
@@ -51,6 +52,8 @@ lua_catnip_window__index(lua_State* L)
     lua_pushcfunction(L, lua_catnip_window_unsubscribe);
   } else if (g_str_equal(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_window_publish);
+  } else if (g_str_equal(key, "destroy")) {
+    lua_pushcfunction(L, lua_catnip_window_method_destroy);
   } else {
     lua_pushnil(L);
   }
