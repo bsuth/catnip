@@ -152,6 +152,24 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
 }
 
 void
+lua_catnip_window_publish_active_event(
+  lua_State* L,
+  struct catnip_window* window,
+  bool active
+)
+{
+  if (active) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
+    lua_catnip_events_call_publish(L, "window::activate", 1);
+    lua_catnip_window_call_publish(L, window, "activate", 0);
+  } else {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
+    lua_catnip_events_call_publish(L, "window::deactivate", 1);
+    lua_catnip_window_call_publish(L, window, "deactivate", 0);
+  }
+}
+
+void
 lua_catnip_window_init(lua_State* L)
 {
   lua_newtable(L);

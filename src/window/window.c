@@ -3,7 +3,6 @@
 #include "scene.h"
 #include "utils/wayland.h"
 #include "window/lua_window.h"
-#include "window/window_properties.h"
 #include "xdg_shell.h"
 #include <stdlib.h>
 
@@ -19,8 +18,6 @@ catnip_window_map(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.map);
-
-  catnip_window_set_active(window, true);
 
   if (catnip_L != NULL) {
     // Do not create the window in Lua until it has actually been mapped
@@ -39,6 +36,27 @@ catnip_window_unmap(struct wl_listener* listener, void* data)
   // if (toplevel == toplevel->server->grabbed_view) {
   //   reset_cursor_mode(toplevel->server);
   // }
+}
+
+static void
+catnip_window_configure(struct wl_listener* listener, void* data)
+{
+  struct catnip_window* window =
+    wl_container_of(listener, window, listeners.configure);
+
+  struct wlr_xdg_surface_configure* configure = data;
+  struct wlr_xdg_toplevel_configure* toplevel_configure =
+    configure->toplevel_configure;
+
+  if (toplevel_configure->activated != window->prev_configure.activated) {
+    lua_catnip_window_publish_active_event(
+      catnip_L,
+      window,
+      toplevel_configure->activated
+    );
+  }
+
+  window->prev_configure.activated = toplevel_configure->activated;
 }
 
 static void
@@ -123,12 +141,13 @@ catnip_window_create(struct wl_listener* listener, void* data)
 
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;
-
     window->scene_tree = wlr_scene_xdg_surface_create(
       &catnip_scene->tree,
       window->xdg_toplevel->base
     );
     window->scene_tree->node.data = window;
+
+    window->prev_configure.activated = false;
 
     window->pending.width = -1;
     window->pending.height = -1;
@@ -142,6 +161,11 @@ catnip_window_create(struct wl_listener* listener, void* data)
       &window->listeners.unmap,
       &window->xdg_surface->surface->events.unmap,
       catnip_window_unmap
+    );
+    wl_setup_listener(
+      &window->listeners.configure,
+      &window->xdg_surface->events.configure,
+      catnip_window_configure
     );
     wl_setup_listener(
       &window->listeners.request_move,

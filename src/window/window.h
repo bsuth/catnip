@@ -15,11 +15,12 @@ struct catnip_window {
   struct {
     struct wl_listener map;
     struct wl_listener unmap;
-    struct wl_listener destroy;
+    struct wl_listener configure;
     struct wl_listener request_move;
     struct wl_listener request_resize;
     struct wl_listener request_maximize;
     struct wl_listener request_fullscreen;
+    struct wl_listener destroy;
   } listeners;
 
   struct {
@@ -27,6 +28,17 @@ struct catnip_window {
     lua_Ref ref;
     lua_Ref subscriptions;
   } lua;
+
+  // Since configure events do not tell us which fields have actually changed,
+  // we store the most recent configure event values here and do the diff
+  // ourselves.
+  //
+  // Note that `struct wlr_xdg_toplevel_configure` has a `fields` property, but
+  // at the time of writing it only tells us if `bounds` or `wm_capabilities`
+  // has changed.
+  struct {
+    bool activated;
+  } prev_configure;
 
   // These properties cannot be updated immediately and must instead _request_
   // an update. Here, we store the most recent values requested.

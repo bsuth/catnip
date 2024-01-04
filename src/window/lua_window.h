@@ -12,6 +12,13 @@ void
 lua_catnip_window_create(lua_State* L, struct catnip_window* window);
 
 void
+lua_catnip_window_publish_active_event(
+  lua_State* L,
+  struct catnip_window* window,
+  bool active
+);
+
+void
 lua_catnip_window_init(lua_State* L);
 
 #endif
