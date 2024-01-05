@@ -6,6 +6,38 @@
 #include <stdbool.h>
 
 // -----------------------------------------------------------------------------
+// Debugging
+// -----------------------------------------------------------------------------
+
+void
+lua_dumpstack(lua_State* L)
+{
+  for (int i = lua_gettop(L); i > 0; --i) {
+    printf("%d: %s = ", i, luaL_typename(L, i));
+
+    switch (lua_type(L, i)) {
+      case LUA_TNIL:
+        printf("%s", "nil");
+        break;
+      case LUA_TBOOLEAN:
+        printf("%s", lua_toboolean(L, i) ? "true" : "false");
+        break;
+      case LUA_TNUMBER:
+        printf("%f", lua_tonumber(L, i));
+        break;
+      case LUA_TSTRING:
+        printf("\"%s\"", lua_tostring(L, i));
+        break;
+      default:
+        printf("%p", lua_topointer(L, i));
+        break;
+    }
+
+    printf("\n");
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Stack Popping
 // -----------------------------------------------------------------------------
 
