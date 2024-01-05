@@ -1,7 +1,7 @@
 #include "lua_keyboard.h"
 #include "events/lua_events.h"
-#include "keyboard/lua_keyboard_events.h"
 #include "keyboard/lua_keyboard_key_event.h"
+#include "keyboard/lua_keyboard_methods.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -52,11 +52,11 @@ lua_catnip_keyboard__index(lua_State* L)
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.options);
   } else if (g_str_equal(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_subscribe);
+    lua_pushcfunction(L, lua_catnip_keyboard_method_subscribe);
   } else if (g_str_equal(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_unsubscribe);
+    lua_pushcfunction(L, lua_catnip_keyboard_method_unsubscribe);
   } else if (g_str_equal(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_publish);
+    lua_pushcfunction(L, lua_catnip_keyboard_method_publish);
   } else {
     lua_pushnil(L);
   }
@@ -119,9 +119,7 @@ lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
   lua_rawseti(L, -2, keyboard->id);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-  lua_catnip_events_call_publish(L, "keyboard::destroy", 1);
-  lua_catnip_keyboard_call_publish(L, keyboard, "destroy", 0);
+  lua_catnip_keyboard_publish(L, keyboard, "destroy", 0);
 
   *(keyboard->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
@@ -149,8 +147,32 @@ lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
   lua_rawseti(L, -2, keyboard->id);
   lua_pop(L, 1);
 
+  lua_catnip_keyboard_publish(L, keyboard, "create", 0);
+}
+
+void
+lua_catnip_keyboard_publish(
+  lua_State* L,
+  struct catnip_keyboard* keyboard,
+  const char* event,
+  int nargs
+)
+{
+  lua_catnip_events_publish(L, keyboard->lua.subscriptions, event, nargs);
+
+  gchar* global_event = g_strconcat("keyboard::", event, NULL);
   lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-  lua_catnip_events_call_publish(L, "keyboard::create", 1);
+  lua_insert(L, -1 - nargs);
+
+  lua_catnip_events_publish(
+    L,
+    lua_catnip_subscriptions,
+    global_event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
+  g_free(global_event);
 }
 
 void
@@ -167,19 +189,9 @@ lua_catnip_keyboard_publish_key_event(
   *lua_event = event;
 
   if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-    lua_pushvalue(L, -2);
-    lua_catnip_events_call_publish(L, "keyboard::keydown", 2);
-
-    lua_pushvalue(L, -1);
-    lua_catnip_keyboard_call_publish(L, keyboard, "keydown", 1);
+    lua_catnip_keyboard_publish(L, keyboard, "keydown", 1);
   } else {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-    lua_pushvalue(L, -2);
-    lua_catnip_events_call_publish(L, "keyboard::keyup", 2);
-
-    lua_pushvalue(L, -1);
-    lua_catnip_keyboard_call_publish(L, keyboard, "keyup", 1);
+    lua_catnip_keyboard_publish(L, keyboard, "keyup", 1);
   }
 
   *lua_event = NULL;

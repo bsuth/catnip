@@ -1,8 +1,9 @@
-#include "utils/lua.h"
+#include "lua_output.h"
 #include "events/lua_events.h"
-#include "output/lua_output_events.h"
+#include "output/lua_output_methods.h"
 #include "output/lua_output_mode.h"
 #include "output/output_properties.h"
+#include "utils/lua.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -71,11 +72,11 @@ lua_catnip_output__index(lua_State* L)
   } else if (g_str_equal(key, "scale")) {
     lua_pushnumber(L, catnip_output_get_scale(output));
   } else if (g_str_equal(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_output_subscribe);
+    lua_pushcfunction(L, lua_catnip_output_method_subscribe);
   } else if (g_str_equal(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_output_unsubscribe);
+    lua_pushcfunction(L, lua_catnip_output_method_unsubscribe);
   } else if (g_str_equal(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_output_publish);
+    lua_pushcfunction(L, lua_catnip_output_method_publish);
   } else {
     lua_pushnil(L);
   }
@@ -139,9 +140,7 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
   lua_rawseti(L, -2, output->id);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
-  lua_catnip_events_call_publish(L, "output::destroy", 1);
-  lua_catnip_output_call_publish(L, output, "destroy", 0);
+  lua_catnip_output_publish(L, output, "destroy", 0);
 
   *(output->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, output->lua.ref);
@@ -173,8 +172,32 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
   lua_rawseti(L, -2, output->id);
   lua_pop(L, 1);
 
+  lua_catnip_output_publish(L, output, "create", 0);
+}
+
+void
+lua_catnip_output_publish(
+  lua_State* L,
+  struct catnip_output* output,
+  const char* event,
+  int nargs
+)
+{
+  lua_catnip_events_publish(L, output->lua.subscriptions, event, nargs);
+
+  gchar* global_event = g_strconcat("output::", event, NULL);
   lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
-  lua_catnip_events_call_publish(L, "output::create", 1);
+  lua_insert(L, -1 - nargs);
+
+  lua_catnip_events_publish(
+    L,
+    lua_catnip_subscriptions,
+    global_event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
+  g_free(global_event);
 }
 
 void

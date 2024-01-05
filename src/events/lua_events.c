@@ -1,70 +1,62 @@
 #include "lua_events.h"
 #include "utils/log.h"
-#include "utils/lua.h"
 #include <lauxlib.h>
 
-static lua_Ref lua_catnip_subscriptions = LUA_NOREF;
+lua_Ref lua_catnip_subscriptions = LUA_NOREF;
 
-int
-lua_catnip_events_subscribe(lua_State* L)
+void
+lua_catnip_events_subscribe(
+  lua_State* L,
+  lua_Ref subscriptions,
+  const char* event
+)
 {
-  luaL_checktype(L, 1, LUA_TTABLE);
-  const char* event = luaL_checkstring(L, 2);
-  luaL_checktype(L, 3, LUA_TFUNCTION);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, subscriptions);
 
-  if (!lua_hasfield(L, 1, event)) {
+  if (!lua_hasfield(L, -1, event)) {
     lua_newtable(L);
     lua_pushvalue(L, -1);
-    lua_setfield(L, 1, event);
+    lua_setfield(L, -3, event);
   }
 
   size_t num_subscriptions = lua_objlen(L, -1);
 
-  for (int i = 1; i <= num_subscriptions; ++i) {
-    lua_rawgeti(L, -1, i);
+  for (int i = 0; i < num_subscriptions; ++i) {
+    lua_rawgeti(L, -1, i + 1);
 
-    if (lua_equal(L, 3, -1)) {
-      lua_remove(L, -2);
-      return 1; // subscription already exists
+    if (lua_equal(L, -4, -1)) {
+      lua_pop(L, 3);
+      return; // subscription already exists
     }
 
     lua_pop(L, 1);
   }
 
-  lua_pushvalue(L, 3);
+  lua_pushvalue(L, -4);
   lua_rawseti(L, -2, num_subscriptions + 1);
-  lua_pop(L, 1);
-
-  lua_pushvalue(L, 3);
-  return 1;
+  lua_pop(L, 2);
 }
 
-int
-lua_catnip_events_global_subscribe(lua_State* L)
+void
+lua_catnip_events_unsubscribe(
+  lua_State* L,
+  lua_Ref subscriptions,
+  const char* event
+)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
-  lua_insert(L, 1);
-  return lua_catnip_events_subscribe(L);
-}
+  lua_rawgeti(L, LUA_REGISTRYINDEX, subscriptions);
 
-int
-lua_catnip_events_unsubscribe(lua_State* L)
-{
-  luaL_checktype(L, 1, LUA_TTABLE);
-  const char* event = luaL_checkstring(L, 2);
-  luaL_checktype(L, 3, LUA_TFUNCTION);
-
-  if (lua_hasfield(L, 1, event)) {
+  if (lua_hasfield(L, -1, event)) {
     size_t num_subscriptions = lua_objlen(L, -1);
     bool found_lua_subscription = false;
 
-    for (int i = 1; i <= num_subscriptions; ++i) {
+    for (int i = 0; i < num_subscriptions; ++i) {
       if (found_lua_subscription) {
-        lua_rawgeti(L, -1, i);
-        lua_rawseti(L, -2, i - 1);
+        lua_rawgeti(L, -1, i + 1);
+        lua_rawseti(L, -2, i);
       } else {
-        lua_rawgeti(L, -1, i);
-        found_lua_subscription = lua_equal(L, 3, -1);
+        lua_rawgeti(L, -1, i + 1);
+        found_lua_subscription = lua_equal(L, -4, -1);
         lua_pop(L, 1);
       }
     }
@@ -77,35 +69,34 @@ lua_catnip_events_unsubscribe(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return 0;
+  lua_pop(L, 1);
 }
 
-int
-lua_catnip_events_global_unsubscribe(lua_State* L)
+void
+lua_catnip_events_publish(
+  lua_State* L,
+  lua_Ref subscriptions,
+  const char* event,
+  int nargs
+)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
-  lua_insert(L, 1);
-  return lua_catnip_events_unsubscribe(L);
-}
+  int arg_end = lua_gettop(L) + 1;
+  int arg_start = arg_end - nargs;
 
-int
-lua_catnip_events_publish(lua_State* L)
-{
-  luaL_checktype(L, 1, LUA_TTABLE);
-  const char* event = luaL_checkstring(L, 2);
-  const int top = lua_gettop(L);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, subscriptions);
 
-  if (lua_hasfield(L, 1, event)) {
+  if (lua_hasfield(L, -1, event)) {
     size_t num_subscriptions = lua_objlen(L, -1);
 
-    for (int i = 1; i <= num_subscriptions; ++i) {
-      lua_rawgeti(L, -1, i);
+    for (int sub_index = 0; sub_index < num_subscriptions; ++sub_index) {
+      lua_rawgeti(L, -1, sub_index + 1);
 
-      for (int j = 3; j <= top; ++j) {
-        lua_pushvalue(L, j);
+      // -3 to offset 3 new objects on the stack
+      for (int arg_index = arg_start; arg_index < arg_end; ++arg_index) {
+        lua_pushvalue(L, arg_index);
       }
 
-      if (lua_pcall(L, top - 2, 0, 0) != 0) {
+      if (lua_pcall(L, nargs, 0, 0) != 0) {
         log_error("%s", lua_popstring(L));
       }
     }
@@ -113,25 +104,7 @@ lua_catnip_events_publish(lua_State* L)
     lua_pop(L, 1);
   }
 
-  return 0;
-}
-
-int
-lua_catnip_events_global_publish(lua_State* L)
-{
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_subscriptions);
-  lua_insert(L, 1);
-  return lua_catnip_events_publish(L);
-}
-
-void
-lua_catnip_events_call_publish(lua_State* L, const char* event, int nargs)
-{
-  lua_pushcfunction(L, lua_catnip_events_global_publish);
-  lua_insert(L, -1 - nargs);
-  lua_pushstring(L, event);
-  lua_insert(L, -1 - nargs);
-  lua_call(L, nargs + 1, 0);
+  lua_pop(L, 1);
 }
 
 void

@@ -1,6 +1,5 @@
 #include "lua_window.h"
 #include "events/lua_events.h"
-#include "window/lua_window_events.h"
 #include "window/lua_window_methods.h"
 #include "window/window_properties.h"
 #include <glib.h>
@@ -47,11 +46,11 @@ lua_catnip_window__index(lua_State* L)
   } else if (g_str_equal(key, "fullscreen")) {
     lua_pushboolean(L, catnip_window_get_fullscreen(window));
   } else if (g_str_equal(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_window_subscribe);
+    lua_pushcfunction(L, lua_catnip_window_method_subscribe);
   } else if (g_str_equal(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_window_unsubscribe);
+    lua_pushcfunction(L, lua_catnip_window_method_unsubscribe);
   } else if (g_str_equal(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_window_publish);
+    lua_pushcfunction(L, lua_catnip_window_method_publish);
   } else if (g_str_equal(key, "destroy")) {
     lua_pushcfunction(L, lua_catnip_window_method_destroy);
   } else {
@@ -117,9 +116,7 @@ lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
   lua_rawseti(L, -2, window->id);
   lua_pop(L, 1);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
-  lua_catnip_events_call_publish(L, "window::destroy", 1);
-  lua_catnip_window_call_publish(L, window, "destroy", 0);
+  lua_catnip_window_publish(L, window, "destroy", 0);
 
   *(window->lua.userdata) = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, window->lua.ref);
@@ -147,8 +144,32 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
   lua_rawseti(L, -2, window->id);
   lua_pop(L, 1);
 
+  lua_catnip_window_publish(L, window, "create", 0);
+}
+
+void
+lua_catnip_window_publish(
+  lua_State* L,
+  struct catnip_window* window,
+  const char* event,
+  int nargs
+)
+{
+  lua_catnip_events_publish(L, window->lua.subscriptions, event, nargs);
+
+  gchar* global_event = g_strconcat("window::", event, NULL);
   lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
-  lua_catnip_events_call_publish(L, "window::create", 1);
+  lua_insert(L, -1 - nargs);
+
+  lua_catnip_events_publish(
+    L,
+    lua_catnip_subscriptions,
+    global_event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
+  g_free(global_event);
 }
 
 void
@@ -159,13 +180,9 @@ lua_catnip_window_publish_active_event(
 )
 {
   if (active) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
-    lua_catnip_events_call_publish(L, "window::activate", 1);
-    lua_catnip_window_call_publish(L, window, "activate", 0);
+    lua_catnip_window_publish(L, window, "activate", 0);
   } else {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, window->lua.ref);
-    lua_catnip_events_call_publish(L, "window::deactivate", 1);
-    lua_catnip_window_call_publish(L, window, "deactivate", 0);
+    lua_catnip_window_publish(L, window, "deactivate", 0);
   }
 }
 

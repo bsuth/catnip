@@ -1,6 +1,7 @@
 #include "lua_cursor.h"
 #include "cursor/cursor_properties.h"
-#include "cursor/lua_cursor_events.h"
+#include "cursor/lua_cursor_methods.h"
+#include "events/lua_events.h"
 #include <glib.h>
 #include <lauxlib.h>
 
@@ -28,11 +29,11 @@ lua_catnip_cursor__index(lua_State* L)
   } else if (g_str_equal(key, "theme")) {
     lua_pushstring(L, catnip_cursor_get_theme());
   } else if (g_str_equal(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_cursor_subscribe);
+    lua_pushcfunction(L, lua_catnip_cursor_method_subscribe);
   } else if (g_str_equal(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_cursor_unsubscribe);
+    lua_pushcfunction(L, lua_catnip_cursor_method_unsubscribe);
   } else if (g_str_equal(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_cursor_publish);
+    lua_pushcfunction(L, lua_catnip_cursor_method_publish);
   } else {
     lua_pushnil(L);
   }
@@ -82,11 +83,14 @@ lua_catnip_cursor_publish_button_event(
 {
   lua_pushnumber(L, event->button);
 
-  if (event->state == WLR_BUTTON_PRESSED) {
-    lua_catnip_cursor_call_publish(L, "button::press", 1);
-  } else {
-    lua_catnip_cursor_call_publish(L, "button::release", 1);
-  }
+  lua_catnip_events_publish(
+    L,
+    lua_catnip_cursor_subscriptions,
+    event->state == WLR_BUTTON_PRESSED ? "button::press" : "button:release",
+    1
+  );
+
+  lua_pop(L, 1);
 }
 
 void

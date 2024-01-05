@@ -12,6 +12,14 @@ void
 lua_catnip_window_create(lua_State* L, struct catnip_window* window);
 
 void
+lua_catnip_window_publish(
+  lua_State* L,
+  struct catnip_window* window,
+  const char* event,
+  int nargs
+);
+
+void
 lua_catnip_window_publish_active_event(
   lua_State* L,
   struct catnip_window* window,
