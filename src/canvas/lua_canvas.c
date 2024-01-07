@@ -36,6 +36,8 @@ lua_catnip_canvas__index(lua_State* L)
     lua_pushnumber(L, catnip_canvas_get_x(canvas));
   } else if (g_str_equal(key, "y")) {
     lua_pushnumber(L, catnip_canvas_get_y(canvas));
+  } else if (g_str_equal(key, "z")) {
+    lua_pushnumber(L, catnip_canvas_get_z(canvas));
   } else if (g_str_equal(key, "width")) {
     lua_pushnumber(L, catnip_canvas_get_width(canvas));
   } else if (g_str_equal(key, "height")) {
@@ -77,6 +79,8 @@ lua_catnip_canvas__newindex(lua_State* L)
     catnip_canvas_set_x(canvas, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "y")) {
     catnip_canvas_set_y(canvas, luaL_checknumber(L, 3));
+  } else if (g_str_equal(key, "z")) {
+    catnip_canvas_set_z(canvas, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "width")) {
     catnip_canvas_set_width(canvas, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "height")) {

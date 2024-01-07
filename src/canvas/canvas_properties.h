@@ -16,6 +16,12 @@ void
 catnip_canvas_set_y(struct catnip_canvas* canvas, int new_y);
 
 int
+catnip_canvas_get_z(struct catnip_canvas* canvas);
+
+void
+catnip_canvas_set_z(struct catnip_canvas* canvas, int new_z);
+
+int
 catnip_canvas_get_width(struct catnip_canvas* canvas);
 
 void

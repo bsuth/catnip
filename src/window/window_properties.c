@@ -1,5 +1,6 @@
 #include "window_properties.h"
 #include "seat/seat.h"
+#include "utils/wayland.h"
 #include <wlr/types/wlr_scene.h>
 
 int
@@ -36,6 +37,18 @@ catnip_window_set_y(struct catnip_window* window, int new_y)
     catnip_window_get_x(window),
     new_y
   );
+}
+
+int
+catnip_window_get_z(struct catnip_window* window)
+{
+  return wlr_scene_node_get_zindex(&window->scene_tree->node);
+}
+
+void
+catnip_window_set_z(struct catnip_window* window, int new_z)
+{
+  wlr_scene_node_set_zindex(&window->scene_tree->node, new_z);
 }
 
 int

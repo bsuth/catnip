@@ -16,6 +16,12 @@ void
 catnip_window_set_y(struct catnip_window* window, int new_y);
 
 int
+catnip_window_get_z(struct catnip_window* window);
+
+void
+catnip_window_set_z(struct catnip_window* window, int new_z);
+
+int
 catnip_window_get_width(struct catnip_window* window);
 
 void

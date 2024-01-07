@@ -33,6 +33,8 @@ lua_catnip_window__index(lua_State* L)
     lua_pushnumber(L, catnip_window_get_x(window));
   } else if (g_str_equal(key, "y")) {
     lua_pushnumber(L, catnip_window_get_y(window));
+  } else if (g_str_equal(key, "z")) {
+    lua_pushnumber(L, catnip_window_get_z(window));
   } else if (g_str_equal(key, "width")) {
     lua_pushnumber(L, catnip_window_get_width(window));
   } else if (g_str_equal(key, "height")) {
@@ -83,6 +85,8 @@ lua_catnip_window__newindex(lua_State* L)
     catnip_window_set_x(window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "y")) {
     catnip_window_set_y(window, luaL_checknumber(L, 3));
+  } else if (g_str_equal(key, "z")) {
+    catnip_window_set_z(window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "width")) {
     catnip_window_set_width(window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "height")) {
