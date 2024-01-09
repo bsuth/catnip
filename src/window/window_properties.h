@@ -40,10 +40,10 @@ void
 catnip_window_set_visible(struct catnip_window* window, bool new_visible);
 
 bool
-catnip_window_get_active(struct catnip_window* window);
+catnip_window_get_focused(struct catnip_window* window);
 
 void
-catnip_window_set_active(struct catnip_window* window, bool new_active);
+catnip_window_set_focused(struct catnip_window* window, bool new_focused);
 
 bool
 catnip_window_get_fullscreen(struct catnip_window* window);

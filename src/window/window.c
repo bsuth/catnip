@@ -1,6 +1,7 @@
 #include "window.h"
 #include "config.h"
 #include "scene.h"
+#include "seat/seat.h"
 #include "utils/wayland.h"
 #include "window/lua_window.h"
 #include "xdg_shell.h"
@@ -11,6 +12,7 @@ static int catnip_window_id_counter = 1;
 
 static struct {
   struct wl_listener new_xdg_surface;
+  struct wl_listener keyboard_focus_change;
 } listeners;
 
 static void
@@ -60,11 +62,6 @@ catnip_window_configure(struct wl_listener* listener, void* data)
     window->prev_configure.height = toplevel_configure->height;
   }
 
-  if (toplevel_configure->activated != window->prev_configure.activated) {
-    lua_catnip_window_publish(catnip_L, window, "property::active", 0);
-    window->prev_configure.activated = toplevel_configure->activated;
-  }
-
   if (toplevel_configure->fullscreen != window->prev_configure.fullscreen) {
     lua_catnip_window_publish(catnip_L, window, "property::fullscreen", 0);
     window->prev_configure.fullscreen = toplevel_configure->fullscreen;
@@ -73,6 +70,33 @@ catnip_window_configure(struct wl_listener* listener, void* data)
   if (toplevel_configure->maximized != window->prev_configure.maximized) {
     lua_catnip_window_publish(catnip_L, window, "property::maximized", 0);
     window->prev_configure.maximized = toplevel_configure->maximized;
+  }
+
+  if (toplevel_configure->activated != window->prev_configure.activated) {
+    lua_catnip_window_publish(catnip_L, window, "property::active", 0);
+    window->prev_configure.activated = toplevel_configure->activated;
+
+    struct wlr_surface* window_surface = window->xdg_toplevel->base->surface;
+    struct wlr_surface* focused_surface =
+      catnip_seat->keyboard_state.focused_surface;
+
+    // Sync the keyboard focus with window active state.
+    if (toplevel_configure->activated != (window_surface == focused_surface)) {
+      if (!toplevel_configure->activated) {
+        wlr_seat_keyboard_notify_clear_focus(catnip_seat);
+      } else {
+        struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
+        if (keyboard != NULL) {
+          wlr_seat_keyboard_notify_enter(
+            catnip_seat,
+            window->xdg_toplevel->base->surface,
+            keyboard->keycodes,
+            keyboard->num_keycodes,
+            &keyboard->modifiers
+          );
+        }
+      }
+    }
   }
 }
 
@@ -219,6 +243,30 @@ catnip_window_create(struct wl_listener* listener, void* data)
   }
 }
 
+static void
+catnip_window_sync_focus(struct wl_listener* listener, void* data)
+{
+  struct wlr_seat_keyboard_focus_change_event* event = data;
+
+  if (event->old_surface != NULL) {
+    struct wlr_xdg_toplevel* old_toplevel =
+      wlr_xdg_toplevel_try_from_wlr_surface(event->old_surface);
+
+    if (old_toplevel != NULL && old_toplevel->base->initialized && old_toplevel->scheduled.activated) {
+      wlr_xdg_toplevel_set_activated(old_toplevel, false);
+    }
+  }
+
+  if (event->new_surface != NULL) {
+    struct wlr_xdg_toplevel* new_toplevel =
+      wlr_xdg_toplevel_try_from_wlr_surface(event->new_surface);
+
+    if (new_toplevel != NULL && new_toplevel->base->initialized && new_toplevel->scheduled.activated) {
+      wlr_xdg_toplevel_set_activated(new_toplevel, true);
+    }
+  }
+}
+
 void
 catnip_window_init()
 {
@@ -228,5 +276,11 @@ catnip_window_init()
     &listeners.new_xdg_surface,
     &catnip_xdg_shell->events.new_surface,
     catnip_window_create
+  );
+
+  wl_setup_listener(
+    &listeners.keyboard_focus_change,
+    &catnip_seat->keyboard_state.events.focus_change,
+    catnip_window_sync_focus
   );
 }

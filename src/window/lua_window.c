@@ -41,8 +41,8 @@ lua_catnip_window__index(lua_State* L)
     lua_pushnumber(L, catnip_window_get_height(window));
   } else if (g_str_equal(key, "visible")) {
     lua_pushboolean(L, catnip_window_get_visible(window));
-  } else if (g_str_equal(key, "active")) {
-    lua_pushboolean(L, catnip_window_get_active(window));
+  } else if (g_str_equal(key, "focused")) {
+    lua_pushboolean(L, catnip_window_get_focused(window));
   } else if (g_str_equal(key, "fullscreen")) {
     lua_pushboolean(L, catnip_window_get_fullscreen(window));
   } else if (g_str_equal(key, "maximized")) {
@@ -93,8 +93,8 @@ lua_catnip_window__newindex(lua_State* L)
     catnip_window_set_height(window, luaL_checknumber(L, 3));
   } else if (g_str_equal(key, "visible")) {
     catnip_window_set_visible(window, lua_toboolean(L, 3));
-  } else if (g_str_equal(key, "active")) {
-    catnip_window_set_active(window, lua_toboolean(L, 3));
+  } else if (g_str_equal(key, "focused")) {
+    catnip_window_set_focused(window, lua_toboolean(L, 3));
   } else if (g_str_equal(key, "fullscreen")) {
     catnip_window_set_fullscreen(window, lua_toboolean(L, 3));
   } else if (g_str_equal(key, "maximized")) {
