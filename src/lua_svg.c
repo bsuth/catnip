@@ -73,8 +73,5 @@ lua_catnip_svg_create(lua_State* L)
     }
   }
 
-  // TODO: need to set dpi?
-  // rsvg_handle_set_dpi(svg, 0);
-
   return 1;
 }

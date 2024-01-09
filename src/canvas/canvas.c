@@ -50,7 +50,6 @@ __catnip_canvas_refresh(void* data)
     return;
   }
 
-  // TODO: be smarter about damaging? Not sure how beneficial it actually is.
   wlr_scene_buffer_set_buffer_with_damage(
     canvas->scene_buffer,
     &canvas->buffer,

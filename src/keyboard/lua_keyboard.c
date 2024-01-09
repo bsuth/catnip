@@ -188,11 +188,9 @@ lua_catnip_keyboard_publish_key_event(
 
   *lua_event = event;
 
-  if (event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
-    lua_catnip_keyboard_publish(L, keyboard, "keydown", 1);
-  } else {
-    lua_catnip_keyboard_publish(L, keyboard, "keyup", 1);
-  }
+  event->state == WL_KEYBOARD_KEY_STATE_PRESSED
+    ? lua_catnip_keyboard_publish(L, keyboard, "key::press", 1)
+    : lua_catnip_keyboard_publish(L, keyboard, "key::release", 1);
 
   *lua_event = NULL;
 
