@@ -54,16 +54,12 @@ catnip_window_set_z(struct catnip_window* window, int new_z)
 int
 catnip_window_get_width(struct catnip_window* window)
 {
-  return (window->pending.width != -1)
-           ? window->pending.width
-           : window->xdg_surface->surface->current.width;
+  return window->xdg_toplevel->scheduled.width;
 }
 
 void
 catnip_window_set_width(struct catnip_window* window, int new_width)
 {
-  window->pending.width = new_width;
-
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
     new_width,
@@ -74,16 +70,12 @@ catnip_window_set_width(struct catnip_window* window, int new_width)
 int
 catnip_window_get_height(struct catnip_window* window)
 {
-  return (window->pending.height != -1)
-           ? window->pending.height
-           : window->xdg_surface->surface->current.height;
+  return window->xdg_toplevel->scheduled.height;
 }
 
 void
 catnip_window_set_height(struct catnip_window* window, int new_height)
 {
-  window->pending.height = new_height;
-
   wlr_xdg_toplevel_set_size(
     window->xdg_toplevel,
     catnip_window_get_width(window),
@@ -155,27 +147,25 @@ catnip_window_set_active(struct catnip_window* window, bool new_active)
 }
 
 bool
-catnip_window_get_maximized(struct catnip_window* window)
-{
-  // TODO
-  return false;
-}
-
-void
-catnip_window_set_maximized(struct catnip_window* window, bool new_maximized)
-{
-  // TODO
-}
-
-bool
 catnip_window_get_fullscreen(struct catnip_window* window)
 {
-  // TODO
-  return false;
+  return window->xdg_toplevel->scheduled.fullscreen;
 }
 
 void
 catnip_window_set_fullscreen(struct catnip_window* window, bool new_fullscreen)
 {
-  // TODO
+  wlr_xdg_toplevel_set_fullscreen(window->xdg_toplevel, new_fullscreen);
+}
+
+bool
+catnip_window_get_maximized(struct catnip_window* window)
+{
+  return window->xdg_toplevel->scheduled.maximized;
+}
+
+void
+catnip_window_set_maximized(struct catnip_window* window, bool new_maximized)
+{
+  wlr_xdg_toplevel_set_maximized(window->xdg_toplevel, new_maximized);
 }

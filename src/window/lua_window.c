@@ -43,10 +43,10 @@ lua_catnip_window__index(lua_State* L)
     lua_pushboolean(L, catnip_window_get_visible(window));
   } else if (g_str_equal(key, "active")) {
     lua_pushboolean(L, catnip_window_get_active(window));
-  } else if (g_str_equal(key, "maximized")) {
-    lua_pushboolean(L, catnip_window_get_maximized(window));
   } else if (g_str_equal(key, "fullscreen")) {
     lua_pushboolean(L, catnip_window_get_fullscreen(window));
+  } else if (g_str_equal(key, "maximized")) {
+    lua_pushboolean(L, catnip_window_get_maximized(window));
   } else if (g_str_equal(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_window_method_subscribe);
   } else if (g_str_equal(key, "unsubscribe")) {
@@ -95,10 +95,10 @@ lua_catnip_window__newindex(lua_State* L)
     catnip_window_set_visible(window, lua_toboolean(L, 3));
   } else if (g_str_equal(key, "active")) {
     catnip_window_set_active(window, lua_toboolean(L, 3));
-  } else if (g_str_equal(key, "maximized")) {
-    catnip_window_set_maximized(window, lua_toboolean(L, 3));
   } else if (g_str_equal(key, "fullscreen")) {
     catnip_window_set_fullscreen(window, lua_toboolean(L, 3));
+  } else if (g_str_equal(key, "maximized")) {
+    catnip_window_set_maximized(window, lua_toboolean(L, 3));
   } else {
     lua_log(L, "invalid key: %s", key);
   }
@@ -174,20 +174,6 @@ lua_catnip_window_publish(
 
   lua_remove(L, -1 - nargs);
   g_free(global_event);
-}
-
-void
-lua_catnip_window_publish_active_event(
-  lua_State* L,
-  struct catnip_window* window,
-  bool active
-)
-{
-  if (active) {
-    lua_catnip_window_publish(L, window, "activate", 0);
-  } else {
-    lua_catnip_window_publish(L, window, "deactivate", 0);
-  }
 }
 
 void

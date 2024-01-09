@@ -19,6 +19,14 @@ catnip_window_map(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.map);
 
+  // Initialize `xdg_toplevel->scheduled` to match the `xdg_toplevel` initial
+  // state since we always query `xdg_toplevel->scheduled` for window
+  // properties.
+  window->xdg_toplevel->scheduled.width =
+    window->xdg_surface->surface->current.width;
+  window->xdg_toplevel->scheduled.height =
+    window->xdg_surface->surface->current.height;
+
   if (catnip_L != NULL) {
     // Do not create the window in Lua until it has actually been mapped
     lua_catnip_window_create(catnip_L, window);
@@ -30,12 +38,6 @@ catnip_window_unmap(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.unmap);
-
-  // TODO
-  // Reset the cursor mode if the grabbed view was unmapped.
-  // if (toplevel == toplevel->server->grabbed_view) {
-  //   reset_cursor_mode(toplevel->server);
-  // }
 }
 
 static void
@@ -48,55 +50,75 @@ catnip_window_configure(struct wl_listener* listener, void* data)
   struct wlr_xdg_toplevel_configure* toplevel_configure =
     configure->toplevel_configure;
 
-  if (toplevel_configure->activated != window->prev_configure.activated) {
-    lua_catnip_window_publish_active_event(
-      catnip_L,
-      window,
-      toplevel_configure->activated
-    );
+  if (toplevel_configure->width != window->prev_configure.width) {
+    lua_catnip_window_publish(catnip_L, window, "property::width", 0);
+    window->prev_configure.width = toplevel_configure->width;
   }
 
-  window->prev_configure.activated = toplevel_configure->activated;
+  if (toplevel_configure->height != window->prev_configure.height) {
+    lua_catnip_window_publish(catnip_L, window, "property::height", 0);
+    window->prev_configure.height = toplevel_configure->height;
+  }
+
+  if (toplevel_configure->activated != window->prev_configure.activated) {
+    lua_catnip_window_publish(catnip_L, window, "property::active", 0);
+    window->prev_configure.activated = toplevel_configure->activated;
+  }
+
+  if (toplevel_configure->fullscreen != window->prev_configure.fullscreen) {
+    lua_catnip_window_publish(catnip_L, window, "property::fullscreen", 0);
+    window->prev_configure.fullscreen = toplevel_configure->fullscreen;
+  }
+
+  if (toplevel_configure->maximized != window->prev_configure.maximized) {
+    lua_catnip_window_publish(catnip_L, window, "property::maximized", 0);
+    window->prev_configure.maximized = toplevel_configure->maximized;
+  }
 }
 
 static void
 catnip_window_request_move(struct wl_listener* listener, void* data)
 {
-  // TODO check the provided serial against a list of button press serials sent
-  // to this client, to prevent the client from requesting this whenever they
-  // want.
+  struct wlr_xdg_toplevel_move_event* event = data;
+
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_move);
-  // TODO start move
+
+  // TODO
 }
 
 static void
 catnip_window_request_resize(struct wl_listener* listener, void* data)
 {
-  // TODO check the provided serial against a list of button press serials sent
-  // to this client, to prevent the client from requesting this whenever they
-  // want.
   struct wlr_xdg_toplevel_resize_event* event = data;
+
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_resize);
-  // TODO start resize
+
+  // TODO
 }
 
 static void
 catnip_window_request_maximize(struct wl_listener* listener, void* data)
 {
-  // TODO support maximization
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_maximize);
+
+  // Don't do anything here, just emit the event (in `catnip_window_configure`)
+  // and let the user decide how to handle maximization.
+
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
 static void
 catnip_window_request_fullscreen(struct wl_listener* listener, void* data)
 {
-  // TODO support fullscreen
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_fullscreen);
+
+  // Don't do anything here, just emit the event (in `catnip_window_configure`)
+  // and let the user decide how to handle fullscreen.
+
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
@@ -146,11 +168,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
       window->xdg_toplevel->base
     );
     window->scene_tree->node.data = window;
-
-    window->prev_configure.activated = false;
-
-    window->pending.width = -1;
-    window->pending.height = -1;
 
     wl_setup_listener(
       &window->listeners.map,

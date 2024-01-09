@@ -37,15 +37,13 @@ struct catnip_window {
   // at the time of writing it only tells us if `bounds` or `wm_capabilities`
   // has changed.
   struct {
+    int32_t width;
+    int32_t height;
     bool activated;
+    bool fullscreen;
+    bool maximized;
+    bool resizing;
   } prev_configure;
-
-  // These properties cannot be updated immediately and must instead _request_
-  // an update. Here, we store the most recent values requested.
-  struct {
-    int width;
-    int height;
-  } pending;
 };
 
 extern struct wl_list catnip_windows;

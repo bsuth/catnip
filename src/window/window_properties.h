@@ -46,15 +46,15 @@ void
 catnip_window_set_active(struct catnip_window* window, bool new_active);
 
 bool
-catnip_window_get_maximized(struct catnip_window* window);
-
-void
-catnip_window_set_maximized(struct catnip_window* window, bool new_maximized);
-
-bool
 catnip_window_get_fullscreen(struct catnip_window* window);
 
 void
 catnip_window_set_fullscreen(struct catnip_window* window, bool new_fullscreen);
+
+bool
+catnip_window_get_maximized(struct catnip_window* window);
+
+void
+catnip_window_set_maximized(struct catnip_window* window, bool new_maximized);
 
 #endif
