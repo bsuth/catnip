@@ -52,35 +52,44 @@ catnip_window_configure(struct wl_listener* listener, void* data)
   struct wlr_xdg_toplevel_configure* toplevel_configure =
     configure->toplevel_configure;
 
-  if (toplevel_configure->width != window->prev_configure.width) {
+  if (toplevel_configure->width != window->latest.width) {
+    window->latest.width = toplevel_configure->width;
     lua_catnip_window_publish(catnip_L, window, "property::width", 0);
-    window->prev_configure.width = toplevel_configure->width;
   }
 
-  if (toplevel_configure->height != window->prev_configure.height) {
+  if (toplevel_configure->height != window->latest.height) {
+    window->latest.height = toplevel_configure->height;
     lua_catnip_window_publish(catnip_L, window, "property::height", 0);
-    window->prev_configure.height = toplevel_configure->height;
   }
 
-  if (toplevel_configure->fullscreen != window->prev_configure.fullscreen) {
+  if (toplevel_configure->activated != window->latest.focused) {
+    window->latest.focused = toplevel_configure->activated;
+    lua_catnip_window_publish(catnip_L, window, "property::focused", 0);
+  }
+
+  if (toplevel_configure->fullscreen != window->latest.fullscreen) {
+    window->latest.fullscreen = toplevel_configure->fullscreen;
     lua_catnip_window_publish(catnip_L, window, "property::fullscreen", 0);
-    window->prev_configure.fullscreen = toplevel_configure->fullscreen;
   }
 
-  if (toplevel_configure->maximized != window->prev_configure.maximized) {
+  if (toplevel_configure->maximized != window->latest.maximized) {
+    window->latest.maximized = toplevel_configure->maximized;
     lua_catnip_window_publish(catnip_L, window, "property::maximized", 0);
-    window->prev_configure.maximized = toplevel_configure->maximized;
   }
 
-  if (toplevel_configure->activated != window->prev_configure.activated) {
-    lua_catnip_window_publish(catnip_L, window, "property::active", 0);
-    window->prev_configure.activated = toplevel_configure->activated;
+  // Sync the `activated` state with whether this windows surface is the focused
+  // keyboard surface. Note that this should be done when handling the
+  // `configure` event and _not_ when updating from Lua, since
+  // `wlr_seat_keyboard_notify_enter` will queue events immediately and queueing
+  // multiple `focus_change` events with varying surfaces will cause the earlier
+  // events to incorrectly sync the `activated` properties.
+  if (toplevel_configure->activated != window->latest.activated) {
+    window->latest.activated = toplevel_configure->activated;
 
     struct wlr_surface* window_surface = window->xdg_toplevel->base->surface;
     struct wlr_surface* focused_surface =
       catnip_seat->keyboard_state.focused_surface;
 
-    // Sync the keyboard focus with window active state.
     if (toplevel_configure->activated != (window_surface == focused_surface)) {
       if (!toplevel_configure->activated) {
         wlr_seat_keyboard_notify_clear_focus(catnip_seat);
@@ -89,7 +98,7 @@ catnip_window_configure(struct wl_listener* listener, void* data)
         if (keyboard != NULL) {
           wlr_seat_keyboard_notify_enter(
             catnip_seat,
-            window->xdg_toplevel->base->surface,
+            window_surface,
             keyboard->keycodes,
             keyboard->num_keycodes,
             &keyboard->modifiers
@@ -244,7 +253,7 @@ catnip_window_create(struct wl_listener* listener, void* data)
 }
 
 static void
-catnip_window_sync_focus(struct wl_listener* listener, void* data)
+catnip_window_sync_keyboard_focus(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_keyboard_focus_change_event* event = data;
 
@@ -281,6 +290,6 @@ catnip_window_init()
   wl_setup_listener(
     &listeners.keyboard_focus_change,
     &catnip_seat->keyboard_state.events.focus_change,
-    catnip_window_sync_focus
+    catnip_window_sync_keyboard_focus
   );
 }

@@ -29,21 +29,37 @@ struct catnip_window {
     lua_Ref subscriptions;
   } lua;
 
-  // Since configure events do not tell us which fields have actually changed,
-  // we store the most recent configure event values here and do the diff
-  // ourselves.
+  // Since properties that are mutated through `configure` events are not
+  // updated immediately (but rather on the next event cycle), we store the
+  // latest known values here.
   //
-  // Note that `struct wlr_xdg_toplevel_configure` has a `fields` property, but
-  // at the time of writing it only tells us if `bounds` or `wm_capabilities`
-  // has changed.
+  // This struct is also used to do diffs so we know whether or not we need to
+  // publish a `property::xxx` event (since the `configure` event may be
+  // triggered by a third party and does not tell us which fields have changed).
+  //
+  // Note that we intentionally do not use `xdg_toplevel->scheduled`, since if
+  // this is changed by a third party, we don't have a chance to emit a
+  // `property::xxx` event until the next `configure` event, but the Lua getter
+  // will fetch the (secretly) changed value immediately.
   struct {
     int32_t width;
     int32_t height;
-    bool activated;
     bool fullscreen;
     bool maximized;
     bool resizing;
-  } prev_configure;
+
+    // Even though we sync the `activated` state with whether or not the window
+    // is "focused", we keep separate properties here since they serve different
+    // functions.
+    //
+    // `focused` is used to track the property value itself and is used when
+    // determining whether we need to publish a `property::focused` event.
+    //
+    // `activated` is used to track whether or we need to sync the keyboard's
+    // focused surface state.
+    bool activated;
+    bool focused;
+  } latest;
 };
 
 extern struct wl_list catnip_windows;
