@@ -1,5 +1,6 @@
 #include "allocator.h"
 #include "backend.h"
+#include "cli.h"
 #include "config.h"
 #include "cursor/cursor.h"
 #include "display.h"
@@ -23,7 +24,7 @@
 int
 main(int argc, char* argv[])
 {
-  // TODO CLI (getopt)
+  catnip_cli_init(argc, argv);
 
   wlr_log_init(WLR_LOG_LEVEL, NULL);
 
