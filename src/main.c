@@ -5,7 +5,6 @@
 #include "display.h"
 #include "events/event_loop.h"
 #include "keyboard/keyboard.h"
-#include "meta.h"
 #include "output/output.h"
 #include "renderer.h"
 #include "scene.h"
@@ -19,7 +18,7 @@
 #include <wlr/util/log.h>
 
 // Match latest from wlroots (see wlroots/types/wlr_compositor.c)
-#define COMPOSITOR_VERSION 6
+#define WLR_COMPOSITOR_VERSION 6
 
 int
 main(int argc, char* argv[])
@@ -41,7 +40,12 @@ main(int argc, char* argv[])
   catnip_output_init(); // must init after backend + scene
   catnip_cursor_init(); // must init after output
 
-  wlr_compositor_create(catnip_display, COMPOSITOR_VERSION, catnip_renderer);
+  wlr_compositor_create(
+    catnip_display,
+    WLR_COMPOSITOR_VERSION,
+    catnip_renderer
+  );
+
   wlr_subcompositor_create(catnip_display);
   wlr_data_device_manager_create(catnip_display);
 

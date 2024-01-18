@@ -30,13 +30,14 @@ INSTALL_DIR := /usr/share/catnip
 # ------------------------------------------------------------------------------
 
 default: CFLAGS += \
-	-DWLR_LOG_ERROR \
+	-DWLR_LOG_LEVEL=1 \
 	-DCATNIP_INSTALL_DIR=\"$(INSTALL_DIR)\"
 
 default: $(BUILD_DIR)/$(EXECUTABLE)
 
 dev: CFLAGS += -g \
-	-DWLR_LOG_DEBUG
+	-DWLR_LOG_LEVEL=3 \
+	-DCATNIP_INSTALL_DIR=\".\"
 
 dev: $(BUILD_DIR)/$(EXECUTABLE)
 	@$(BUILD_DIR)/$(EXECUTABLE)
