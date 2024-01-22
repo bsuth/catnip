@@ -5,6 +5,7 @@
 #include "cursor/cursor.h"
 #include "display.h"
 #include "events/event_loop.h"
+#include "events/lua_events.h"
 #include "keyboard/keyboard.h"
 #include "output/output.h"
 #include "renderer.h"
@@ -62,11 +63,17 @@ main(int argc, char* argv[])
   // Init config AFTER the backend has started. Otherwise, the Wayland objects
   // (outputs, windows, etc) will not have been initialized yet and the user
   // will be unable to access them from their config.
-  //
-  // TODO: allow CLI `-c, --config` option to set `catnip_config_path`
   catnip_config_init();
 
-  wl_display_run(catnip_display);
+  while (catnip_display_run) {
+    wl_display_flush_clients(catnip_display);
+
+    if (wl_event_loop_dispatch(catnip_event_loop, 0) < 0) {
+      break;
+    }
+
+    lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "tick", 0);
+  }
 
   return 0;
 }

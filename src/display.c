@@ -3,6 +3,7 @@
 #include <stdlib.h>
 
 struct wl_display* catnip_display = NULL;
+bool catnip_display_run = true;
 const char* catnip_display_socket = NULL;
 
 void

@@ -22,6 +22,7 @@ static void
 __lua_catnip_quit()
 {
   lua_catnip_quit_event_source = NULL;
+  catnip_display_run = false;
   wl_display_terminate(catnip_display);
 }
 
