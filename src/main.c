@@ -25,9 +25,9 @@
 int
 main(int argc, char* argv[])
 {
-  catnip_cli_init(argc, argv);
+  wlr_log_init(WLR_ERROR, NULL); // default log level
 
-  wlr_log_init(WLR_LOG_LEVEL, NULL);
+  catnip_cli_init(argc, argv);
 
   catnip_display_init();
   catnip_scene_init();

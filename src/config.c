@@ -4,7 +4,6 @@
 #include <glib.h>
 #include <lauxlib.h>
 #include <lualib.h>
-#include <stdio.h>
 #include <unistd.h>
 
 lua_State* catnip_L = NULL;
