@@ -23,7 +23,7 @@ $(shell mkdir -p $(BUILD_DIR))
 
 INSTALL_DIR := /usr/share/catnip
 
-.PHONY = clean dev
+.PHONY = default dev clean test
 
 # ------------------------------------------------------------------------------
 # Builds
@@ -99,3 +99,10 @@ $(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)
 
 clean:
 	if [[ -d $(BUILD_DIR) ]]; then rm -r $(BUILD_DIR); fi
+
+# ------------------------------------------------------------------------------
+# Tests
+# ------------------------------------------------------------------------------
+
+test: default
+	@luajit test/_runner.lua
