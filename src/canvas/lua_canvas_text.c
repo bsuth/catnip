@@ -1,6 +1,5 @@
 #include "lua_canvas_text.h"
 #include "canvas/canvas_methods.h"
-#include "utils/log.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
 #include <pango/pango-layout.h>
@@ -137,13 +136,10 @@ lua_catnip_canvas_text(lua_State* L)
       const char* alignment = lua_popstring(L);
 
       if (g_str_equal(alignment, "left")) {
-        text.alignment = PANGO_ALIGN_LEFT;
       } else if (g_str_equal(alignment, "center")) {
         text.alignment = PANGO_ALIGN_CENTER;
       } else if (g_str_equal(alignment, "right")) {
         text.alignment = PANGO_ALIGN_RIGHT;
-      } else {
-        log_warning("%s", lua_field_error_msg(L, "align", "invalid value"));
       }
     }
 
@@ -162,14 +158,7 @@ lua_catnip_canvas_text(lua_State* L)
           text.ellipsize = PANGO_ELLIPSIZE_MIDDLE;
         } else if (g_str_equal(ellipsis, "end")) {
           text.ellipsize = PANGO_ELLIPSIZE_END;
-        } else {
-          log_warning(
-            "%s",
-            lua_field_error_msg(L, "ellipsis", "invalid value")
-          );
         }
-      } else {
-        log_warning("%s", lua_field_error_msg_bad_type(L, "ellipsis", -1));
       }
 
       lua_pop(L, 1);
@@ -184,8 +173,6 @@ lua_catnip_canvas_text(lua_State* L)
         text.wrap = PANGO_WRAP_WORD;
       } else if (g_str_equal(wrap, "auto")) {
         text.wrap = PANGO_WRAP_WORD_CHAR;
-      } else {
-        log_warning("%s", lua_field_error_msg(L, "wrap", "invalid value"));
       }
     }
   }

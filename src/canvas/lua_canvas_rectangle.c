@@ -1,7 +1,6 @@
 #include "lua_canvas_rectangle.h"
 #include "canvas/canvas_methods.h"
 #include "utils/cairo.h"
-#include "utils/log.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
 
@@ -143,7 +142,7 @@ lua_catnip_canvas_rectangle(lua_State* L)
       lua_rawgeti(L, -1, 4);
       rectangle.radius_bottom_left = lua_popinteger(L);
     } else {
-      log_warning("%s", lua_field_error_msg_bad_type(L, "radius", -1));
+      lua_log_bad_field_type(L, 6, "radius");
     }
 
     lua_pop(L, 1);

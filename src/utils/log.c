@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <time.h>
 
-enum LOG_LEVEL global_log_level = LOG_LEVEL_SILENT;
+enum LOG_LEVEL global_log_level = LOG_LEVEL_ERROR;
 
 static const char*
 get_log_level_label(enum LOG_LEVEL log_level)

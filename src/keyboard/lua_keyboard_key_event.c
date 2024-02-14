@@ -12,13 +12,7 @@ lua_catnip_keyboard_key_event__index(lua_State* L)
   struct catnip_keyboard_key_event* key_event = *lua_key_event;
 
   if (key_event == NULL) {
-    lua_log(L, "attempt to index outdated key event");
-    lua_pushnil(L);
-    return 1;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
+    lua_log_error(L, "attempt to index outdated userdata");
     lua_pushnil(L);
     return 1;
   }
@@ -57,13 +51,7 @@ lua_catnip_keyboard_key_event__newindex(lua_State* L)
   struct catnip_keyboard_key_event* key_event = *lua_key_event;
 
   if (key_event == NULL) {
-    lua_log(L, "attempt to index outdated key event");
-    return 0;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    lua_log(L, "invalid key type: %s", lua_typename(L, key_type));
+    lua_log_error(L, "attempt to index outdated userdata");
     return 0;
   }
 
@@ -72,7 +60,7 @@ lua_catnip_keyboard_key_event__newindex(lua_State* L)
   if (g_str_equal(key, "prevent_notify")) {
     key_event->prevent_notify = lua_toboolean(L, 3);
   } else {
-    lua_log(L, "invalid key: %s", key);
+    lua_log_error(L, "unknown userdata field (%s)", key);
   }
 
   return 0;

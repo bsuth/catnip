@@ -11,11 +11,6 @@ lua_Ref lua_catnip_cursor_subscriptions = LUA_NOREF;
 static int
 lua_catnip_cursor__index(lua_State* L)
 {
-  if (lua_type(L, 2) != LUA_TSTRING) {
-    lua_pushnil(L);
-    return 1;
-  }
-
   const char* key = lua_tostring(L, 2);
 
   if (g_str_equal(key, "x")) {
@@ -44,12 +39,6 @@ lua_catnip_cursor__index(lua_State* L)
 static int
 lua_catnip_cursor__newindex(lua_State* L)
 {
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    lua_log(L, "invalid key type: %s", lua_typename(L, key_type));
-    return 0;
-  }
-
   const char* key = lua_tostring(L, 2);
 
   if (g_str_equal(key, "x")) {
@@ -63,7 +52,7 @@ lua_catnip_cursor__newindex(lua_State* L)
   } else if (g_str_equal(key, "theme")) {
     catnip_cursor_set_theme(luaL_checkstring(L, 3));
   } else {
-    lua_log(L, "invalid key: %s", key);
+    lua_log_error(L, "unknown userdata field (%s)", key);
   }
 
   return 0;

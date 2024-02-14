@@ -40,13 +40,7 @@ lua_catnip_output__index(lua_State* L)
   struct catnip_output* output = *lua_output;
 
   if (output == NULL) {
-    lua_log(L, "attempt to index outdated output");
-    lua_pushnil(L);
-    return 1;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
+    lua_log_error(L, "attempt to index outdated userdata");
     lua_pushnil(L);
     return 1;
   }
@@ -91,13 +85,7 @@ lua_catnip_output__newindex(lua_State* L)
   struct catnip_output* output = *lua_output;
 
   if (output == NULL) {
-    lua_log(L, "attempt to index outdated output");
-    return 0;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    lua_log(L, "invalid key type: %s", lua_typename(L, key_type));
+    lua_log_error(L, "attempt to index outdated userdata");
     return 0;
   }
 
@@ -120,7 +108,7 @@ lua_catnip_output__newindex(lua_State* L)
   } else if (g_str_equal(key, "scale")) {
     catnip_output_set_scale(output, luaL_checknumber(L, 3));
   } else {
-    lua_log(L, "invalid key: %s", key);
+    lua_log_error(L, "unknown userdata field (%s)", key);
   }
 
   return 0;

@@ -6,7 +6,6 @@
 #include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
-#include "utils/log.h"
 #include "utils/lua.h"
 #include <glib.h>
 #include <lauxlib.h>
@@ -24,12 +23,6 @@ lua_catnip_canvas__index(lua_State* L)
 {
   struct catnip_canvas** lua_canvas = lua_touserdata(L, 1);
   struct catnip_canvas* canvas = *lua_canvas;
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    lua_pushnil(L);
-    return 1;
-  }
 
   const char* key = lua_tostring(L, 2);
 
@@ -68,12 +61,6 @@ lua_catnip_canvas__newindex(lua_State* L)
   struct catnip_canvas** lua_canvas = lua_touserdata(L, 1);
   struct catnip_canvas* canvas = *lua_canvas;
 
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    log_warning("invalid key type: %s", lua_typename(L, key_type));
-    return 0;
-  }
-
   const char* key = lua_tostring(L, 2);
 
   if (g_str_equal(key, "x")) {
@@ -89,7 +76,7 @@ lua_catnip_canvas__newindex(lua_State* L)
   } else if (g_str_equal(key, "visible")) {
     catnip_canvas_set_visible(canvas, lua_toboolean(L, 3));
   } else {
-    log_warning("invalid key: %s", key);
+    lua_log_error(L, "unknown userdata field (%s)", key);
   }
 
   return 0;

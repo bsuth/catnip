@@ -1,9 +1,6 @@
 #include "lua.h"
 #include "utils/glib.h"
-#include "utils/log.h"
-#include <glib.h>
 #include <lauxlib.h>
-#include <stdbool.h>
 
 // -----------------------------------------------------------------------------
 // Debugging
@@ -136,7 +133,7 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type)
   if (!lua_hasfield(L, index, field)) {
     return false;
   } else if (lua_type(L, -1) != type) {
-    log_warning("%s", lua_field_error_msg_expected_type(L, field, -1, type));
+    lua_log_expected_field_type(L, index, field, type);
     lua_pop(L, 1);
     return false;
   } else {
@@ -145,55 +142,11 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type)
 }
 
 // -----------------------------------------------------------------------------
-// Error Messages
+// Messages
 // -----------------------------------------------------------------------------
 
-void
-lua_log(lua_State* L, const char* format, ...)
-{
-  char timestamp[9];
-  time_t timer = time(NULL);
-  struct tm* tm = localtime(&timer);
-  strftime(timestamp, sizeof(timestamp), "%H:%M:%S", tm);
-
-  GString* message = g_string_new(NULL);
-  va_list varargs;
-  va_start(varargs, format);
-  g_string_vprintf(message, format, varargs);
-  va_end(varargs);
-
-  char* lua_message = lua_error_msg(L, message->str);
-  printf("[%s] %s\n", timestamp, lua_message);
-
-  g_string_free(message, true);
-  free(lua_message);
-}
-
 char*
-lua_error_msg(lua_State* L, const char* details)
-{
-  GString* error_msg = g_string_new(NULL);
-  lua_Debug caller_info;
-
-  if (!lua_getstack(L, 1, &caller_info)) {
-    g_string_printf(error_msg, "%s", details);
-  } else {
-    lua_getinfo(L, "Sl", &caller_info);
-
-    g_string_printf(
-      error_msg,
-      "%s:%d: %s",
-      caller_info.short_src,
-      caller_info.currentline,
-      details
-    );
-  }
-
-  return g_string_free_and_steal(error_msg);
-}
-
-char*
-lua_error_msg_bad_type(lua_State* L, int index)
+lua_msg_bad_type(lua_State* L, int index)
 {
   return g_string_free_and_steal(
     g_string_new_printf("bad type '%s'", luaL_typename(L, index))
@@ -201,88 +154,121 @@ lua_error_msg_bad_type(lua_State* L, int index)
 }
 
 char*
-lua_error_msg_expected_type(lua_State* L, int index, int expected_type)
+lua_msg_expected_type(lua_State* L, int index, int type)
 {
   return g_string_free_and_steal(g_string_new_printf(
     "%s expected, got %s",
-    lua_typename(L, expected_type),
+    lua_typename(L, type),
     luaL_typename(L, index)
   ));
 }
 
 char*
-lua_arg_error_msg(lua_State* L, int arg_index, const char* details)
+lua_msg_bad_arg(lua_State* L, int index, const char* details)
 {
   lua_Debug callee_info;
 
   if (!lua_getstack(L, 0, &callee_info)) {
     GString* error_msg = g_string_new(NULL);
-    g_string_printf(error_msg, "bad argument #%d (%s)", arg_index, details);
+    g_string_printf(error_msg, "bad argument #%d (%s)", index, details);
     return g_string_free_and_steal(error_msg);
   }
 
   lua_getinfo(L, "n", &callee_info);
 
-  GString* full_details = g_string_new_printf(
+  return g_string_free_and_steal(g_string_new_printf(
     "bad argument #%d to '%s' (%s)",
-    arg_index,
+    index,
     callee_info.name ? callee_info.name : "?",
     details
+  ));
+}
+
+char*
+lua_msg_bad_field(lua_State* L, const char* field, const char* details)
+{
+  return g_string_free_and_steal(
+    g_string_new_printf("bad field '%s' (%s)", field, details)
   );
-
-  char* error_msg = lua_error_msg(L, full_details->str);
-  g_string_free(full_details, true);
-
-  return error_msg;
 }
 
-char*
-lua_arg_error_msg_bad_type(lua_State* L, int arg_index)
+// -----------------------------------------------------------------------------
+// Logging
+// -----------------------------------------------------------------------------
+
+void
+lua_log(lua_State* L, enum LOG_LEVEL log_level, const char* format, ...)
 {
-  char* details = lua_error_msg_bad_type(L, arg_index);
-  char* error_msg = lua_arg_error_msg(L, arg_index, details);
-  free(details);
-  return error_msg;
+  GString* message = g_string_new(NULL);
+  va_list varargs;
+  va_start(varargs, format);
+  g_string_vprintf(message, format, varargs);
+  va_end(varargs);
+
+  lua_Debug caller_info;
+
+  if (!lua_getstack(L, 1, &caller_info)) {
+    log_log(log_level, "%s", message->str);
+  } else {
+    lua_getinfo(L, "Sl", &caller_info);
+
+    log_log(
+      log_level,
+      "%s:%d: %s",
+      caller_info.short_src,
+      caller_info.currentline,
+      message->str
+    );
+  }
+
+  g_string_free(message, true);
 }
 
-char*
-lua_arg_error_msg_expected_type(lua_State* L, int arg_index, int expected_type)
+void
+lua_log_bad_arg_type(lua_State* L, int index)
 {
-  char* details = lua_error_msg_expected_type(L, arg_index, expected_type);
-  char* error_msg = lua_arg_error_msg(L, arg_index, details);
-  free(details);
-  return error_msg;
+  char* bad_type_msg = lua_msg_bad_type(L, index);
+  char* bad_arg_msg = lua_msg_bad_arg(L, index, bad_type_msg);
+  lua_log_error(L, "%s", bad_arg_msg);
+  free(bad_arg_msg);
+  free(bad_type_msg);
 }
 
-char*
-lua_field_error_msg(lua_State* L, const char* field, const char* details)
+void
+lua_log_expected_arg_type(lua_State* L, int index, int type)
 {
-  GString* full_details =
-    g_string_new_printf("bad field '%s' (%s)", field, details);
-  char* error_msg = lua_error_msg(L, full_details->str);
-  g_string_free(full_details, true);
-  return error_msg;
+  char* expected_type_msg = lua_msg_expected_type(L, index, type);
+  char* bad_arg_msg = lua_msg_bad_arg(L, index, expected_type_msg);
+  lua_log_error(L, "%s", bad_arg_msg);
+  free(bad_arg_msg);
+  free(expected_type_msg);
 }
 
-char*
-lua_field_error_msg_bad_type(lua_State* L, const char* field, int value_index)
+void
+lua_log_bad_field_type(lua_State* L, int index, const char* field)
 {
-  char* details = lua_error_msg_bad_type(L, value_index);
-  char* error_msg = lua_field_error_msg(L, field, details);
-  free(details);
-  return error_msg;
+  lua_getfield(L, index, field);
+  char* bad_type_msg = lua_msg_bad_type(L, -1);
+  char* bad_field_msg = lua_msg_bad_field(L, field, bad_type_msg);
+  lua_log_error(L, "%s", bad_field_msg);
+  free(bad_field_msg);
+  free(bad_type_msg);
+  lua_pop(L, 1);
 }
 
-char*
-lua_field_error_msg_expected_type(
+void
+lua_log_expected_field_type(
   lua_State* L,
+  int index,
   const char* field,
-  int value_index,
-  int expected_type
+  int type
 )
 {
-  char* details = lua_error_msg_expected_type(L, value_index, expected_type);
-  char* error_msg = lua_field_error_msg(L, field, details);
-  free(details);
-  return error_msg;
+  lua_getfield(L, index, field);
+  char* expected_type_msg = lua_msg_expected_type(L, -1, type);
+  char* bad_field_msg = lua_msg_bad_field(L, field, expected_type_msg);
+  lua_log_error(L, "%s", bad_field_msg);
+  free(bad_field_msg);
+  free(expected_type_msg);
+  lua_pop(L, 1);
 }

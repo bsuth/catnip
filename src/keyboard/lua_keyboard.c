@@ -15,13 +15,7 @@ lua_catnip_keyboard__index(lua_State* L)
   struct catnip_keyboard* keyboard = *lua_keyboard;
 
   if (keyboard == NULL) {
-    lua_log(L, "attempt to index outdated keyboard");
-    lua_pushnil(L);
-    return 1;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
+    lua_log_error(L, "attempt to index outdated userdata");
     lua_pushnil(L);
     return 1;
   }
@@ -72,13 +66,7 @@ lua_catnip_keyboard__newindex(lua_State* L)
   struct catnip_keyboard* keyboard = *lua_keyboard;
 
   if (keyboard == NULL) {
-    lua_log(L, "attempt to index outdated keyboard");
-    return 0;
-  }
-
-  int key_type = lua_type(L, 2);
-  if (key_type != LUA_TSTRING) {
-    lua_log(L, "invalid key type: %s", lua_typename(L, key_type));
+    lua_log_error(L, "attempt to index outdated userdata");
     return 0;
   }
 
@@ -100,7 +88,7 @@ lua_catnip_keyboard__newindex(lua_State* L)
     keyboard->xkb_rule_names.options = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
   } else {
-    lua_log(L, "invalid key: %s", key);
+    lua_log_error(L, "unknown userdata field (%s)", key);
   }
 
   return 0;

@@ -10,7 +10,7 @@ lua_catnip_output_mode__index(lua_State* L)
   struct wlr_output_mode* mode = *lua_mode;
 
   if (mode == NULL) {
-    lua_log(L, "attempt to index outdated output mode");
+    lua_log_error(L, "attempt to index outdated userdata");
     lua_pushnil(L);
     return 1;
   }

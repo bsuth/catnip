@@ -9,7 +9,7 @@
 #include "lua_png.h"
 #include "lua_svg.h"
 #include "output/lua_output.h"
-#include "utils/log.h"
+#include "utils/lua.h"
 #include "window/lua_window.h"
 #include <lauxlib.h>
 #include <stdlib.h>
@@ -56,7 +56,7 @@ lua_catnip_reload(lua_State* L)
   }
 
   if (catnip_config_loading) {
-    log_warning("attempted to reload during startup, ignoring...");
+    lua_log_warning(L, "attempted to reload during startup, ignoring...");
     return 0;
   }
 
