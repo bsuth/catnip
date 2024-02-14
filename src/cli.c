@@ -24,7 +24,7 @@ static const char* catnip_help =
   "usage: catnip [OPTION]\n"
   "  -c, --config FILE     specify lua config path\n"
   "  -l, --loglevel LEVEL  specify log level, must be one of:\n"
-  "                        silent, error, info, debug \n"
+  "                        silent, error, warning, info, debug \n"
   "  -v, --version         print help and exit\n"
   "  -h, --help            print version and exit\n";
 
@@ -58,12 +58,19 @@ catnip_cli_init(int argc, char* argv[])
         break;
       case 'l': {
         if (g_str_equal(optarg, "silent")) {
+          global_log_level = LOG_LEVEL_SILENT;
           wlr_log_init(WLR_SILENT, NULL);
         } else if (g_str_equal(optarg, "error")) {
+          global_log_level = LOG_LEVEL_ERROR;
+          wlr_log_init(WLR_ERROR, NULL);
+        } else if (g_str_equal(optarg, "warning")) {
+          global_log_level = LOG_LEVEL_WARNING;
           wlr_log_init(WLR_ERROR, NULL);
         } else if (g_str_equal(optarg, "info")) {
+          global_log_level = LOG_LEVEL_INFO;
           wlr_log_init(WLR_INFO, NULL);
         } else if (g_str_equal(optarg, "debug")) {
+          global_log_level = LOG_LEVEL_DEBUG;
           wlr_log_init(WLR_DEBUG, NULL);
         } else {
           log_warning("invalid option '--loglevel %s'", optarg);
