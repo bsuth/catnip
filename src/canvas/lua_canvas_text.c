@@ -7,11 +7,14 @@
 #include <pango/pangocairo.h>
 
 struct catnip_canvas_text {
-  const char* markup;
+  const char* text;
+
   int x;
   int y;
   int width;
   int height;
+
+  PangoAttrList* attributes;
   PangoAlignment alignment;
   PangoEllipsizeMode ellipsize;
   PangoWrapMode wrap;
@@ -25,9 +28,10 @@ catnip_canvas_text_draw(
 {
   PangoLayout* layout = pango_cairo_create_layout(canvas->cr);
 
+  pango_layout_set_text(layout, text->text, -1);
   pango_layout_set_width(layout, text->width);
   pango_layout_set_height(layout, text->height);
-  pango_layout_set_markup(layout, text->markup, -1);
+  pango_layout_set_attributes(layout, text->attributes);
   pango_layout_set_alignment(layout, text->alignment);
   pango_layout_set_ellipsize(layout, text->ellipsize);
   pango_layout_set_wrap(layout, text->wrap);
@@ -47,25 +51,86 @@ lua_catnip_canvas_text(lua_State* L)
   struct catnip_canvas* canvas = *lua_canvas;
 
   struct catnip_canvas_text text = {
-    .markup = luaL_checkstring(L, 2),
+    .text = luaL_checkstring(L, 2),
     .x = 0,
     .y = 0,
     .width = -1,
     .height = -1,
+    .attributes = pango_attr_list_new(),
     .alignment = PANGO_ALIGN_LEFT,
     .ellipsize = PANGO_ELLIPSIZE_NONE,
     .wrap = PANGO_WRAP_WORD_CHAR,
   };
 
   if (lua_type(L, 3) == LUA_TTABLE) {
-    lua_hasnumberfield(L, 3, "x") && (text.x = lua_popinteger(L));
-    lua_hasnumberfield(L, 3, "y") && (text.y = lua_popinteger(L));
-    lua_hasnumberfield(L, 3, "width")
-      && (text.width = PANGO_SCALE * lua_popinteger(L));
+    if (lua_hasnumberfield(L, 3, "x")) {
+      text.x = lua_popinteger(L);
+    }
+
+    if (lua_hasnumberfield(L, 3, "y")) {
+      text.y = lua_popinteger(L);
+    }
+
+    if (lua_hasnumberfield(L, 3, "width")) {
+      text.width = PANGO_SCALE * lua_popinteger(L);
+    }
 
     if (lua_hasnumberfield(L, 3, "height")) {
-      text.height = lua_popinteger(L);
-      (text.height > 0) && (text.height *= PANGO_SCALE);
+      text.height = PANGO_SCALE * lua_popinteger(L);
+    }
+
+    if (lua_hasnumberfield(L, 3, "font")) {
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_family_new(lua_popstring(L))
+      );
+    }
+
+    if (lua_hasnumberfield(L, 3, "size")) {
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_size_new(lua_popinteger(L))
+      );
+    }
+
+    if (lua_hasnumberfield(L, 3, "weight")) {
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_weight_new(lua_popinteger(L))
+      );
+    }
+
+    if (lua_hasnumberfield(L, 3, "italics")) {
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_style_new(
+          lua_popboolean(L) ? PANGO_STYLE_NORMAL : PANGO_STYLE_ITALIC
+        )
+      );
+    }
+
+    if (lua_hasnumberfield(L, 3, "color")) {
+      int color = lua_popinteger(L);
+
+      const guint8 red8 = ((color & 0xff0000) >> 16);
+      const guint8 green8 = ((color & 0x00ff00) >> 8);
+      const guint8 blue8 = (color & 0x0000ff);
+
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_foreground_new(
+          ((guint16) red8 << 8) | red8,
+          ((guint16) green8 << 8) | green8,
+          ((guint16) blue8 << 8) | blue8
+        )
+      );
+    }
+
+    if (lua_hasnumberfield(L, 3, "opacity")) {
+      pango_attr_list_insert(
+        text.attributes,
+        pango_attr_foreground_alpha_new(0xffff * lua_popnumber(L))
+      );
     }
 
     if (lua_hasstringfield(L, 3, "align")) {
@@ -98,7 +163,10 @@ lua_catnip_canvas_text(lua_State* L)
         } else if (g_str_equal(ellipsis, "end")) {
           text.ellipsize = PANGO_ELLIPSIZE_END;
         } else {
-          log_warning("invalid ellipsis: %s", ellipsis);
+          log_warning(
+            "%s",
+            lua_field_error_msg(L, "ellipsis", "invalid value")
+          );
         }
       } else {
         log_warning("%s", lua_field_error_msg_bad_type(L, "ellipsis", -1));
@@ -123,6 +191,7 @@ lua_catnip_canvas_text(lua_State* L)
   }
 
   catnip_canvas_text_draw(canvas, &text);
+  pango_attr_list_unref(text.attributes);
 
   return 0;
 }
