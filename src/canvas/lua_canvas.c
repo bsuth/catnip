@@ -2,7 +2,7 @@
 #include "canvas/canvas.h"
 #include "canvas/canvas_properties.h"
 #include "canvas/lua_canvas_png.h"
-#include "canvas/lua_canvas_shapes.h"
+#include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
 #include "utils/log.h"

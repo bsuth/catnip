@@ -16,7 +16,10 @@ cairo_rounded_rectangle(
   double y,
   double width,
   double height,
-  double radius
+  double radius_top_left,
+  double radius_top_right,
+  double radius_bottom_right,
+  double radius_bottom_left
 );
 
 #endif

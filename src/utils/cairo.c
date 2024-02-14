@@ -1,5 +1,5 @@
 #include "cairo.h"
-#include "math.h"
+#include <math.h>
 
 void
 cairo_set_source_hex(cairo_t* cr, int hex)
@@ -31,13 +31,49 @@ cairo_rounded_rectangle(
   double y,
   double width,
   double height,
-  double radius
+  double radius_top_left,
+  double radius_top_right,
+  double radius_bottom_right,
+  double radius_bottom_left
 )
 {
   cairo_new_sub_path(cr);
-  cairo_arc(cr, x + radius, y + radius, radius, M_PI, 3 * M_PI_2);
-  cairo_arc(cr, x + width - radius, y + radius, radius, -M_PI_2, 0);
-  cairo_arc(cr, x + width - radius, y + height - radius, radius, 0, M_PI_2);
-  cairo_arc(cr, x + radius, y + height - radius, radius, M_PI_2, M_PI);
+
+  cairo_arc(
+    cr,
+    x + radius_top_left,
+    y + radius_top_left,
+    radius_top_left,
+    M_PI,
+    3 * M_PI_2
+  );
+
+  cairo_arc(
+    cr,
+    x + width - radius_top_right,
+    y + radius_top_right,
+    radius_top_right,
+    -M_PI_2,
+    0
+  );
+
+  cairo_arc(
+    cr,
+    x + width - radius_bottom_right,
+    y + height - radius_bottom_right,
+    radius_bottom_right,
+    0,
+    M_PI_2
+  );
+
+  cairo_arc(
+    cr,
+    x + radius_bottom_left,
+    y + height - radius_bottom_left,
+    radius_bottom_left,
+    M_PI_2,
+    M_PI
+  );
+
   cairo_close_path(cr);
 }
