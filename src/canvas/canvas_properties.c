@@ -1,4 +1,5 @@
 #include "canvas_properties.h"
+#include "canvas/canvas_methods.h"
 #include "utils/wayland.h"
 
 int

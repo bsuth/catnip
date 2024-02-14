@@ -1,5 +1,6 @@
 #include "lua_canvas.h"
 #include "canvas/canvas.h"
+#include "canvas/canvas_methods.h"
 #include "canvas/canvas_properties.h"
 #include "canvas/lua_canvas_png.h"
 #include "canvas/lua_canvas_rectangle.h"

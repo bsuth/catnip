@@ -19,28 +19,8 @@ struct catnip_canvas {
   struct wl_event_source* refresh_task;
 };
 
-// -----------------------------------------------------------------------------
-// Canvas
-// -----------------------------------------------------------------------------
-
 struct catnip_canvas*
 catnip_canvas_create(int width, int height);
-
-void
-catnip_canvas_refresh(struct catnip_canvas* canvas);
-
-void
-catnip_canvas_clear(struct catnip_canvas* canvas);
-
-void
-catnip_canvas_move(struct catnip_canvas* canvas, int new_x, int new_y);
-
-void
-catnip_canvas_resize(
-  struct catnip_canvas* canvas,
-  int new_width,
-  int new_height
-);
 
 void
 catnip_canvas_destroy(struct catnip_canvas* canvas);

@@ -1,5 +1,6 @@
 #include "cursor_properties.h"
 #include "cursor/cursor.h"
+#include "cursor/cursor_methods.h"
 #include "output/output.h"
 #include "utils/time.h"
 #include <stdlib.h>
