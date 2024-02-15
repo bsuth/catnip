@@ -46,7 +46,7 @@ catnip_canvas_text_draw(
 int
 lua_catnip_canvas_text(lua_State* L)
 {
-  struct catnip_canvas** lua_canvas = lua_touserdata(L, 1);
+  struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
   struct catnip_canvas* canvas = *lua_canvas;
 
   struct catnip_canvas_text text = {

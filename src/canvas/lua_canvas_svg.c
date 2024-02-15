@@ -46,7 +46,7 @@ catnip_canvas_svg_draw(
 int
 lua_catnip_canvas_svg(lua_State* L)
 {
-  struct catnip_canvas** lua_canvas = lua_touserdata(L, 1);
+  struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
   struct catnip_canvas* canvas = *lua_canvas;
 
   RsvgHandle** lua_svg = luaL_checkudata(L, 2, "catnip.svg");

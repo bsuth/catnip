@@ -1,7 +1,7 @@
 #include "lua_canvas.h"
 #include "canvas/canvas.h"
-#include "canvas/canvas_methods.h"
 #include "canvas/canvas_properties.h"
+#include "canvas/lua_canvas_methods.h"
 #include "canvas/lua_canvas_png.h"
 #include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_svg.h"
@@ -9,14 +9,6 @@
 #include "utils/lua.h"
 #include <glib.h>
 #include <lauxlib.h>
-
-static int
-lua_catnip_canvas_clear(lua_State* L)
-{
-  struct catnip_canvas** lua_canvas = lua_touserdata(L, 1);
-  catnip_canvas_clear(*lua_canvas);
-  return 0;
-}
 
 static int
 lua_catnip_canvas__index(lua_State* L)
