@@ -6,8 +6,6 @@
 #include "events/event_loop.h"
 #include "events/lua_events.h"
 #include "keyboard/lua_keyboard.h"
-#include "lua_png.h"
-#include "lua_svg.h"
 #include "output/lua_output.h"
 #include "utils/lua.h"
 #include "window/lua_window.h"
@@ -145,14 +143,6 @@ lua_catnip_init(lua_State* L)
   lua_catnip_canvas_init(L);
   lua_pushcfunction(L, lua_catnip_canvas_create);
   lua_setfield(L, -2, "canvas");
-
-  lua_catnip_png_init(L);
-  lua_pushcfunction(L, lua_catnip_png_create);
-  lua_setfield(L, -2, "png");
-
-  lua_catnip_svg_init(L);
-  lua_pushcfunction(L, lua_catnip_svg_create);
-  lua_setfield(L, -2, "svg");
 
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
