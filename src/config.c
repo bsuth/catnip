@@ -36,14 +36,15 @@ catnip_config_try(const char* path)
   catnip_config_loading = false;
   free(config_basename);
 
-  chdir(current_dir);
-  free(current_dir);
-
   if (!loaded) {
     log_error("%s: %s", path, lua_tostring(new_catnip_L, -1));
     lua_close(new_catnip_L);
+    chdir(current_dir);
+    free(current_dir);
     return false;
   }
+
+  free(current_dir);
 
   if (catnip_L != NULL) {
     lua_close(catnip_L);
