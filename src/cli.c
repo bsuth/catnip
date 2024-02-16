@@ -60,9 +60,6 @@ catnip_cli_init(int argc, char* argv[])
         if (g_str_equal(optarg, "silent")) {
           global_log_level = LOG_LEVEL_SILENT;
           wlr_log_init(WLR_SILENT, NULL);
-        } else if (g_str_equal(optarg, "error")) {
-          global_log_level = LOG_LEVEL_ERROR;
-          wlr_log_init(WLR_ERROR, NULL);
         } else if (g_str_equal(optarg, "warning")) {
           global_log_level = LOG_LEVEL_WARNING;
           wlr_log_init(WLR_ERROR, NULL);
@@ -73,7 +70,8 @@ catnip_cli_init(int argc, char* argv[])
           global_log_level = LOG_LEVEL_DEBUG;
           wlr_log_init(WLR_DEBUG, NULL);
         } else {
-          log_warning("invalid option '--loglevel %s'", optarg);
+          global_log_level = LOG_LEVEL_ERROR;
+          wlr_log_init(WLR_ERROR, NULL);
         }
       }; break;
       default:
