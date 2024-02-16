@@ -1,16 +1,18 @@
-require('_setup')
+local catnip = require('catnip')
+local uv = require('luv')
+local test = require('_setup')
 
-register('test1')
-register('test2')
+local window_created = test.new()
+local timed_out = test.new()
 
 local timer = uv.new_timer()
 
 os.execute('foot & disown')
 
 catnip.subscribe('window::create', function()
-  pass('test1')
+  window_created:pass()
 end)
 
 timer:start(1000, 0, function()
-  fail('test2', 'mymessage')
+  timed_out:fail('mymessage')
 end)

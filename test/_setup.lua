@@ -14,13 +14,11 @@ end)
 -- -----------------------------------------------------------------------------
 
 local test_result_file = assert(io.open(os.getenv('CATNIP_TEST_RESULT_PATH'), 'w'))
-
-local tests = {}
 local num_tests = 0
-local num_resolved_tests = 0
+local num_pass_tests = 0
 
-local function format(status, id, message)
-  local parts = { status }
+local function format(success, id, message)
+  local parts = { success and 'PASS' or 'FAIL' }
 
   if id ~= nil then
     table.insert(parts, '[' .. id .. ']')
@@ -33,60 +31,52 @@ local function format(status, id, message)
   return table.concat(parts, ' ')
 end
 
-local function commit(status, id, message)
-  assert(test_result_file:write(format(status, id, message)))
+local function commit(success, id, message)
+  test_result_file:write(format(success, id, message))
   test_result_file:close()
   os.exit() -- abort immediately
 end
 
-local function resolve(status, id, message)
-  -- allow omitting ids and committing immediately for single tests
-  if num_tests == 0 then
-    commit(status, nil, id)
-  end
-
-  -- cannot resolve a nonexistent test
-  if tests[id] == nil then
-    commit('FAIL', id, 'INTERNAL ERROR NOEXIST')
-  end
-
-  -- cannot resolve a test that has already been resolved
-  if tests[id] ~= 'pending' then
-    commit('FAIL', id, 'INTERNAL ERROR RERESOLVE')
-  end
-
-  -- immediately commit on first failure
-  if status == 'FAIL' then
-    commit('FAIL', id, message)
-  end
-
-  tests[id] = status
-  num_resolved_tests = num_resolved_tests + 1
-
-  if num_resolved_tests == num_tests then
-    commit('PASS')
-  end
-end
-
-local function fail(...)
-  resolve('FAIL', ...)
-end
-
-local function pass(...)
-  resolve('PASS', ...)
-end
-
-local function register(id)
-  tests[id] = 'pending'
-  num_tests = num_tests + 1
-end
-
 -- -----------------------------------------------------------------------------
--- Globals
+-- Timeout
 -- -----------------------------------------------------------------------------
 
-_G.catnip = catnip
-_G.uv = uv
-_G.register = register
-_G.fail = fail
-_G.pass= pass
+local timer = uv.new_timer()
+
+timer:start(10000, 0, function()
+  commit(false, nil, 'timeout')
+end)
+
+-- -----------------------------------------------------------------------------
+-- Return
+-- -----------------------------------------------------------------------------
+
+return {
+  fail = function(message)
+    commit(false, nil, message)
+  end,
+
+  pass = function()
+    commit(true)
+  end,
+
+  new = function()
+    local test = {}
+
+    num_tests = num_tests + 1
+    test.id = num_tests
+
+    function test:fail(message)
+      commit(false, self.id, message)
+    end
+
+    function test:pass(message)
+      num_pass_tests = num_pass_tests + 1
+      if num_pass_tests == num_tests then
+        commit(true)
+      end
+    end
+
+    return test
+  end,
+}
