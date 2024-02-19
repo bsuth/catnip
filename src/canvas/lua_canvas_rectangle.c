@@ -4,6 +4,8 @@
 #include "utils/lua.h"
 #include <lauxlib.h>
 
+#define default(a, b) a != -1 ? a : b
+
 struct catnip_canvas_rectangle {
   int x;
   int y;
@@ -34,61 +36,40 @@ catnip_canvas_rectangle_draw(
 {
   cairo_save(canvas->cr);
 
-  // Draw both the fill and the stroke as the same rectangle. This prevents any
-  // gaps between the fill and stroke at the corners when the rectangle has a
-  // non-trivial radius.
-  int x = rectangle->x + (double) rectangle->stroke_size / 2;
-  int y = rectangle->y + (double) rectangle->stroke_size / 2;
-  int width = rectangle->width - rectangle->stroke_size;
-  int height = rectangle->height - rectangle->stroke_size;
+  cairo_rounded_rectangle(
+    canvas->cr,
+    rectangle->x,
+    rectangle->y,
+    rectangle->width,
+    rectangle->height,
+    rectangle->radius_top_left,
+    rectangle->radius_top_right,
+    rectangle->radius_bottom_right,
+    rectangle->radius_bottom_left
+  );
 
-  int fill_color =
-    rectangle->fill_color == -1 ? rectangle->color : rectangle->fill_color;
-  int fill_opacity = rectangle->fill_opacity == -1 ? rectangle->opacity
-                                                   : rectangle->fill_opacity;
+  cairo_clip_preserve(canvas->cr);
+
+  int fill_color = default(rectangle->fill_color, rectangle->color);
+  int fill_opacity = default(rectangle->fill_opacity, rectangle->opacity);
 
   if (fill_color != -1 && fill_opacity > 0) {
     cairo_set_source_hexa(canvas->cr, fill_color, fill_opacity);
-
-    cairo_rounded_rectangle(
-      canvas->cr,
-      x,
-      y,
-      width,
-      height,
-      rectangle->radius_top_left,
-      rectangle->radius_top_right,
-      rectangle->radius_bottom_right,
-      rectangle->radius_bottom_left
-    );
-
-    cairo_fill(canvas->cr);
+    cairo_paint(canvas->cr);
   }
 
-  int stroke_color =
-    rectangle->stroke_color == -1 ? rectangle->color : rectangle->stroke_color;
-  int stroke_opacity = rectangle->stroke_opacity == -1
-                         ? rectangle->opacity
-                         : rectangle->stroke_opacity;
+  int stroke_color = default(rectangle->stroke_color, rectangle->color);
+  int stroke_opacity = default(rectangle->stroke_opacity, rectangle->opacity);
 
   if (stroke_color != -1 && stroke_opacity > 0 && rectangle->stroke_size > 0) {
-    cairo_set_line_width(canvas->cr, rectangle->stroke_size);
+    cairo_set_line_width(canvas->cr, 2 * rectangle->stroke_size);
     cairo_set_source_hexa(canvas->cr, stroke_color, stroke_opacity);
-
-    cairo_rounded_rectangle(
-      canvas->cr,
-      x,
-      y,
-      width,
-      height,
-      rectangle->radius_top_left,
-      rectangle->radius_top_right,
-      rectangle->radius_bottom_right,
-      rectangle->radius_bottom_left
-    );
-
-    cairo_stroke(canvas->cr);
+    cairo_stroke_preserve(canvas->cr);
   }
+
+  // Reset the path generated from `cairo_rounded_rectangle`, since all our
+  // painting methods above preserve the path.
+  cairo_new_path(canvas->cr);
 
   cairo_restore(canvas->cr);
   catnip_canvas_refresh(canvas);

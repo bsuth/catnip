@@ -75,5 +75,7 @@ main(int argc, char* argv[])
     lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "tick", 0);
   }
 
+  wl_display_terminate(catnip_display);
+
   return 0;
 }
