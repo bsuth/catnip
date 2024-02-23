@@ -11,7 +11,11 @@ catnip_canvas_get_x(struct catnip_canvas* canvas)
 void
 catnip_canvas_set_x(struct catnip_canvas* canvas, int new_x)
 {
-  catnip_canvas_move(canvas, new_x, catnip_canvas_get_y(canvas));
+  wlr_scene_node_set_position(
+    &canvas->scene_tree->node,
+    new_x,
+    catnip_canvas_get_y(canvas)
+  );
 }
 
 int
@@ -23,7 +27,11 @@ catnip_canvas_get_y(struct catnip_canvas* canvas)
 void
 catnip_canvas_set_y(struct catnip_canvas* canvas, int new_y)
 {
-  catnip_canvas_move(canvas, catnip_canvas_get_x(canvas), new_y);
+  wlr_scene_node_set_position(
+    &canvas->scene_tree->node,
+    catnip_canvas_get_x(canvas),
+    new_y
+  );
 }
 
 int

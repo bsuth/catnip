@@ -2,6 +2,7 @@
 #include "canvas/canvas.h"
 #include "canvas/canvas_properties.h"
 #include "canvas/lua_canvas_methods.h"
+#include "canvas/lua_canvas_path.h"
 #include "canvas/lua_canvas_png.h"
 #include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_svg.h"
@@ -34,6 +35,8 @@ lua_catnip_canvas__index(lua_State* L)
     lua_pushcfunction(L, lua_catnip_canvas_clear);
   } else if (g_str_equal(key, "rectangle")) {
     lua_pushcfunction(L, lua_catnip_canvas_rectangle);
+  } else if (g_str_equal(key, "path")) {
+    lua_pushcfunction(L, lua_catnip_canvas_path);
   } else if (g_str_equal(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
   } else if (g_str_equal(key, "svg")) {

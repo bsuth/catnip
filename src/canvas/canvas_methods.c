@@ -33,22 +33,6 @@ catnip_canvas_refresh(struct catnip_canvas* canvas)
 }
 
 void
-catnip_canvas_clear(struct catnip_canvas* canvas)
-{
-  cairo_save(canvas->cr);
-  cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint(canvas->cr);
-  cairo_restore(canvas->cr);
-  catnip_canvas_refresh(canvas);
-}
-
-void
-catnip_canvas_move(struct catnip_canvas* canvas, int new_x, int new_y)
-{
-  wlr_scene_node_set_position(&canvas->scene_tree->node, new_x, new_y);
-}
-
-void
 catnip_canvas_resize(
   struct catnip_canvas* canvas,
   int new_width,
