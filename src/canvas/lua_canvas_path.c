@@ -14,10 +14,10 @@ lua_catnip_canvas_path_move(
 )
 {
   lua_rawgeti(L, -1, 2);
-  int x = lua_popinteger(L);
+  double x = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 3);
-  int y = lua_popinteger(L);
+  double y = lua_popnumber(L);
 
   if (relative) {
     cairo_rel_move_to(canvas->cr, x, y);
@@ -34,10 +34,10 @@ lua_catnip_canvas_path_line(
 )
 {
   lua_rawgeti(L, -1, 2);
-  int x = lua_popinteger(L);
+  double x = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 3);
-  int y = lua_popinteger(L);
+  double y = lua_popnumber(L);
 
   if (relative) {
     cairo_rel_line_to(canvas->cr, x, y);
@@ -57,10 +57,10 @@ lua_catnip_canvas_path_arc(
   cairo_get_current_point(canvas->cr, &x, &y);
 
   lua_rawgeti(L, -1, 2);
-  double cx = lua_popinteger(L);
+  double cx = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 3);
-  double cy = lua_popinteger(L);
+  double cy = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 4);
   double radians = lua_popnumber(L);
@@ -86,22 +86,22 @@ lua_catnip_canvas_path_bezier(
 )
 {
   lua_rawgeti(L, -1, 2);
-  int control1_x = lua_popinteger(L);
+  double control1_x = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 3);
-  int control1_y = lua_popinteger(L);
+  double control1_y = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 4);
-  int control2_x = lua_popinteger(L);
+  double control2_x = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 5);
-  int control2_y = lua_popinteger(L);
+  double control2_y = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 6);
-  int x = lua_popinteger(L);
+  double x = lua_popnumber(L);
 
   lua_rawgeti(L, -1, 7);
-  int y = lua_popinteger(L);
+  double y = lua_popnumber(L);
 
   if (relative) {
     cairo_rel_curve_to(
@@ -180,8 +180,8 @@ lua_catnip_canvas_path(lua_State* L)
     lua_hasnumberfield(L, 2, "stroke_color") ? lua_popinteger(L) : -1;
   double stroke_opacity =
     lua_hasnumberfield(L, 2, "stroke_opacity") ? lua_popnumber(L) : 1;
-  int stroke_size =
-    lua_hasnumberfield(L, 2, "stroke_size") ? lua_popinteger(L) : 1;
+  double stroke_size =
+    lua_hasnumberfield(L, 2, "stroke_size") ? lua_popnumber(L) : 1;
 
   if (stroke_color != -1 && stroke_opacity > 0 && stroke_size > 0) {
     cairo_set_line_width(canvas->cr, stroke_size);

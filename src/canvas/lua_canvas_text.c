@@ -5,103 +5,57 @@
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>
 
-struct catnip_canvas_text {
-  const char* text;
-
-  int x;
-  int y;
-  int width;
-  int height;
-
-  PangoAttrList* attributes;
-  PangoAlignment alignment;
-  PangoEllipsizeMode ellipsize;
-  PangoWrapMode wrap;
-};
-
-static void
-catnip_canvas_text_draw(
-  struct catnip_canvas* canvas,
-  struct catnip_canvas_text* text
-)
-{
-  PangoLayout* layout = pango_cairo_create_layout(canvas->cr);
-
-  pango_layout_set_text(layout, text->text, -1);
-  pango_layout_set_width(layout, text->width);
-  pango_layout_set_height(layout, text->height);
-  pango_layout_set_attributes(layout, text->attributes);
-  pango_layout_set_alignment(layout, text->alignment);
-  pango_layout_set_ellipsize(layout, text->ellipsize);
-  pango_layout_set_wrap(layout, text->wrap);
-
-  cairo_save(canvas->cr);
-  cairo_move_to(canvas->cr, text->x, text->y);
-  pango_cairo_show_layout(canvas->cr, layout);
-  cairo_restore(canvas->cr);
-
-  catnip_canvas_refresh(canvas);
-}
-
 int
 lua_catnip_canvas_text(lua_State* L)
 {
   struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
   struct catnip_canvas* canvas = *lua_canvas;
 
-  struct catnip_canvas_text text = {
-    .text = luaL_checkstring(L, 2),
-    .x = 0,
-    .y = 0,
-    .width = -1,
-    .height = -1,
-    .attributes = pango_attr_list_new(),
-    .alignment = PANGO_ALIGN_LEFT,
-    .ellipsize = PANGO_ELLIPSIZE_NONE,
-    .wrap = PANGO_WRAP_WORD_CHAR,
-  };
+  PangoLayout* layout = pango_cairo_create_layout(canvas->cr);
+  pango_layout_set_text(layout, luaL_checkstring(L, 2), -1);
+
+  PangoAttrList* attributes = pango_attr_list_new();
+  pango_layout_set_attributes(layout, attributes);
+
+  int x = 0;
+  int y = 0;
 
   if (lua_type(L, 3) == LUA_TTABLE) {
-    if (lua_hasnumberfield(L, 3, "x")) {
-      text.x = lua_popinteger(L);
-    }
-
-    if (lua_hasnumberfield(L, 3, "y")) {
-      text.y = lua_popinteger(L);
-    }
+    x = lua_hasnumberfield(L, 3, "x") ? lua_popnumber(L) : x;
+    y = lua_hasnumberfield(L, 3, "y") ? lua_popnumber(L) : x;
 
     if (lua_hasnumberfield(L, 3, "width")) {
-      text.width = PANGO_SCALE * lua_popinteger(L);
+      pango_layout_set_width(layout, PANGO_SCALE * lua_popnumber(L));
     }
 
     if (lua_hasnumberfield(L, 3, "height")) {
-      text.height = PANGO_SCALE * lua_popinteger(L);
+      pango_layout_set_height(layout, PANGO_SCALE * lua_popnumber(L));
     }
 
     if (lua_hasnumberfield(L, 3, "font")) {
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_family_new(lua_popstring(L))
       );
     }
 
     if (lua_hasnumberfield(L, 3, "size")) {
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_size_new(lua_popinteger(L))
       );
     }
 
     if (lua_hasnumberfield(L, 3, "weight")) {
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_weight_new(lua_popinteger(L))
       );
     }
 
     if (lua_hasnumberfield(L, 3, "italics")) {
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_style_new(
           lua_popboolean(L) ? PANGO_STYLE_NORMAL : PANGO_STYLE_ITALIC
         )
@@ -116,7 +70,7 @@ lua_catnip_canvas_text(lua_State* L)
       const guint8 blue8 = (color & 0x0000ff);
 
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_foreground_new(
           ((guint16) red8 << 8) | red8,
           ((guint16) green8 << 8) | green8,
@@ -127,19 +81,19 @@ lua_catnip_canvas_text(lua_State* L)
 
     if (lua_hasnumberfield(L, 3, "opacity")) {
       pango_attr_list_insert(
-        text.attributes,
+        attributes,
         pango_attr_foreground_alpha_new(0xffff * lua_popnumber(L))
       );
     }
 
     if (lua_hasstringfield(L, 3, "align")) {
       const char* alignment = lua_popstring(L);
-
       if (g_str_equal(alignment, "left")) {
+        pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
       } else if (g_str_equal(alignment, "center")) {
-        text.alignment = PANGO_ALIGN_CENTER;
+        pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
       } else if (g_str_equal(alignment, "right")) {
-        text.alignment = PANGO_ALIGN_RIGHT;
+        pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
       }
     }
 
@@ -147,17 +101,18 @@ lua_catnip_canvas_text(lua_State* L)
       int ellipsis_type = lua_type(L, -1);
 
       if (ellipsis_type == LUA_TBOOLEAN) {
-        text.ellipsize =
-          lua_toboolean(L, -1) ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE;
+        pango_layout_set_ellipsize(
+          layout,
+          lua_toboolean(L, -1) ? PANGO_ELLIPSIZE_END : PANGO_ELLIPSIZE_NONE
+        );
       } else if (ellipsis_type == LUA_TSTRING) {
         const char* ellipsis = lua_tostring(L, -1);
-
         if (g_str_equal(ellipsis, "start")) {
-          text.ellipsize = PANGO_ELLIPSIZE_START;
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_START);
         } else if (g_str_equal(ellipsis, "middle")) {
-          text.ellipsize = PANGO_ELLIPSIZE_MIDDLE;
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
         } else if (g_str_equal(ellipsis, "end")) {
-          text.ellipsize = PANGO_ELLIPSIZE_END;
+          pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
         }
       }
 
@@ -166,19 +121,23 @@ lua_catnip_canvas_text(lua_State* L)
 
     if (lua_hasstringfield(L, 3, "wrap")) {
       const char* wrap = lua_popstring(L);
-
       if (g_str_equal(wrap, "char")) {
-        text.wrap = PANGO_WRAP_CHAR;
+        pango_layout_set_wrap(layout, PANGO_WRAP_CHAR);
       } else if (g_str_equal(wrap, "word")) {
-        text.wrap = PANGO_WRAP_WORD;
+        pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
       } else if (g_str_equal(wrap, "auto")) {
-        text.wrap = PANGO_WRAP_WORD_CHAR;
+        pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
       }
     }
   }
 
-  catnip_canvas_text_draw(canvas, &text);
-  pango_attr_list_unref(text.attributes);
+  cairo_save(canvas->cr);
+  cairo_move_to(canvas->cr, x, y);
+  pango_cairo_show_layout(canvas->cr, layout);
+  cairo_restore(canvas->cr);
+  catnip_canvas_refresh(canvas);
+
+  pango_attr_list_unref(attributes);
 
   return 0;
 }

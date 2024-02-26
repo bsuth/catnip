@@ -4,14 +4,6 @@
 #include <lauxlib.h>
 #include <librsvg/rsvg.h>
 
-struct catnip_canvas_svg {
-  RsvgHandle* rsvg;
-  int x;
-  int y;
-  int width;
-  int height;
-};
-
 static bool
 is_svg_filename(const char* filename)
 {
@@ -20,37 +12,6 @@ is_svg_filename(const char* filename)
     len > 3 && filename[len - 4] == '.' && filename[len - 3] == 's'
     && filename[len - 2] == 'v' && filename[len - 1] == 'g'
   );
-}
-
-static void
-catnip_canvas_svg_draw(
-  struct catnip_canvas* canvas,
-  struct catnip_canvas_svg* svg
-)
-{
-  RsvgRectangle viewport = {
-    .x = svg->x,
-    .y = svg->y,
-    .width = svg->width,
-    .height = svg->height,
-  };
-
-  if (viewport.width == -1 || viewport.height == -1) {
-    double width_px, height_px;
-    rsvg_handle_get_intrinsic_size_in_pixels(svg->rsvg, &width_px, &height_px);
-
-    if (viewport.width == -1 && viewport.height == -1) {
-      viewport.width = width_px;
-      viewport.height = height_px;
-    } else if (viewport.width == -1) {
-      viewport.width = viewport.height * (width_px / height_px);
-    } else {
-      viewport.height = viewport.width * (width_px / height_px);
-    }
-  }
-
-  rsvg_handle_render_document(svg->rsvg, canvas->cr, &viewport, NULL);
-  catnip_canvas_refresh(canvas);
 }
 
 int
@@ -73,29 +34,32 @@ lua_catnip_canvas_svg(lua_State* L)
     return 0;
   }
 
-  struct catnip_canvas_svg canvas_svg = {
-    .rsvg = rsvg,
+  double scale_x = 1;
+  double scale_y = 1;
+
+  RsvgRectangle viewport = {
     .x = 0,
     .y = 0,
-    .width = -1,
-    .height = -1,
+    .width = 0,
+    .height = 0,
   };
 
-  if (lua_type(L, 3) == LUA_TTABLE) {
-    if (lua_hasnumberfield(L, 3, "x")) {
-      canvas_svg.x = lua_popinteger(L);
-    }
+  rsvg_handle_get_intrinsic_size_in_pixels(
+    rsvg,
+    &viewport.width,
+    &viewport.height
+  );
 
-    if (lua_hasnumberfield(L, 3, "y")) {
-      canvas_svg.y = lua_popinteger(L);
-    }
+  if (lua_type(L, 3) == LUA_TTABLE) {
+    viewport.x = lua_hasnumberfield(L, 3, "x") ? lua_popnumber(L) : viewport.x;
+    viewport.y = lua_hasnumberfield(L, 3, "y") ? lua_popnumber(L) : viewport.y;
 
     if (lua_hasnumberfield(L, 3, "width")) {
-      canvas_svg.width = lua_popinteger(L);
+      scale_x = lua_popnumber(L) / viewport.width;
     }
 
     if (lua_hasnumberfield(L, 3, "height")) {
-      canvas_svg.height = lua_popinteger(L);
+      scale_y = lua_popnumber(L) / viewport.height;
     }
 
     if (lua_hasstringfield(L, 3, "stylesheet")) {
@@ -117,7 +81,14 @@ lua_catnip_canvas_svg(lua_State* L)
     }
   }
 
-  catnip_canvas_svg_draw(canvas, &canvas_svg);
+  scale_x = scale_x != 1 ? scale_x : scale_y;
+  scale_y = scale_y != 1 ? scale_y : scale_x;
+
+  viewport.width *= scale_x;
+  viewport.height *= scale_y;
+
+  rsvg_handle_render_document(rsvg, canvas->cr, &viewport, NULL);
+  catnip_canvas_refresh(canvas);
 
   g_object_unref(rsvg);
 
