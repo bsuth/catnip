@@ -23,7 +23,7 @@ $(shell mkdir -p $(BUILD_DIR))
 
 INSTALL_DIR := /usr/share/catnip
 
-.PHONY = default dev clean test
+.PHONY = default dev clean format test
 
 # ------------------------------------------------------------------------------
 # Builds
@@ -99,6 +99,13 @@ $(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)
 
 clean:
 	if [[ -d $(BUILD_DIR) ]]; then rm -r $(BUILD_DIR); fi
+
+# ------------------------------------------------------------------------------
+# Format
+# ------------------------------------------------------------------------------
+
+format:
+	clang-format -i $(shell find $(SOURCE_DIR) -type f)
 
 # ------------------------------------------------------------------------------
 # Tests

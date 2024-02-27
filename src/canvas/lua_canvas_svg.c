@@ -8,10 +8,8 @@ static bool
 is_svg_filename(const char* filename)
 {
   size_t len = strlen(filename);
-  return (
-    len > 3 && filename[len - 4] == '.' && filename[len - 3] == 's'
-    && filename[len - 2] == 'v' && filename[len - 1] == 'g'
-  );
+  return len > 3 && filename[len - 4] == '.' && filename[len - 3] == 's'
+    && filename[len - 2] == 'v' && filename[len - 1] == 'g';
 }
 
 int
@@ -23,10 +21,9 @@ lua_catnip_canvas_svg(lua_State* L)
   GError* error = NULL;
 
   const char* svg = luaL_checkstring(L, 2);
-  RsvgHandle* rsvg =
-    is_svg_filename(svg)
-      ? rsvg_handle_new_from_file(svg, &error)
-      : rsvg_handle_new_from_data((const guint8*) svg, strlen(svg), &error);
+  RsvgHandle* rsvg = is_svg_filename(svg)
+    ? rsvg_handle_new_from_file(svg, &error)
+    : rsvg_handle_new_from_data((const guint8*) svg, strlen(svg), &error);
 
   if (error != NULL) {
     lua_log_error(L, "bad svg (%s)", error->message);

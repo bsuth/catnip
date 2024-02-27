@@ -31,7 +31,7 @@ catnip_config_try(const char* path)
   catnip_config_loading = true;
 
   bool loaded = !luaL_loadfile(new_catnip_L, config_basename)
-                && !lua_pcall(new_catnip_L, 0, 0, 0);
+    && !lua_pcall(new_catnip_L, 0, 0, 0);
 
   catnip_config_loading = false;
   free(config_basename);
