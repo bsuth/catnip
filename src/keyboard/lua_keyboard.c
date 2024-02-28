@@ -1,8 +1,8 @@
 #include "lua_keyboard.h"
-#include "events/lua_events.h"
 #include "keyboard/keyboard_methods.h"
 #include "keyboard/lua_keyboard_key_event.h"
 #include "keyboard/lua_keyboard_methods.h"
+#include "lua_events.h"
 #include <glib.h>
 #include <lauxlib.h>
 

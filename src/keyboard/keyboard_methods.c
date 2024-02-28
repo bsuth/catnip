@@ -1,5 +1,5 @@
 #include "keyboard_methods.h"
-#include "events/event_loop.h"
+#include "event_loop.h"
 
 static void
 __catnip_keyboard_reload_keymap(void* data)
@@ -28,6 +28,9 @@ catnip_keyboard_reload_keymap(struct catnip_keyboard* keyboard)
     return;
   }
 
-  keyboard->xkb_keymap_event_source =
-    catnip_event_loop_once(__catnip_keyboard_reload_keymap, keyboard);
+  keyboard->xkb_keymap_event_source = wl_event_loop_add_idle(
+    catnip_event_loop,
+    __catnip_keyboard_reload_keymap,
+    keyboard
+  );
 }

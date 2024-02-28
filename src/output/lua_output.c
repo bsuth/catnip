@@ -1,5 +1,5 @@
 #include "lua_output.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include "output/lua_output_methods.h"
 #include "output/lua_output_mode.h"
 #include "output/output_properties.h"

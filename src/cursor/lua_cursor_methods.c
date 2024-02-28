@@ -1,6 +1,6 @@
 #include "lua_cursor_methods.h"
 #include "cursor/lua_cursor.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include <lauxlib.h>
 
 int

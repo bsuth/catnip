@@ -1,5 +1,5 @@
 #include "lua_output_methods.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include "output/lua_output.h"
 #include <lauxlib.h>
 

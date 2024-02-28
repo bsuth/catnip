@@ -1,5 +1,5 @@
 #include "canvas_methods.h"
-#include "events/event_loop.h"
+#include "event_loop.h"
 
 static void
 __catnip_canvas_refresh(void* data)
@@ -29,7 +29,7 @@ catnip_canvas_refresh(struct catnip_canvas* canvas)
   }
 
   canvas->refresh_task =
-    catnip_event_loop_once(__catnip_canvas_refresh, canvas);
+    wl_event_loop_add_idle(catnip_event_loop, __catnip_canvas_refresh, canvas);
 }
 
 void

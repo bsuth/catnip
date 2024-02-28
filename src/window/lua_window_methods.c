@@ -1,5 +1,5 @@
 #include "lua_window_methods.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include "window.h"
 #include "window/lua_window.h"
 #include <lauxlib.h>

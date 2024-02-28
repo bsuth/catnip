@@ -3,9 +3,9 @@
 #include "config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
-#include "events/event_loop.h"
-#include "events/lua_events.h"
+#include "event_loop.h"
 #include "keyboard/lua_keyboard.h"
+#include "lua_events.h"
 #include "output/lua_output.h"
 #include "utils/lua.h"
 #include "window/lua_window.h"
@@ -31,7 +31,7 @@ lua_catnip_quit(lua_State* L)
   }
 
   lua_catnip_quit_event_source =
-    catnip_event_loop_once(__lua_catnip_quit, NULL);
+    wl_event_loop_add_idle(catnip_event_loop, __lua_catnip_quit, NULL);
 
   lua_catnip_events_publish(L, lua_catnip_subscriptions, "quit", 0);
 
@@ -58,7 +58,7 @@ lua_catnip_reload(lua_State* L)
   }
 
   lua_catnip_reload_event_source =
-    catnip_event_loop_once(__lua_catnip_reload, NULL);
+    wl_event_loop_add_idle(catnip_event_loop, __lua_catnip_reload, NULL);
 
   lua_catnip_events_publish(L, lua_catnip_subscriptions, "reload", 0);
 

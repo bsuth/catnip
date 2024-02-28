@@ -1,7 +1,7 @@
 #include "lua_cursor.h"
 #include "cursor/cursor_properties.h"
 #include "cursor/lua_cursor_methods.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include <glib.h>
 #include <lauxlib.h>
 

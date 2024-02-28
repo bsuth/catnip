@@ -1,7 +1,7 @@
 #include "lua_keyboard_methods.h"
-#include "events/lua_events.h"
 #include "keyboard/keyboard.h"
 #include "keyboard/lua_keyboard.h"
+#include "lua_events.h"
 #include <lauxlib.h>
 
 int

@@ -1,5 +1,5 @@
 #include "lua_window.h"
-#include "events/lua_events.h"
+#include "lua_events.h"
 #include "window/lua_window_methods.h"
 #include "window/window_properties.h"
 #include <glib.h>
