@@ -9,11 +9,12 @@ DEPENDENCIES = \
 	pangocairo \
 	glib-2.0 \
 	luajit \
-	lua \
 	pixman-1 \
 	xkbcommon \
 	wlroots \
 	wayland-server
+
+ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 
 SOURCE_DIR := src
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
@@ -35,7 +36,7 @@ default: CFLAGS += \
 default: $(BUILD_DIR)/$(EXECUTABLE)
 
 dev: CFLAGS += -g \
-	-DCATNIP_INSTALL_DIR=\".\"
+	-DCATNIP_INSTALL_DIR=\"$(ROOT_DIR)\"
 
 dev: $(BUILD_DIR)/$(EXECUTABLE)
 	@$(BUILD_DIR)/$(EXECUTABLE)

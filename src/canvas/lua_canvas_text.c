@@ -53,7 +53,7 @@ lua_catnip_canvas_text(lua_State* L)
       );
     }
 
-    if (lua_hasnumberfield(L, 3, "italics")) {
+    if (lua_hasnumberfield(L, 3, "italic")) {
       pango_attr_list_insert(
         attributes,
         pango_attr_style_new(
@@ -120,13 +120,21 @@ lua_catnip_canvas_text(lua_State* L)
     }
 
     if (lua_hasstringfield(L, 3, "wrap")) {
-      const char* wrap = lua_popstring(L);
-      if (g_str_equal(wrap, "char")) {
-        pango_layout_set_wrap(layout, PANGO_WRAP_CHAR);
-      } else if (g_str_equal(wrap, "word")) {
-        pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
-      } else if (g_str_equal(wrap, "auto")) {
-        pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+      int wrap_type = lua_type(L, -1);
+
+      if (wrap_type == LUA_TBOOLEAN) {
+        if (lua_toboolean(L, -1)) {
+          pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+        }
+      } else if (wrap_type == LUA_TSTRING) {
+        const char* wrap = lua_popstring(L);
+        if (g_str_equal(wrap, "char")) {
+          pango_layout_set_wrap(layout, PANGO_WRAP_CHAR);
+        } else if (g_str_equal(wrap, "word")) {
+          pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
+        } else if (g_str_equal(wrap, "auto")) {
+          pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
+        }
       }
     }
   }
