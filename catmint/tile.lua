@@ -1,4 +1,4 @@
-require('catmint.catnip_types')
+require('catmint.catnip')
 
 --- @class CatmintTileSpace
 --- @field x number

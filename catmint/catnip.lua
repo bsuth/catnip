@@ -1,4 +1,16 @@
---- @class CatnipCanvasPath
+-- README
+--
+-- This module simply re-exports the core `catnip` module with LuaCATS
+-- annotations. This is used over definition files to save the user from having
+-- to deal with workspace settings, i.e. annotations should "just work".
+--
+-- Note that since the C core populates `path.loaded.catnip` when initializing
+-- the lua_State, `require('catnip')` will always return the core C module and
+-- _not_ this module. Other modules should prefer using
+-- `require('catmint.catnip')` in order to get proper annnotations.
+local catnip = require('catnip') --- @type Catnip
+
+--- @class (exact) CatnipCanvasPath
 --- @field fill_color number?
 --- @field fill_opacity number?
 --- @field stroke_color number?
@@ -7,7 +19,7 @@
 -- src/canvas/lua_canvas_path.c
 -- TODO: Support typing path commands?
 
---- @class CatnipCanvasTextOptions
+--- @class (exact) CatnipCanvasTextOptions
 --- @field x number?
 --- @field y number?
 --- @field width number?
@@ -23,14 +35,14 @@
 --- @field wrap (boolean | 'char' | 'word' | 'auto')?
 -- src/canvas/lua_canvas_text.c
 
---- @class CatnipCanvasPngOptions
+--- @class (exact) CatnipCanvasPngOptions
 --- @field x number?
 --- @field y number?
 --- @field width number?
 --- @field height number?
 -- src/canvas/lua_canvas_png.c
 
---- @class CatnipCanvasSvgOptions
+--- @class (exact) CatnipCanvasSvgOptions
 --- @field x number?
 --- @field y number?
 --- @field width number?
@@ -38,7 +50,7 @@
 --- @field stylesheet string?
 -- src/canvas/lua_canvas_svg.c
 
---- @class CatnipCanvas
+--- @class (exact) CatnipCanvas
 --- @field x number
 --- @field y number
 --- @field z number
@@ -52,7 +64,7 @@
 --- @field png fun(canvas: CatnipCursor, png: string, options: CatnipCanvasPngOptions?)
 -- src/canvas/lua_canvas.c
 
---- @class CatnipCursor
+--- @class (exact) CatnipCursor
 --- @field x number
 --- @field y number
 --- @field name string
@@ -63,7 +75,7 @@
 --- @field publish fun(event: string, ...)
 --  src/cursor/lua_cursor.c
 
---- @class CatnipKeyboard
+--- @class (exact) CatnipKeyboard
 --- @field id number
 --- @field name string
 --- @field xkb_rules string?
@@ -76,13 +88,13 @@
 --- @field publish fun(keyboard: CatnipKeyboard, event: string, ...)
 -- src/keyboard/lua_keyboard.c
 
---- @class CatnipOutputMode
+--- @class (exact) CatnipOutputMode
 --- @field width number
 --- @field height number
 --- @field refresh number
 -- src/output/lua_output_mode.c
 
---- @class CatnipOutput
+--- @class (exact) CatnipOutput
 --- @field id number
 --- @field x number
 --- @field y number
@@ -97,9 +109,8 @@
 --- @field publish fun(output: CatnipOutput, event: string, ...)
 -- src/output/lua_output.c
 
---- @class CatnipWindow
+--- @class (exact) CatnipWindow
 --- @field id number
---- @field x number
 --- @field y number
 --- @field z number
 --- @field width number
@@ -113,3 +124,11 @@
 --- @field publish fun(window: CatnipWindow, event: string, ...)
 --- @field destroy fun(window: CatnipWindow)
 -- src/window/lua_window.c
+
+--- @class (exact) Catnip
+--- @field cursor CatnipCursor
+--- @field keyboards CatnipKeyboard[]
+--- @field outputs CatnipOutput[]
+--- @field windows CatnipWindow[]
+
+return catnip
