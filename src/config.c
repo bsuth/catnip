@@ -1,9 +1,13 @@
 #include "config.h"
 #include "lua_catnip.h"
 #include "utils/log.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
+#include <libgen.h>
+#include <linux/limits.h>
 #include <lualib.h>
+#include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 lua_State* catnip_L = NULL;
@@ -17,34 +21,31 @@ catnip_config_try(const char* path)
     return false;
   }
 
-  char* current_dir = g_get_current_dir();
+  char cwd[PATH_MAX];
+  getcwd(cwd, PATH_MAX);
 
-  char* config_dir = g_path_get_dirname(path);
-  chdir(config_dir);
-  free(config_dir);
+  char* path_dirname_copy = strdup(path);
+  chdir(dirname(path_dirname_copy));
+  free(path_dirname_copy);
 
   lua_State* new_catnip_L = lua_open();
   luaL_openlibs(new_catnip_L);
   lua_catnip_init(new_catnip_L);
 
-  char* config_basename = g_path_get_basename(path);
   catnip_config_loading = true;
-
-  bool loaded = !luaL_loadfile(new_catnip_L, config_basename)
+  char* path_basename_copy = strdup(path);
+  const char* path_basename = basename(path_basename_copy);
+  bool loaded = !luaL_loadfile(new_catnip_L, path_basename)
     && !lua_pcall(new_catnip_L, 0, 0, 0);
-
+  free(path_basename_copy);
   catnip_config_loading = false;
-  free(config_basename);
 
   if (!loaded) {
     log_error("%s: %s", path, lua_tostring(new_catnip_L, -1));
     lua_close(new_catnip_L);
-    chdir(current_dir);
-    free(current_dir);
+    chdir(cwd);
     return false;
   }
-
-  free(current_dir);
 
   if (catnip_L != NULL) {
     lua_close(catnip_L);
@@ -64,9 +65,9 @@ catnip_config_load()
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
 
   if (xdg_config_home != NULL && xdg_config_home[0] != '\0') {
-    gchar* path = g_strconcat(xdg_config_home, "/catnip/init.lua", NULL);
+    char* path = strfmt("%s/catnip/init.lua", xdg_config_home);
     bool loaded = catnip_config_try(path);
-    g_free(path);
+    free(path);
 
     if (loaded) {
       return true;
@@ -76,9 +77,9 @@ catnip_config_load()
   const char* home = getenv("HOME");
 
   if (home != NULL && home[0] != '\0') {
-    gchar* path = g_strconcat(home, "/.config/catnip/init.lua", NULL);
+    char* path = strfmt("%s/.config/catnip/init.lua", home);
     bool loaded = catnip_config_try(path);
-    g_free(path);
+    free(path);
 
     if (loaded) {
       return true;

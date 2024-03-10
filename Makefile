@@ -7,9 +7,7 @@ DEPENDENCIES = \
 	cairo \
 	pango \
 	pangocairo \
-	glib-2.0 \
 	luajit \
-	pixman-1 \
 	xkbcommon \
 	wlroots \
 	wayland-server
