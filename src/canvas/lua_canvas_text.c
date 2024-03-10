@@ -1,6 +1,7 @@
 #include "lua_canvas_text.h"
 #include "canvas/canvas_methods.h"
 #include "utils/lua.h"
+#include "utils/string.h"
 #include <lauxlib.h>
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>
@@ -88,11 +89,11 @@ lua_catnip_canvas_text(lua_State* L)
 
     if (lua_hasstringfield(L, 3, "align")) {
       const char* alignment = lua_popstring(L);
-      if (g_str_equal(alignment, "left")) {
+      if (streq(alignment, "left")) {
         pango_layout_set_alignment(layout, PANGO_ALIGN_LEFT);
-      } else if (g_str_equal(alignment, "center")) {
+      } else if (streq(alignment, "center")) {
         pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
-      } else if (g_str_equal(alignment, "right")) {
+      } else if (streq(alignment, "right")) {
         pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
       }
     }
@@ -107,11 +108,11 @@ lua_catnip_canvas_text(lua_State* L)
         );
       } else if (ellipsis_type == LUA_TSTRING) {
         const char* ellipsis = lua_tostring(L, -1);
-        if (g_str_equal(ellipsis, "start")) {
+        if (streq(ellipsis, "start")) {
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_START);
-        } else if (g_str_equal(ellipsis, "middle")) {
+        } else if (streq(ellipsis, "middle")) {
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_MIDDLE);
-        } else if (g_str_equal(ellipsis, "end")) {
+        } else if (streq(ellipsis, "end")) {
           pango_layout_set_ellipsize(layout, PANGO_ELLIPSIZE_END);
         }
       }
@@ -128,11 +129,11 @@ lua_catnip_canvas_text(lua_State* L)
         }
       } else if (wrap_type == LUA_TSTRING) {
         const char* wrap = lua_popstring(L);
-        if (g_str_equal(wrap, "char")) {
+        if (streq(wrap, "char")) {
           pango_layout_set_wrap(layout, PANGO_WRAP_CHAR);
-        } else if (g_str_equal(wrap, "word")) {
+        } else if (streq(wrap, "word")) {
           pango_layout_set_wrap(layout, PANGO_WRAP_WORD);
-        } else if (g_str_equal(wrap, "auto")) {
+        } else if (streq(wrap, "auto")) {
           pango_layout_set_wrap(layout, PANGO_WRAP_WORD_CHAR);
         }
       }

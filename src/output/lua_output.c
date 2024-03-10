@@ -4,8 +4,9 @@
 #include "output/lua_output_mode.h"
 #include "output/output_properties.h"
 #include "utils/lua.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
+#include <stdlib.h>
 
 lua_Ref lua_catnip_outputs = LUA_NOREF;
 
@@ -47,29 +48,29 @@ lua_catnip_output__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "id")) {
+  if (streq(key, "id")) {
     lua_pushnumber(L, output->id);
-  } else if (g_str_equal(key, "x")) {
+  } else if (streq(key, "x")) {
     lua_pushnumber(L, catnip_output_get_x(output));
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     lua_pushnumber(L, catnip_output_get_y(output));
-  } else if (g_str_equal(key, "width")) {
+  } else if (streq(key, "width")) {
     lua_pushnumber(L, catnip_output_get_width(output));
-  } else if (g_str_equal(key, "height")) {
+  } else if (streq(key, "height")) {
     lua_pushnumber(L, catnip_output_get_height(output));
-  } else if (g_str_equal(key, "refresh")) {
+  } else if (streq(key, "refresh")) {
     lua_pushnumber(L, catnip_output_get_refresh(output));
-  } else if (g_str_equal(key, "mode")) {
+  } else if (streq(key, "mode")) {
     lua_catnip_output_push_current_mode(L, output);
-  } else if (g_str_equal(key, "modes")) {
+  } else if (streq(key, "modes")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.modes);
-  } else if (g_str_equal(key, "scale")) {
+  } else if (streq(key, "scale")) {
     lua_pushnumber(L, catnip_output_get_scale(output));
-  } else if (g_str_equal(key, "subscribe")) {
+  } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_output_method_subscribe);
-  } else if (g_str_equal(key, "unsubscribe")) {
+  } else if (streq(key, "unsubscribe")) {
     lua_pushcfunction(L, lua_catnip_output_method_unsubscribe);
-  } else if (g_str_equal(key, "publish")) {
+  } else if (streq(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_output_method_publish);
   } else {
     lua_pushnil(L);
@@ -91,21 +92,21 @@ lua_catnip_output__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (streq(key, "x")) {
     catnip_output_set_x(output, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     catnip_output_set_y(output, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "width")) {
+  } else if (streq(key, "width")) {
     catnip_output_set_width(output, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "height")) {
+  } else if (streq(key, "height")) {
     catnip_output_set_height(output, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "refresh")) {
+  } else if (streq(key, "refresh")) {
     catnip_output_set_refresh(output, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "mode")) {
+  } else if (streq(key, "mode")) {
     struct wlr_output_mode** lua_output_mode =
       luaL_checkudata(L, 3, "catnip.output.mode");
     catnip_output_set_mode(output, *lua_output_mode);
-  } else if (g_str_equal(key, "scale")) {
+  } else if (streq(key, "scale")) {
     catnip_output_set_scale(output, luaL_checknumber(L, 3));
   } else {
     lua_log_error(L, "unknown userdata field (%s)", key);
@@ -173,7 +174,7 @@ lua_catnip_output_publish(
 {
   lua_catnip_events_publish(L, output->lua.subscriptions, event, nargs);
 
-  gchar* global_event = g_strconcat("output::", event, NULL);
+  char* global_event = strfmt("output::%s", event);
   lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
   lua_insert(L, -1 - nargs);
 
@@ -185,7 +186,7 @@ lua_catnip_output_publish(
   );
 
   lua_remove(L, -1 - nargs);
-  g_free(global_event);
+  free(global_event);
 }
 
 void

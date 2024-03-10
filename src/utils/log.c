@@ -1,7 +1,8 @@
 #include "log.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <stdbool.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <time.h>
 
 enum LOG_LEVEL global_log_level = LOG_LEVEL_ERROR;
@@ -35,18 +36,12 @@ log_log(enum LOG_LEVEL log_level, const char* format, ...)
   struct tm* tm = localtime(&timer);
   strftime(timestamp, sizeof(timestamp), "%H:%M:%S", tm);
 
-  GString* message = g_string_new(NULL);
   va_list varargs;
   va_start(varargs, format);
-  g_string_vprintf(message, format, varargs);
+  char* message = strvfmt(format, varargs);
   va_end(varargs);
 
-  printf(
-    "[%s] %s: %s\n",
-    get_log_level_label(log_level),
-    timestamp,
-    message->str
-  );
+  printf("[%s] %s: %s\n", get_log_level_label(log_level), timestamp, message);
 
-  g_string_free(message, true);
+  free(message);
 }

@@ -1,8 +1,8 @@
 #include "cli.h"
 #include "config.h"
 #include "utils/log.h"
+#include "utils/string.h"
 #include <getopt.h>
-#include <glib.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -57,16 +57,16 @@ catnip_cli_init(int argc, char* argv[])
         catnip_config_path = strdup(optarg);
         break;
       case 'l': {
-        if (g_str_equal(optarg, "silent")) {
+        if (streq(optarg, "silent")) {
           global_log_level = LOG_LEVEL_SILENT;
           wlr_log_init(WLR_SILENT, NULL);
-        } else if (g_str_equal(optarg, "warning")) {
+        } else if (streq(optarg, "warning")) {
           global_log_level = LOG_LEVEL_WARNING;
           wlr_log_init(WLR_ERROR, NULL);
-        } else if (g_str_equal(optarg, "info")) {
+        } else if (streq(optarg, "info")) {
           global_log_level = LOG_LEVEL_INFO;
           wlr_log_init(WLR_INFO, NULL);
-        } else if (g_str_equal(optarg, "debug")) {
+        } else if (streq(optarg, "debug")) {
           global_log_level = LOG_LEVEL_DEBUG;
           wlr_log_init(WLR_DEBUG, NULL);
         } else {

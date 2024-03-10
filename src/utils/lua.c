@@ -1,6 +1,7 @@
 #include "lua.h"
-#include "utils/glib.h"
+#include "utils/string.h"
 #include <lauxlib.h>
+#include <stdlib.h>
 
 // -----------------------------------------------------------------------------
 // Debugging
@@ -148,19 +149,17 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type)
 char*
 lua_msg_bad_type(lua_State* L, int index)
 {
-  return g_string_free_and_steal(
-    g_string_new_printf("bad type '%s'", luaL_typename(L, index))
-  );
+  return strfmt("bad type '%s'", luaL_typename(L, index));
 }
 
 char*
 lua_msg_expected_type(lua_State* L, int index, int type)
 {
-  return g_string_free_and_steal(g_string_new_printf(
+  return strfmt(
     "%s expected, got %s",
     lua_typename(L, type),
     luaL_typename(L, index)
-  ));
+  );
 }
 
 char*
@@ -169,27 +168,23 @@ lua_msg_bad_arg(lua_State* L, int index, const char* details)
   lua_Debug callee_info;
 
   if (!lua_getstack(L, 0, &callee_info)) {
-    GString* error_msg = g_string_new(NULL);
-    g_string_printf(error_msg, "bad argument #%d (%s)", index, details);
-    return g_string_free_and_steal(error_msg);
+    return strfmt("bad argument #%d (%s)", index, details);
   }
 
   lua_getinfo(L, "n", &callee_info);
 
-  return g_string_free_and_steal(g_string_new_printf(
+  return strfmt(
     "bad argument #%d to '%s' (%s)",
     index,
     callee_info.name ? callee_info.name : "?",
     details
-  ));
+  );
 }
 
 char*
 lua_msg_bad_field(lua_State* L, const char* field, const char* details)
 {
-  return g_string_free_and_steal(
-    g_string_new_printf("bad field '%s' (%s)", field, details)
-  );
+  return strfmt("bad field '%s' (%s)", field, details);
 }
 
 // -----------------------------------------------------------------------------
@@ -199,16 +194,15 @@ lua_msg_bad_field(lua_State* L, const char* field, const char* details)
 void
 lua_log(lua_State* L, enum LOG_LEVEL log_level, const char* format, ...)
 {
-  GString* message = g_string_new(NULL);
   va_list varargs;
   va_start(varargs, format);
-  g_string_vprintf(message, format, varargs);
+  char* message = strvfmt(format, varargs);
   va_end(varargs);
 
   lua_Debug caller_info;
 
   if (!lua_getstack(L, 1, &caller_info)) {
-    log_log(log_level, "%s", message->str);
+    log_log(log_level, "%s", message);
   } else {
     lua_getinfo(L, "Sl", &caller_info);
 
@@ -217,11 +211,11 @@ lua_log(lua_State* L, enum LOG_LEVEL log_level, const char* format, ...)
       "%s:%d: %s",
       caller_info.short_src,
       caller_info.currentline,
-      message->str
+      message
     );
   }
 
-  g_string_free(message, true);
+  free(message);
 }
 
 void

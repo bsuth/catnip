@@ -7,8 +7,8 @@
 #include "keyboard/lua_keyboard.h"
 #include "lua_events.h"
 #include "output/lua_output.h"
-#include "utils/glib.h"
 #include "utils/lua.h"
+#include "utils/string.h"
 #include "window/lua_window.h"
 #include <lauxlib.h>
 #include <stdlib.h>
@@ -122,16 +122,16 @@ lua_catnip_init(lua_State* L)
 
   lua_getfield(L, -1, "path");
 
-  GString* lua_path = g_string_new_printf(
+  char* lua_path = strfmt(
     "%s/?.lua;%s/?/init.lua;%s",
     CATNIP_INSTALL_DIR,
     CATNIP_INSTALL_DIR,
     lua_popstring(L)
   );
 
-  lua_pushstring(L, lua_path->str);
+  lua_pushstring(L, lua_path);
   lua_setfield(L, -2, "path");
-  g_string_free(lua_path, true);
+  free(lua_path);
 
   lua_getfield(L, -1, "loaded");
 

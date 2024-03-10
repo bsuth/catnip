@@ -1,6 +1,6 @@
 #include "lua_output_mode.h"
 #include "output/output_properties.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
 
 static int
@@ -17,11 +17,11 @@ lua_catnip_output_mode__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "width")) {
+  if (streq(key, "width")) {
     lua_pushnumber(L, mode->width);
-  } else if (g_str_equal(key, "height")) {
+  } else if (streq(key, "height")) {
     lua_pushnumber(L, mode->height);
-  } else if (g_str_equal(key, "refresh")) {
+  } else if (streq(key, "refresh")) {
     lua_pushnumber(L, mode->refresh);
   } else {
     lua_pushnil(L);

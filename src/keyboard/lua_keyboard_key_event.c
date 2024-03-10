@@ -1,7 +1,7 @@
 #include "lua_keyboard_key_event.h"
 #include "keyboard/keyboard.h"
 #include "utils/lua.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 
@@ -19,23 +19,23 @@ lua_catnip_keyboard_key_event__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "code")) {
+  if (streq(key, "code")) {
     lua_pushnumber(L, key_event->xkb_keysym);
-  } else if (g_str_equal(key, "name")) {
+  } else if (streq(key, "name")) {
     lua_pushstring(L, key_event->xkb_name);
-  } else if (g_str_equal(key, "shift")) {
+  } else if (streq(key, "shift")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_SHIFT);
-  } else if (g_str_equal(key, "ctrl")) {
+  } else if (streq(key, "ctrl")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_CTRL);
-  } else if (g_str_equal(key, "mod1")) {
+  } else if (streq(key, "mod1")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_ALT);
-  } else if (g_str_equal(key, "mod2")) {
+  } else if (streq(key, "mod2")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD2);
-  } else if (g_str_equal(key, "mod3")) {
+  } else if (streq(key, "mod3")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD3);
-  } else if (g_str_equal(key, "mod4")) {
+  } else if (streq(key, "mod4")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_LOGO);
-  } else if (g_str_equal(key, "mod5")) {
+  } else if (streq(key, "mod5")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_MOD5);
   } else {
     lua_pushnil(L);
@@ -57,7 +57,7 @@ lua_catnip_keyboard_key_event__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "prevent_notify")) {
+  if (streq(key, "prevent_notify")) {
     key_event->prevent_notify = lua_toboolean(L, 3);
   } else {
     lua_log_error(L, "unknown userdata field (%s)", key);

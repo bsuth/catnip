@@ -2,7 +2,7 @@
 #include "canvas/canvas_methods.h"
 #include "utils/cairo.h"
 #include "utils/lua.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
 #include <math.h>
 
@@ -142,23 +142,23 @@ lua_catnip_canvas_path(lua_State* L)
       lua_rawgeti(L, -1, 1);
       const char* command = lua_popstring(L);
 
-      if (g_str_equal(command, "close") || g_str_equal(command, "CLOSE")) {
+      if (streq(command, "close") || streq(command, "CLOSE")) {
         cairo_close_path(canvas->cr);
-      } else if (g_str_equal(command, "MOVE")) {
+      } else if (streq(command, "MOVE")) {
         lua_catnip_canvas_path_move(L, canvas, false);
-      } else if (g_str_equal(command, "move")) {
+      } else if (streq(command, "move")) {
         lua_catnip_canvas_path_move(L, canvas, true);
-      } else if (g_str_equal(command, "LINE")) {
+      } else if (streq(command, "LINE")) {
         lua_catnip_canvas_path_line(L, canvas, false);
-      } else if (g_str_equal(command, "line")) {
+      } else if (streq(command, "line")) {
         lua_catnip_canvas_path_line(L, canvas, true);
-      } else if (g_str_equal(command, "ARC")) {
+      } else if (streq(command, "ARC")) {
         lua_catnip_canvas_path_arc(L, canvas, false);
-      } else if (g_str_equal(command, "arc")) {
+      } else if (streq(command, "arc")) {
         lua_catnip_canvas_path_arc(L, canvas, true);
-      } else if (g_str_equal(command, "BEZIER")) {
+      } else if (streq(command, "BEZIER")) {
         lua_catnip_canvas_path_bezier(L, canvas, false);
-      } else if (g_str_equal(command, "bezier")) {
+      } else if (streq(command, "bezier")) {
         lua_catnip_canvas_path_bezier(L, canvas, true);
       }
     }

@@ -3,8 +3,9 @@
 #include "keyboard/lua_keyboard_key_event.h"
 #include "keyboard/lua_keyboard_methods.h"
 #include "lua_events.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
+#include <stdlib.h>
 
 lua_Ref lua_catnip_keyboards = LUA_NOREF;
 
@@ -22,35 +23,35 @@ lua_catnip_keyboard__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "id")) {
+  if (streq(key, "id")) {
     lua_pushnumber(L, keyboard->id);
-  } else if (g_str_equal(key, "name")) {
+  } else if (streq(key, "name")) {
     lua_pushstring(L, keyboard->wlr_keyboard->base.name);
-  } else if (g_str_equal(key, "xkb_rules")) {
+  } else if (streq(key, "xkb_rules")) {
     keyboard->xkb_rule_names.rules == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.rules);
-  } else if (g_str_equal(key, "xkb_model")) {
+  } else if (streq(key, "xkb_model")) {
     keyboard->xkb_rule_names.model == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.model);
-  } else if (g_str_equal(key, "xkb_layout")) {
+  } else if (streq(key, "xkb_layout")) {
     keyboard->xkb_rule_names.layout == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.layout);
-  } else if (g_str_equal(key, "xkb_variant")) {
+  } else if (streq(key, "xkb_variant")) {
     keyboard->xkb_rule_names.variant == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.variant);
-  } else if (g_str_equal(key, "xkb_options")) {
+  } else if (streq(key, "xkb_options")) {
     keyboard->xkb_rule_names.options == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.options);
-  } else if (g_str_equal(key, "subscribe")) {
+  } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_keyboard_method_subscribe);
-  } else if (g_str_equal(key, "unsubscribe")) {
+  } else if (streq(key, "unsubscribe")) {
     lua_pushcfunction(L, lua_catnip_keyboard_method_unsubscribe);
-  } else if (g_str_equal(key, "publish")) {
+  } else if (streq(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_keyboard_method_publish);
   } else {
     lua_pushnil(L);
@@ -72,19 +73,19 @@ lua_catnip_keyboard__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "xkb_rules")) {
+  if (streq(key, "xkb_rules")) {
     keyboard->xkb_rule_names.rules = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
-  } else if (g_str_equal(key, "xkb_model")) {
+  } else if (streq(key, "xkb_model")) {
     keyboard->xkb_rule_names.model = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
-  } else if (g_str_equal(key, "xkb_layout")) {
+  } else if (streq(key, "xkb_layout")) {
     keyboard->xkb_rule_names.layout = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
-  } else if (g_str_equal(key, "xkb_variant")) {
+  } else if (streq(key, "xkb_variant")) {
     keyboard->xkb_rule_names.variant = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
-  } else if (g_str_equal(key, "xkb_options")) {
+  } else if (streq(key, "xkb_options")) {
     keyboard->xkb_rule_names.options = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
   } else {
@@ -149,7 +150,7 @@ lua_catnip_keyboard_publish(
 {
   lua_catnip_events_publish(L, keyboard->lua.subscriptions, event, nargs);
 
-  gchar* global_event = g_strconcat("keyboard::", event, NULL);
+  char* global_event = strfmt("keyboard::%s", event);
   lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
   lua_insert(L, -1 - nargs);
 
@@ -161,7 +162,7 @@ lua_catnip_keyboard_publish(
   );
 
   lua_remove(L, -1 - nargs);
-  g_free(global_event);
+  free(global_event);
 }
 
 void

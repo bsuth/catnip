@@ -7,7 +7,7 @@
 #include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
 #include "utils/lua.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
 
 static int
@@ -18,27 +18,27 @@ lua_catnip_canvas__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (streq(key, "x")) {
     lua_pushnumber(L, catnip_canvas_get_x(canvas));
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     lua_pushnumber(L, catnip_canvas_get_y(canvas));
-  } else if (g_str_equal(key, "z")) {
+  } else if (streq(key, "z")) {
     lua_pushnumber(L, catnip_canvas_get_z(canvas));
-  } else if (g_str_equal(key, "width")) {
+  } else if (streq(key, "width")) {
     lua_pushnumber(L, catnip_canvas_get_width(canvas));
-  } else if (g_str_equal(key, "height")) {
+  } else if (streq(key, "height")) {
     lua_pushnumber(L, catnip_canvas_get_height(canvas));
-  } else if (g_str_equal(key, "visible")) {
+  } else if (streq(key, "visible")) {
     lua_pushboolean(L, catnip_canvas_get_visible(canvas));
-  } else if (g_str_equal(key, "clear")) {
+  } else if (streq(key, "clear")) {
     lua_pushcfunction(L, lua_catnip_canvas_clear);
-  } else if (g_str_equal(key, "path")) {
+  } else if (streq(key, "path")) {
     lua_pushcfunction(L, lua_catnip_canvas_path);
-  } else if (g_str_equal(key, "text")) {
+  } else if (streq(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
-  } else if (g_str_equal(key, "svg")) {
+  } else if (streq(key, "svg")) {
     lua_pushcfunction(L, lua_catnip_canvas_svg);
-  } else if (g_str_equal(key, "png")) {
+  } else if (streq(key, "png")) {
     lua_pushcfunction(L, lua_catnip_canvas_png);
   } else {
     lua_pushnil(L);
@@ -55,17 +55,17 @@ lua_catnip_canvas__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (streq(key, "x")) {
     catnip_canvas_set_x(canvas, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     catnip_canvas_set_y(canvas, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "z")) {
+  } else if (streq(key, "z")) {
     catnip_canvas_set_z(canvas, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "width")) {
+  } else if (streq(key, "width")) {
     catnip_canvas_set_width(canvas, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "height")) {
+  } else if (streq(key, "height")) {
     catnip_canvas_set_height(canvas, luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "visible")) {
+  } else if (streq(key, "visible")) {
     catnip_canvas_set_visible(canvas, lua_toboolean(L, 3));
   } else {
     lua_log_error(L, "unknown userdata field (%s)", key);

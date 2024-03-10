@@ -2,7 +2,7 @@
 #include "cursor/cursor_properties.h"
 #include "cursor/lua_cursor_methods.h"
 #include "lua_events.h"
-#include <glib.h>
+#include "utils/string.h"
 #include <lauxlib.h>
 
 lua_Ref lua_catnip_cursor = LUA_NOREF;
@@ -13,21 +13,21 @@ lua_catnip_cursor__index(lua_State* L)
 {
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (streq(key, "x")) {
     lua_pushnumber(L, catnip_cursor_get_x());
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     lua_pushnumber(L, catnip_cursor_get_y());
-  } else if (g_str_equal(key, "name")) {
+  } else if (streq(key, "name")) {
     lua_pushstring(L, catnip_cursor_get_name());
-  } else if (g_str_equal(key, "size")) {
+  } else if (streq(key, "size")) {
     lua_pushnumber(L, catnip_cursor_get_size());
-  } else if (g_str_equal(key, "theme")) {
+  } else if (streq(key, "theme")) {
     lua_pushstring(L, catnip_cursor_get_theme());
-  } else if (g_str_equal(key, "subscribe")) {
+  } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_cursor_method_subscribe);
-  } else if (g_str_equal(key, "unsubscribe")) {
+  } else if (streq(key, "unsubscribe")) {
     lua_pushcfunction(L, lua_catnip_cursor_method_unsubscribe);
-  } else if (g_str_equal(key, "publish")) {
+  } else if (streq(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_cursor_method_publish);
   } else {
     lua_pushnil(L);
@@ -41,15 +41,15 @@ lua_catnip_cursor__newindex(lua_State* L)
 {
   const char* key = lua_tostring(L, 2);
 
-  if (g_str_equal(key, "x")) {
+  if (streq(key, "x")) {
     catnip_cursor_set_x(luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "y")) {
+  } else if (streq(key, "y")) {
     catnip_cursor_set_y(luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "name")) {
+  } else if (streq(key, "name")) {
     catnip_cursor_set_name(luaL_checkstring(L, 3));
-  } else if (g_str_equal(key, "size")) {
+  } else if (streq(key, "size")) {
     catnip_cursor_set_size(luaL_checknumber(L, 3));
-  } else if (g_str_equal(key, "theme")) {
+  } else if (streq(key, "theme")) {
     catnip_cursor_set_theme(luaL_checkstring(L, 3));
   } else {
     lua_log_error(L, "unknown userdata field (%s)", key);
