@@ -4,12 +4,12 @@
 #include "cursor/lua_cursor.h"
 #include "display.h"
 #include "event_loop.h"
-#include "keyboard/lua_keyboard.h"
+#include "keyboard/lua_keyboards.h"
 #include "lua_events.h"
-#include "output/lua_output.h"
+#include "output/lua_outputs.h"
 #include "utils/lua.h"
 #include "utils/string.h"
-#include "window/lua_window.h"
+#include "window/lua_windows.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -138,15 +138,15 @@ lua_catnip_init(lua_State* L)
   luaL_newlib(L, lua_catnip_lib);
   lua_catnip_events_init(L);
 
-  lua_catnip_keyboard_init(L); // must init after events
+  lua_catnip_keyboards_init(L); // must init after events
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
   lua_setfield(L, -2, "keyboards");
 
-  lua_catnip_window_init(L); // must init after events
+  lua_catnip_windows_init(L); // must init after events
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
   lua_setfield(L, -2, "windows");
 
-  lua_catnip_output_init(L); // must init after events
+  lua_catnip_outputs_init(L); // must init after events
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
   lua_setfield(L, -2, "outputs");
 

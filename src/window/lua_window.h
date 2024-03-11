@@ -3,8 +3,6 @@
 
 #include "window/window.h"
 
-extern lua_Ref lua_catnip_windows;
-
 void
 lua_catnip_window_destroy(lua_State* L, struct catnip_window* window);
 

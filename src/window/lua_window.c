@@ -6,8 +6,6 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 
-lua_Ref lua_catnip_windows = LUA_NOREF;
-
 static int
 lua_catnip_window__index(lua_State* L)
 {
@@ -104,11 +102,6 @@ static const struct luaL_Reg lua_catnip_window_mt[] = {
 void
 lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
-  lua_pushnil(L);
-  lua_rawseti(L, -2, window->id);
-  lua_pop(L, 1);
-
   lua_catnip_window_publish(L, window, "destroy", 0);
 
   *(window->lua.userdata) = NULL;
@@ -119,23 +112,16 @@ lua_catnip_window_destroy(lua_State* L, struct catnip_window* window)
 void
 lua_catnip_window_create(lua_State* L, struct catnip_window* window)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
-
   struct catnip_window** lua_window =
     lua_newuserdata(L, sizeof(struct catnip_window*));
   luaL_setmetatable(L, "catnip.window");
 
   *lua_window = window;
   window->lua.userdata = lua_window;
-
-  lua_pushvalue(L, -1);
   window->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   lua_newtable(L);
   window->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  lua_rawseti(L, -2, window->id);
-  lua_pop(L, 1);
 
   lua_catnip_window_publish(L, window, "create", 0);
 }
@@ -168,16 +154,7 @@ lua_catnip_window_publish(
 void
 lua_catnip_window_init(lua_State* L)
 {
-  lua_newtable(L);
-  lua_catnip_windows = luaL_ref(L, LUA_REGISTRYINDEX);
-
   luaL_newmetatable(L, "catnip.window");
   luaL_setfuncs(L, lua_catnip_window_mt, 0);
   lua_pop(L, 1);
-
-  struct catnip_window* window = NULL;
-  wl_list_for_each(window, &catnip_windows, link)
-  {
-    lua_catnip_window_create(L, window);
-  }
 }

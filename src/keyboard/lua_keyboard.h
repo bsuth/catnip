@@ -3,8 +3,6 @@
 
 #include "keyboard/keyboard.h"
 
-extern lua_Ref lua_catnip_keyboards;
-
 void
 lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard);
 

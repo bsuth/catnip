@@ -3,12 +3,9 @@
 #include "output/lua_output_methods.h"
 #include "output/lua_output_mode.h"
 #include "output/output_properties.h"
-#include "utils/lua.h"
 #include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
-
-lua_Ref lua_catnip_outputs = LUA_NOREF;
 
 static void
 lua_catnip_output_push_current_mode(lua_State* L, struct catnip_output* output)
@@ -124,11 +121,6 @@ static const struct luaL_Reg lua_catnip_output_mt[] = {
 void
 lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
-  lua_pushnil(L);
-  lua_rawseti(L, -2, output->id);
-  lua_pop(L, 1);
-
   lua_catnip_output_publish(L, output, "destroy", 0);
 
   *(output->lua.userdata) = NULL;
@@ -141,25 +133,18 @@ lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
 void
 lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
-
   struct catnip_output** lua_output =
     lua_newuserdata(L, sizeof(struct catnip_output*));
   luaL_setmetatable(L, "catnip.output");
 
   *lua_output = output;
   output->lua.userdata = lua_output;
-
-  lua_pushvalue(L, -1);
   output->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   lua_newtable(L);
   output->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 
   lua_catnip_output_modes_create(L, output);
-
-  lua_rawseti(L, -2, output->id);
-  lua_pop(L, 1);
 
   lua_catnip_output_publish(L, output, "create", 0);
 }
@@ -192,18 +177,9 @@ lua_catnip_output_publish(
 void
 lua_catnip_output_init(lua_State* L)
 {
-  lua_newtable(L);
-  lua_catnip_outputs = luaL_ref(L, LUA_REGISTRYINDEX);
-
   luaL_newmetatable(L, "catnip.output");
   luaL_setfuncs(L, lua_catnip_output_mt, 0);
   lua_pop(L, 1);
 
   lua_catnip_output_mode_init(L);
-
-  struct catnip_output* output = NULL;
-  wl_list_for_each(output, &catnip_outputs, link)
-  {
-    lua_catnip_output_create(L, output);
-  }
 }

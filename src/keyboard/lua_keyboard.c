@@ -7,8 +7,6 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 
-lua_Ref lua_catnip_keyboards = LUA_NOREF;
-
 static int
 lua_catnip_keyboard__index(lua_State* L)
 {
@@ -104,11 +102,6 @@ static const struct luaL_Reg lua_catnip_keyboard_mt[] = {
 void
 lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
-  lua_pushnil(L);
-  lua_rawseti(L, -2, keyboard->id);
-  lua_pop(L, 1);
-
   lua_catnip_keyboard_publish(L, keyboard, "destroy", 0);
 
   *(keyboard->lua.userdata) = NULL;
@@ -119,23 +112,16 @@ lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
 void
 lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
 {
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
-
   struct catnip_keyboard** lua_keyboard =
     lua_newuserdata(L, sizeof(struct catnip_keyboard*));
   luaL_setmetatable(L, "catnip.keyboard");
 
   *lua_keyboard = keyboard;
   keyboard->lua.userdata = lua_keyboard;
-
-  lua_pushvalue(L, -1);
   keyboard->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   lua_newtable(L);
   keyboard->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  lua_rawseti(L, -2, keyboard->id);
-  lua_pop(L, 1);
 
   lua_catnip_keyboard_publish(L, keyboard, "create", 0);
 }
@@ -190,18 +176,9 @@ lua_catnip_keyboard_publish_key_event(
 void
 lua_catnip_keyboard_init(lua_State* L)
 {
-  lua_newtable(L);
-  lua_catnip_keyboards = luaL_ref(L, LUA_REGISTRYINDEX);
-
   luaL_newmetatable(L, "catnip.keyboard");
   luaL_setfuncs(L, lua_catnip_keyboard_mt, 0);
   lua_pop(L, 1);
 
   lua_catnip_keyboard_key_event_init(L);
-
-  struct catnip_keyboard* keyboard = NULL;
-  wl_list_for_each(keyboard, &catnip_keyboards, link)
-  {
-    lua_catnip_keyboard_create(L, keyboard);
-  }
 }
