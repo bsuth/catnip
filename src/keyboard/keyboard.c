@@ -2,6 +2,7 @@
 #include "backend.h"
 #include "config.h"
 #include "keyboard/keyboard_methods.h"
+#include "keyboard/lua_key_event.h"
 #include "keyboard/lua_keyboard.h"
 #include "seat/seat.h"
 #include "utils/wayland.h"
@@ -9,7 +10,6 @@
 #include <xkbcommon/xkbcommon.h>
 
 struct wl_list catnip_keyboards;
-static int catnip_keybound_id_counter = 1;
 
 static struct {
   struct wl_listener new_input;
@@ -54,7 +54,7 @@ catnip_keyboard_key(struct wl_listener* listener, void* data)
     char xkb_name[64];
     xkb_keysym_get_name(xkb_keysym, xkb_name, 64);
 
-    struct catnip_keyboard_key_event event = {
+    struct catnip_key_event event = {
       .modifiers = modifiers,
       .xkb_keysym = xkb_keysym,
       .xkb_name = xkb_name,
@@ -62,7 +62,7 @@ catnip_keyboard_key(struct wl_listener* listener, void* data)
       .prevent_notify = false,
     };
 
-    lua_catnip_keyboard_publish_key_event(catnip_L, keyboard, &event);
+    lua_catnip_publish_key_event(catnip_L, keyboard, &event);
 
     if (!event.prevent_notify) {
       // Wayland only allows a single keyboard per seat. Thus, we assign all
@@ -87,7 +87,7 @@ catnip_keyboard_destroy(struct wl_listener* listener, void* data)
     wl_container_of(listener, keyboard, listeners.destroy);
 
   if (catnip_L != NULL) {
-    lua_catnip_keyboard_destroy(catnip_L, keyboard);
+    lua_catnip_keyboard_destroy(catnip_L, keyboard->lua_resource);
   }
 
   wl_list_remove(&keyboard->link);
@@ -111,7 +111,6 @@ catnip_keyboard_create(struct wl_listener* listener, void* data)
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
-  keyboard->id = catnip_keybound_id_counter++;
   keyboard->wlr_keyboard = wlr_keyboard;
 
   keyboard->xkb_keymap_event_source = NULL;

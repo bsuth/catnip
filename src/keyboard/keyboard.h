@@ -1,12 +1,12 @@
 #ifndef CATNIP_KEYBOARD_H
 #define CATNIP_KEYBOARD_H
 
-#include "utils/lua.h"
+#include "lua_resource.h"
 #include <wlr/types/wlr_seat.h>
 
 struct catnip_keyboard {
-  int id;
   struct wl_list link;
+  struct catnip_lua_resource* lua_resource;
 
   struct wlr_keyboard* wlr_keyboard;
 
@@ -18,15 +18,9 @@ struct catnip_keyboard {
     struct wl_listener key;
     struct wl_listener destroy;
   } listeners;
-
-  struct {
-    struct catnip_keyboard** userdata;
-    lua_Ref ref;
-    lua_Ref subscriptions;
-  } lua;
 };
 
-struct catnip_keyboard_key_event {
+struct catnip_key_event {
   uint32_t modifiers;
   xkb_keysym_t xkb_keysym;
   const char* xkb_name;
@@ -38,8 +32,5 @@ extern struct wl_list catnip_keyboards;
 
 void
 catnip_keyboard_init();
-
-void
-catnip_keyboard_reload_keymap(struct catnip_keyboard* keyboard);
 
 #endif

@@ -1,12 +1,12 @@
 #ifndef CATNIP_WINDOW_H
 #define CATNIP_WINDOW_H
 
-#include "utils/lua.h"
+#include "lua_resource.h"
 #include <wlr/types/wlr_xdg_shell.h>
 
 struct catnip_window {
-  int id;
   struct wl_list link;
+  struct catnip_lua_resource* lua_resource;
 
   struct wlr_xdg_surface* xdg_surface;
   struct wlr_xdg_toplevel* xdg_toplevel;
@@ -22,12 +22,6 @@ struct catnip_window {
     struct wl_listener request_fullscreen;
     struct wl_listener destroy;
   } listeners;
-
-  struct {
-    struct catnip_window** userdata;
-    lua_Ref ref;
-    lua_Ref subscriptions;
-  } lua;
 
   // Since properties that are mutated through `configure` events are not
   // updated immediately (but rather on the next event cycle), we store the

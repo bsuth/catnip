@@ -1,7 +1,7 @@
 #include "window_properties.h"
 #include "config.h"
+#include "lua_resource.h"
 #include "utils/wayland.h"
-#include "window/lua_window.h"
 #include <wlr/types/wlr_scene.h>
 
 // NOTE: Publishing `property::xxx` events for `wlr_scene_node` properties is a
@@ -30,7 +30,7 @@ catnip_window_set_x(struct catnip_window* window, int new_x)
     catnip_window_get_y(window)
   );
 
-  lua_catnip_window_publish(catnip_L, window, "property::x", 0);
+  lua_catnip_resource_publish(catnip_L, window->lua_resource, "property::x", 0);
 }
 
 int
@@ -54,7 +54,7 @@ catnip_window_set_y(struct catnip_window* window, int new_y)
     new_y
   );
 
-  lua_catnip_window_publish(catnip_L, window, "property::y", 0);
+  lua_catnip_resource_publish(catnip_L, window->lua_resource, "property::y", 0);
 }
 
 int
@@ -71,7 +71,7 @@ catnip_window_set_z(struct catnip_window* window, int new_z)
   }
 
   wlr_scene_node_set_zindex(&window->scene_tree->node, new_z);
-  lua_catnip_window_publish(catnip_L, window, "property::z", 0);
+  lua_catnip_resource_publish(catnip_L, window->lua_resource, "property::z", 0);
 }
 
 int
@@ -94,7 +94,12 @@ catnip_window_set_width(struct catnip_window* window, int new_width)
   );
   window->latest.width = new_width;
 
-  lua_catnip_window_publish(catnip_L, window, "property::width", 0);
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::width",
+    0
+  );
 }
 
 int
@@ -117,7 +122,12 @@ catnip_window_set_height(struct catnip_window* window, int new_height)
   );
   window->latest.height = new_height;
 
-  lua_catnip_window_publish(catnip_L, window, "property::height", 0);
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::height",
+    0
+  );
 }
 
 bool
@@ -134,7 +144,13 @@ catnip_window_set_visible(struct catnip_window* window, bool new_visible)
   }
 
   wlr_scene_node_set_enabled(&window->scene_tree->node, new_visible);
-  lua_catnip_window_publish(catnip_L, window, "property::visible", 0);
+
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::visible",
+    0
+  );
 }
 
 bool
@@ -156,7 +172,12 @@ catnip_window_set_focused(struct catnip_window* window, bool new_focused)
   wlr_xdg_toplevel_set_activated(window->xdg_toplevel, new_focused);
   window->latest.focused = new_focused;
 
-  lua_catnip_window_publish(catnip_L, window, "property::focused", 0);
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::focused",
+    0
+  );
 }
 
 bool
@@ -175,7 +196,12 @@ catnip_window_set_fullscreen(struct catnip_window* window, bool new_fullscreen)
   wlr_xdg_toplevel_set_fullscreen(window->xdg_toplevel, new_fullscreen);
   window->latest.fullscreen = new_fullscreen;
 
-  lua_catnip_window_publish(catnip_L, window, "property::fullscreen", 0);
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::fullscreen",
+    0
+  );
 }
 
 bool
@@ -194,5 +220,10 @@ catnip_window_set_maximized(struct catnip_window* window, bool new_maximized)
   wlr_xdg_toplevel_set_maximized(window->xdg_toplevel, new_maximized);
   window->latest.maximized = new_maximized;
 
-  lua_catnip_window_publish(catnip_L, window, "property::maximized", 0);
+  lua_catnip_resource_publish(
+    catnip_L,
+    window->lua_resource,
+    "property::maximized",
+    0
+  );
 }

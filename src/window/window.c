@@ -8,7 +8,6 @@
 #include <stdlib.h>
 
 struct wl_list catnip_windows;
-static int catnip_window_id_counter = 1;
 
 static struct {
   struct wl_listener new_xdg_surface;
@@ -33,6 +32,10 @@ catnip_window_map(struct wl_listener* listener, void* data)
     // Do not create the window in Lua until it has actually been mapped
     lua_catnip_window_create(catnip_L, window);
   }
+
+  // TODO: docs
+  // need to do this here so we dont double create lua window
+  wl_list_insert(&catnip_windows, &window->link);
 }
 
 static void
@@ -54,27 +57,52 @@ catnip_window_configure(struct wl_listener* listener, void* data)
 
   if (toplevel_configure->width != window->latest.width) {
     window->latest.width = toplevel_configure->width;
-    lua_catnip_window_publish(catnip_L, window, "property::width", 0);
+    lua_catnip_resource_publish(
+      catnip_L,
+      window->lua_resource,
+      "property::width",
+      0
+    );
   }
 
   if (toplevel_configure->height != window->latest.height) {
     window->latest.height = toplevel_configure->height;
-    lua_catnip_window_publish(catnip_L, window, "property::height", 0);
+    lua_catnip_resource_publish(
+      catnip_L,
+      window->lua_resource,
+      "property::height",
+      0
+    );
   }
 
   if (toplevel_configure->activated != window->latest.focused) {
     window->latest.focused = toplevel_configure->activated;
-    lua_catnip_window_publish(catnip_L, window, "property::focused", 0);
+    lua_catnip_resource_publish(
+      catnip_L,
+      window->lua_resource,
+      "property::focused",
+      0
+    );
   }
 
   if (toplevel_configure->fullscreen != window->latest.fullscreen) {
     window->latest.fullscreen = toplevel_configure->fullscreen;
-    lua_catnip_window_publish(catnip_L, window, "property::fullscreen", 0);
+    lua_catnip_resource_publish(
+      catnip_L,
+      window->lua_resource,
+      "property::fullscreen",
+      0
+    );
   }
 
   if (toplevel_configure->maximized != window->latest.maximized) {
     window->latest.maximized = toplevel_configure->maximized;
-    lua_catnip_window_publish(catnip_L, window, "property::maximized", 0);
+    lua_catnip_resource_publish(
+      catnip_L,
+      window->lua_resource,
+      "property::maximized",
+      0
+    );
   }
 
   // Sync the `activated` state with whether this windows surface is the focused
@@ -162,7 +190,7 @@ catnip_window_destroy(struct wl_listener* listener, void* data)
     wl_container_of(listener, window, listeners.destroy);
 
   if (catnip_L != NULL) {
-    lua_catnip_window_destroy(catnip_L, window);
+    lua_catnip_window_destroy(catnip_L, window->lua_resource);
   }
 
   wl_list_remove(&window->link);
@@ -192,8 +220,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
     xdg_surface->data = wlr_scene_xdg_surface_create(parent->data, xdg_surface);
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
     struct catnip_window* window = calloc(1, sizeof(struct catnip_window));
-    window->id = catnip_window_id_counter++;
-
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;
     window->scene_tree = wlr_scene_xdg_surface_create(
@@ -247,8 +273,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
     // it requires the popup parent's scene node. For convenience, we always
     // store the scene node in `xdg_surface->data`.
     xdg_surface->data = window->scene_tree;
-
-    wl_list_insert(&catnip_windows, &window->link);
   }
 }
 

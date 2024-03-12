@@ -1,29 +1,20 @@
 #include "lua_keyboard.h"
 #include "keyboard/keyboard_methods.h"
-#include "keyboard/lua_keyboard_key_event.h"
-#include "keyboard/lua_keyboard_methods.h"
-#include "lua_events.h"
+#include "keyboard/lua_keyboard_list.h"
+#include "lua_resource.h"
 #include "utils/string.h"
 #include <lauxlib.h>
-#include <stdlib.h>
 
-static int
-lua_catnip_keyboard__index(lua_State* L)
+static bool
+lua_catnip_keyboard__index(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  struct catnip_keyboard** lua_keyboard = lua_touserdata(L, 1);
-  struct catnip_keyboard* keyboard = *lua_keyboard;
+  struct catnip_keyboard* keyboard = lua_resource->data;
 
-  if (keyboard == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
-    lua_pushnil(L);
-    return 1;
-  }
-
-  const char* key = lua_tostring(L, 2);
-
-  if (streq(key, "id")) {
-    lua_pushnumber(L, keyboard->id);
-  } else if (streq(key, "name")) {
+  if (streq(key, "name")) {
     lua_pushstring(L, keyboard->wlr_keyboard->base.name);
   } else if (streq(key, "xkb_rules")) {
     keyboard->xkb_rule_names.rules == NULL
@@ -45,31 +36,21 @@ lua_catnip_keyboard__index(lua_State* L)
     keyboard->xkb_rule_names.options == NULL
       ? lua_pushnil(L)
       : lua_pushstring(L, keyboard->xkb_rule_names.options);
-  } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_method_subscribe);
-  } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_method_unsubscribe);
-  } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_keyboard_method_publish);
   } else {
-    lua_pushnil(L);
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
-static int
-lua_catnip_keyboard__newindex(lua_State* L)
+static bool
+lua_catnip_keyboard__newindex(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  struct catnip_keyboard** lua_keyboard = lua_touserdata(L, 1);
-  struct catnip_keyboard* keyboard = *lua_keyboard;
-
-  if (keyboard == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
-    return 0;
-  }
-
-  const char* key = lua_tostring(L, 2);
+  struct catnip_keyboard* keyboard = lua_resource->data;
 
   if (streq(key, "xkb_rules")) {
     keyboard->xkb_rule_names.rules = luaL_checkstring(L, 3);
@@ -87,98 +68,36 @@ lua_catnip_keyboard__newindex(lua_State* L)
     keyboard->xkb_rule_names.options = luaL_checkstring(L, 3);
     catnip_keyboard_reload_keymap(keyboard);
   } else {
-    lua_log_error(L, "unknown userdata field (%s)", key);
+    return false;
   }
 
-  return 0;
+  return true;
 }
 
-static const struct luaL_Reg lua_catnip_keyboard_mt[] = {
-  {"__index", lua_catnip_keyboard__index},
-  {"__newindex", lua_catnip_keyboard__newindex},
-  {NULL, NULL}
-};
-
-void
-lua_catnip_keyboard_destroy(lua_State* L, struct catnip_keyboard* keyboard)
-{
-  lua_catnip_keyboard_publish(L, keyboard, "destroy", 0);
-
-  *(keyboard->lua.userdata) = NULL;
-  luaL_unref(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-  luaL_unref(L, LUA_REGISTRYINDEX, keyboard->lua.subscriptions);
-}
-
-void
+struct catnip_lua_resource*
 lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
 {
-  struct catnip_keyboard** lua_keyboard =
-    lua_newuserdata(L, sizeof(struct catnip_keyboard*));
-  luaL_setmetatable(L, "catnip.keyboard");
+  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  keyboard->lua_resource = lua_resource;
 
-  *lua_keyboard = keyboard;
-  keyboard->lua.userdata = lua_keyboard;
-  keyboard->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_resource->data = keyboard;
+  lua_resource->namespace = "keyboard";
+  lua_resource->__index = lua_catnip_keyboard__index;
+  lua_resource->__newindex = lua_catnip_keyboard__newindex;
 
-  lua_newtable(L);
-  keyboard->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+  wl_list_insert(&lua_catnip_keyboard_list->head, &lua_resource->link);
 
-  lua_catnip_keyboard_publish(L, keyboard, "create", 0);
+  lua_catnip_resource_publish(L, lua_resource, "create", 0);
+
+  return lua_resource;
 }
 
 void
-lua_catnip_keyboard_publish(
+lua_catnip_keyboard_destroy(
   lua_State* L,
-  struct catnip_keyboard* keyboard,
-  const char* event,
-  int nargs
+  struct catnip_lua_resource* lua_resource
 )
 {
-  lua_catnip_events_publish(L, keyboard->lua.subscriptions, event, nargs);
-
-  char* global_event = strfmt("keyboard::%s", event);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, keyboard->lua.ref);
-  lua_insert(L, -1 - nargs);
-
-  lua_catnip_events_publish(
-    L,
-    lua_catnip_subscriptions,
-    global_event,
-    nargs + 1
-  );
-
-  lua_remove(L, -1 - nargs);
-  free(global_event);
-}
-
-void
-lua_catnip_keyboard_publish_key_event(
-  lua_State* L,
-  struct catnip_keyboard* keyboard,
-  struct catnip_keyboard_key_event* event
-)
-{
-  struct catnip_keyboard_key_event** lua_event =
-    lua_newuserdata(L, sizeof(struct catnip_keyboard_key_event*));
-  luaL_setmetatable(L, "catnip.keyboard.key.event");
-
-  *lua_event = event;
-
-  event->state == WL_KEYBOARD_KEY_STATE_PRESSED
-    ? lua_catnip_keyboard_publish(L, keyboard, "key::press", 1)
-    : lua_catnip_keyboard_publish(L, keyboard, "key::release", 1);
-
-  *lua_event = NULL;
-
-  lua_pop(L, 1);
-}
-
-void
-lua_catnip_keyboard_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.keyboard");
-  luaL_setfuncs(L, lua_catnip_keyboard_mt, 0);
-  lua_pop(L, 1);
-
-  lua_catnip_keyboard_key_event_init(L);
+  lua_catnip_resource_publish(L, lua_resource, "destroy", 0);
+  lua_catnip_resource_destroy(L, lua_resource);
 }

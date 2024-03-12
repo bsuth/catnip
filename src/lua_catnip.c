@@ -4,12 +4,14 @@
 #include "cursor/lua_cursor.h"
 #include "display.h"
 #include "event_loop.h"
-#include "keyboard/lua_keyboards.h"
+#include "keyboard/lua_keyboard_list.h"
 #include "lua_events.h"
-#include "output/lua_outputs.h"
+#include "lua_resource.h"
+#include "lua_resource_list.h"
+#include "output/lua_output_list.h"
 #include "utils/lua.h"
 #include "utils/string.h"
-#include "window/lua_windows.h"
+#include "window/lua_window_list.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -138,16 +140,19 @@ lua_catnip_init(lua_State* L)
   luaL_newlib(L, lua_catnip_lib);
   lua_catnip_events_init(L);
 
-  lua_catnip_keyboards_init(L); // must init after events
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboards);
+  lua_catnip_resource_init(L);
+  lua_catnip_resource_list_init(L);
+
+  lua_catnip_keyboard_list_init(L); // must init after resource / events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboard_list->ref);
   lua_setfield(L, -2, "keyboards");
 
-  lua_catnip_windows_init(L); // must init after events
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_windows);
+  lua_catnip_window_list_init(L); // must init after resource / events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_window_list->ref);
   lua_setfield(L, -2, "windows");
 
-  lua_catnip_outputs_init(L); // must init after events
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_outputs);
+  lua_catnip_output_list_init(L); // must init after resource / events
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
   lua_setfield(L, -2, "outputs");
 
   lua_catnip_cursor_init(L);

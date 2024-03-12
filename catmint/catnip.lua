@@ -12,13 +12,13 @@
 local catnip = require('catnip') --- @type Catnip
 return catnip
 
---- @alias CatnipIterable<T> { [number]: T } | fun(): T
+--- @alias CatnipResourceList<T> { [number]: T } | fun(): T
 
 --- @class (exact) Catnip
 --- @field cursor CatnipCursor
---- @field keyboards CatnipIterable<CatnipKeyboard>
---- @field outputs CatnipIterable<CatnipOutput>
---- @field windows CatnipIterable<CatnipWindow>
+--- @field keyboards CatnipResourceList<CatnipKeyboard>
+--- @field outputs CatnipResourceList<CatnipOutput>
+--- @field windows CatnipResourceList<CatnipWindow>
 --- @field canvas fun(): CatnipCanvas
 --- @field subscribe fun(event: string, callback: fun(...)): fun(...)
 --- @field unsubscribe fun(event: string, callback: fun(...))
@@ -105,7 +105,7 @@ return catnip
 --- @field height number
 --- @field refresh number
 --- @field mode CatnipOutputMode
---- @field modes CatnipIterable<CatnipOutputMode>
+--- @field modes CatnipResourceList<CatnipOutputMode>
 --- @field scale number
 --- @field subscribe fun(output: CatnipOutput, event: string, callback: fun(...)): fun(...)
 --- @field unsubscribe fun(output: CatnipOutput, event: string, callback: fun(...))

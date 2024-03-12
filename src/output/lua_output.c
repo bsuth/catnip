@@ -1,53 +1,38 @@
 #include "lua_output.h"
-#include "lua_events.h"
-#include "output/lua_output_methods.h"
-#include "output/lua_output_mode.h"
+#include "lua_resource.h"
+#include "output/lua_output_list.h"
+#include "output/lua_output_mode_list.h"
 #include "output/output_properties.h"
 #include "utils/string.h"
 #include <lauxlib.h>
-#include <stdlib.h>
 
 static void
 lua_catnip_output_push_current_mode(lua_State* L, struct catnip_output* output)
 {
   struct wlr_output_mode* current_mode = catnip_output_get_mode(output);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.modes);
-  lua_pushnil(L);
-
-  while (lua_next(L, -2) != 0) {
-    struct wlr_output_mode** lua_mode = lua_touserdata(L, -1);
-
-    if (current_mode == *lua_mode) {
-      lua_remove(L, -3);
-      lua_remove(L, -2);
+  struct catnip_lua_resource* lua_resource = NULL;
+  wl_list_for_each(lua_resource, &output->lua_mode_list->head, link)
+  {
+    if (lua_resource->data == current_mode) {
+      lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
       return;
     }
-
-    lua_pop(L, 1);
   }
 
-  lua_pop(L, 1);
   lua_pushnil(L);
 }
 
-static int
-lua_catnip_output__index(lua_State* L)
+static bool
+lua_catnip_output__index(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  struct catnip_output** lua_output = lua_touserdata(L, 1);
-  struct catnip_output* output = *lua_output;
+  struct catnip_output* output = lua_resource->data;
 
-  if (output == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
-    lua_pushnil(L);
-    return 1;
-  }
-
-  const char* key = lua_tostring(L, 2);
-
-  if (streq(key, "id")) {
-    lua_pushnumber(L, output->id);
-  } else if (streq(key, "x")) {
+  if (streq(key, "x")) {
     lua_pushnumber(L, catnip_output_get_x(output));
   } else if (streq(key, "y")) {
     lua_pushnumber(L, catnip_output_get_y(output));
@@ -60,34 +45,24 @@ lua_catnip_output__index(lua_State* L)
   } else if (streq(key, "mode")) {
     lua_catnip_output_push_current_mode(L, output);
   } else if (streq(key, "modes")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.modes);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_mode_list->ref);
   } else if (streq(key, "scale")) {
     lua_pushnumber(L, catnip_output_get_scale(output));
-  } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_output_method_subscribe);
-  } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_output_method_unsubscribe);
-  } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_output_method_publish);
   } else {
-    lua_pushnil(L);
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
-static int
-lua_catnip_output__newindex(lua_State* L)
+static bool
+lua_catnip_output__newindex(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  struct catnip_output** lua_output = lua_touserdata(L, 1);
-  struct catnip_output* output = *lua_output;
-
-  if (output == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
-    return 0;
-  }
-
-  const char* key = lua_tostring(L, 2);
+  struct catnip_output* output = lua_resource->data;
 
   if (streq(key, "x")) {
     catnip_output_set_x(output, luaL_checknumber(L, 3));
@@ -106,80 +81,39 @@ lua_catnip_output__newindex(lua_State* L)
   } else if (streq(key, "scale")) {
     catnip_output_set_scale(output, luaL_checknumber(L, 3));
   } else {
-    lua_log_error(L, "unknown userdata field (%s)", key);
+    return false;
   }
 
-  return 0;
+  return true;
 }
 
-static const struct luaL_Reg lua_catnip_output_mt[] = {
-  {"__index", lua_catnip_output__index},
-  {"__newindex", lua_catnip_output__newindex},
-  {NULL, NULL}
-};
-
-void
-lua_catnip_output_destroy(lua_State* L, struct catnip_output* output)
-{
-  lua_catnip_output_publish(L, output, "destroy", 0);
-
-  *(output->lua.userdata) = NULL;
-  luaL_unref(L, LUA_REGISTRYINDEX, output->lua.ref);
-  luaL_unref(L, LUA_REGISTRYINDEX, output->lua.subscriptions);
-
-  lua_catnip_output_modes_destroy(L, output);
-}
-
-void
+struct catnip_lua_resource*
 lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 {
-  struct catnip_output** lua_output =
-    lua_newuserdata(L, sizeof(struct catnip_output*));
-  luaL_setmetatable(L, "catnip.output");
+  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  output->lua_resource = lua_resource;
+  output->lua_mode_list = lua_catnip_output_mode_list_create(L, output);
 
-  *lua_output = output;
-  output->lua.userdata = lua_output;
-  output->lua.ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_resource->data = output;
+  lua_resource->namespace = "output";
+  lua_resource->__index = lua_catnip_output__index;
+  lua_resource->__newindex = lua_catnip_output__newindex;
 
-  lua_newtable(L);
-  output->lua.subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+  wl_list_insert(&lua_catnip_output_list->head, &lua_resource->link);
 
-  lua_catnip_output_modes_create(L, output);
+  lua_catnip_resource_publish(L, lua_resource, "create", 0);
 
-  lua_catnip_output_publish(L, output, "create", 0);
+  return lua_resource;
 }
 
 void
-lua_catnip_output_publish(
+lua_catnip_output_destroy(
   lua_State* L,
-  struct catnip_output* output,
-  const char* event,
-  int nargs
+  struct catnip_lua_resource* lua_resource
 )
 {
-  lua_catnip_events_publish(L, output->lua.subscriptions, event, nargs);
-
-  char* global_event = strfmt("output::%s", event);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua.ref);
-  lua_insert(L, -1 - nargs);
-
-  lua_catnip_events_publish(
-    L,
-    lua_catnip_subscriptions,
-    global_event,
-    nargs + 1
-  );
-
-  lua_remove(L, -1 - nargs);
-  free(global_event);
-}
-
-void
-lua_catnip_output_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.output");
-  luaL_setfuncs(L, lua_catnip_output_mt, 0);
-  lua_pop(L, 1);
-
-  lua_catnip_output_mode_init(L);
+  struct catnip_output* output = lua_resource->data;
+  lua_catnip_resource_publish(L, lua_resource, "destroy", 0);
+  lua_catnip_resource_list_destroy(L, output->lua_mode_list);
+  lua_catnip_resource_destroy(L, lua_resource);
 }
