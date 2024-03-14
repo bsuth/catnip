@@ -5,6 +5,7 @@
 #include "display.h"
 #include "event_loop.h"
 #include "keyboard/lua_keyboard_list.h"
+#include "lua_event.h"
 #include "lua_events.h"
 #include "lua_resource.h"
 #include "lua_resource_list.h"
@@ -138,6 +139,8 @@ lua_catnip_init(lua_State* L)
   lua_getfield(L, -1, "loaded");
 
   luaL_newlib(L, lua_catnip_lib);
+
+  lua_catnip_event_init(L);
   lua_catnip_events_init(L);
 
   lua_catnip_resource_init(L);

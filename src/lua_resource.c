@@ -51,7 +51,7 @@ lua_catnip_resource__index(lua_State* L)
   struct catnip_lua_resource* lua_resource = lua_touserdata(L, 1);
 
   if (lua_resource->data == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
+    lua_log_error(L, "attempt to index outdated resource");
     lua_pushnil(L);
   } else if (lua_type(L, 2) != LUA_TSTRING) {
     lua_pushnil(L);
@@ -67,7 +67,7 @@ lua_catnip_resource__index(lua_State* L)
     lua_pushcfunction(L, lua_catnip_resource_method_unsubscribe);
   } else if (streq(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_resource_method_publish);
-  } else if (lua_resource->__index == NULL || !lua_resource->__index(L, lua_resource, lua_tostring(L, 2))) {
+  } else if (lua_resource->__index == NULL || !lua_resource->__index(L, lua_resource, key)) {
     lua_pushnil(L);
   }
 
@@ -80,17 +80,24 @@ lua_catnip_resource__newindex(lua_State* L)
   struct catnip_lua_resource* lua_resource = lua_touserdata(L, 1);
 
   if (lua_resource->data == NULL) {
-    lua_log_error(L, "attempt to index outdated userdata");
+    lua_log_error(L, "attempt to index outdated resource");
+    return 0;
   } else if (lua_type(L, 2) != LUA_TSTRING) {
-    lua_log_warning(L, ""); // TODO
+    lua_log_warning(
+      L,
+      "attempt to index resource with type '%s'",
+      luaL_typename(L, 2)
+    );
+    return 0;
   }
 
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "id")) {
-    lua_log_warning(L, ""); // TODO
-  } else if (lua_resource->__newindex == NULL || !lua_resource->__newindex(L, lua_resource, lua_tostring(L, 2))) {
-    lua_log_warning(L, ""); // TODO
+  bool success = !streq(key, "id") && lua_resource->__newindex != NULL
+    && lua_resource->__newindex(L, lua_resource, key);
+
+  if (!success) {
+    lua_log_warning(L, "attempt set unknown index '%s'", key);
   }
 
   return 0;

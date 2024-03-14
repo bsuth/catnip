@@ -1,17 +1,17 @@
 #include "lua_key_event.h"
 #include "keyboard/keyboard.h"
-#include "lua_resource.h"
+#include "lua_event.h"
 #include "utils/string.h"
 #include <lauxlib.h>
 
 static bool
 lua_catnip_key_event__index(
   lua_State* L,
-  struct catnip_lua_resource* lua_resource,
+  struct catnip_lua_event* lua_event,
   const char* key
 )
 {
-  struct catnip_key_event* key_event = lua_resource->data;
+  struct catnip_key_event* key_event = lua_event->data;
 
   if (streq(key, "code")) {
     lua_pushnumber(L, key_event->xkb_keysym);
@@ -41,11 +41,11 @@ lua_catnip_key_event__index(
 static bool
 lua_catnip_key_event__newindex(
   lua_State* L,
-  struct catnip_lua_resource* lua_resource,
+  struct catnip_lua_event* lua_event,
   const char* key
 )
 {
-  struct catnip_key_event* key_event = lua_resource->data;
+  struct catnip_key_event* key_event = lua_event->data;
 
   if (streq(key, "prevent_notify")) {
     key_event->prevent_notify = lua_toboolean(L, 3);
@@ -63,13 +63,13 @@ lua_catnip_publish_key_event(
   struct catnip_key_event* event
 )
 {
-  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  struct catnip_lua_event* lua_event = lua_catnip_event_create(L);
 
-  lua_resource->data = event;
-  lua_resource->__index = lua_catnip_key_event__index;
-  lua_resource->__newindex = lua_catnip_key_event__newindex;
+  lua_event->data = event;
+  lua_event->__index = lua_catnip_key_event__index;
+  lua_event->__newindex = lua_catnip_key_event__newindex;
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_event->ref);
 
   event->state == WL_KEYBOARD_KEY_STATE_PRESSED
     ? lua_catnip_resource_publish(L, keyboard->lua_resource, "key::press", 1)
@@ -77,5 +77,5 @@ lua_catnip_publish_key_event(
 
   lua_pop(L, 1);
 
-  lua_catnip_resource_destroy(L, lua_resource);
+  lua_catnip_event_destroy(L, lua_event);
 }

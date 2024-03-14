@@ -33,8 +33,10 @@ catnip_window_map(struct wl_listener* listener, void* data)
     lua_catnip_window_create(catnip_L, window);
   }
 
-  // TODO: docs
-  // need to do this here so we dont double create lua window
+  // Do not add the window to the `catnip_windows` list until it has actually
+  // been mapped. This is to prevent double creating the Lua window in the case
+  // that the user refreshes the Lua state after the window has been created
+  // (i.e. `catnip_window_create`) but before the window has been mapped.
   wl_list_insert(&catnip_windows, &window->link);
 }
 
