@@ -7,8 +7,8 @@
 static int
 lua_catnip_window_method_destroy(lua_State* L)
 {
-  struct catnip_window** lua_window = luaL_checkudata(L, 1, "catnip.window");
-  wlr_xdg_toplevel_send_close((*lua_window)->xdg_toplevel);
+  struct catnip_window* window = lua_catnip_resource_checkmethod(L, "window");
+  wlr_xdg_toplevel_send_close(window->xdg_toplevel);
   return 0;
 }
 

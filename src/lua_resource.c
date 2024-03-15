@@ -103,9 +103,22 @@ lua_catnip_resource__newindex(lua_State* L)
   return 0;
 }
 
+static int
+lua_catnip_resource__gc(lua_State* L)
+{
+  struct catnip_lua_resource* lua_resource = lua_touserdata(L, 1);
+
+  if (lua_resource->__gc != NULL) {
+    lua_resource->__gc(L, lua_resource);
+  }
+
+  return 0;
+}
+
 static const struct luaL_Reg lua_catnip_resource_mt[] = {
   {"__index", lua_catnip_resource__index},
   {"__newindex", lua_catnip_resource__newindex},
+  {"__gc", lua_catnip_resource__gc},
   {NULL, NULL}
 };
 
@@ -134,6 +147,19 @@ lua_catnip_resource_destroy(
   lua_resource->data = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->ref);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->subscriptions);
+}
+
+void*
+lua_catnip_resource_checkmethod(lua_State* L, const char* namespace)
+{
+  struct catnip_lua_resource* lua_resource =
+    luaL_checkudata(L, 1, "catnip.resource");
+
+  if (!streq(namespace, lua_resource->namespace)) {
+    luaL_typerror(L, 1, namespace);
+  }
+
+  return lua_resource->data;
 }
 
 void
