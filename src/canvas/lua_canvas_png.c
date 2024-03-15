@@ -1,13 +1,13 @@
 #include "lua_canvas_png.h"
 #include "canvas/canvas_methods.h"
+#include "lua_resource.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
 
 int
 lua_catnip_canvas_png(lua_State* L)
 {
-  struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
-  struct catnip_canvas* canvas = *lua_canvas;
+  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
 
   const char* filename = luaL_checkstring(L, 2);
   cairo_surface_t* png_surface = cairo_image_surface_create_from_png(filename);

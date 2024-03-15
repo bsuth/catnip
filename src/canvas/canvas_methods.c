@@ -61,3 +61,13 @@ catnip_canvas_resize(
 
   catnip_canvas_refresh(canvas);
 }
+
+void
+catnip_canvas_clear(struct catnip_canvas* canvas)
+{
+  cairo_save(canvas->cr);
+  cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(canvas->cr);
+  cairo_restore(canvas->cr);
+  catnip_canvas_refresh(canvas);
+}

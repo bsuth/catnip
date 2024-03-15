@@ -1,18 +1,19 @@
 #include "lua_cursor.h"
+#include "cursor/cursor.h"
 #include "cursor/cursor_properties.h"
-#include "cursor/lua_cursor_methods.h"
 #include "lua_events.h"
 #include "utils/string.h"
 #include <lauxlib.h>
 
-lua_Ref lua_catnip_cursor = LUA_NOREF;
-lua_Ref lua_catnip_cursor_subscriptions = LUA_NOREF;
+struct catnip_lua_resource* lua_catnip_cursor = NULL;
 
-static int
-lua_catnip_cursor__index(lua_State* L)
+static bool
+lua_catnip_cursor__index(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  const char* key = lua_tostring(L, 2);
-
   if (streq(key, "x")) {
     lua_pushnumber(L, catnip_cursor_get_x());
   } else if (streq(key, "y")) {
@@ -23,24 +24,20 @@ lua_catnip_cursor__index(lua_State* L)
     lua_pushnumber(L, catnip_cursor_get_size());
   } else if (streq(key, "theme")) {
     lua_pushstring(L, catnip_cursor_get_theme());
-  } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_cursor_method_subscribe);
-  } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_cursor_method_unsubscribe);
-  } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_cursor_method_publish);
   } else {
-    lua_pushnil(L);
+    return false;
   }
 
-  return 1;
+  return true;
 }
 
-static int
-lua_catnip_cursor__newindex(lua_State* L)
+static bool
+lua_catnip_cursor__newindex(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* key
+)
 {
-  const char* key = lua_tostring(L, 2);
-
   if (streq(key, "x")) {
     catnip_cursor_set_x(luaL_checknumber(L, 3));
   } else if (streq(key, "y")) {
@@ -52,17 +49,11 @@ lua_catnip_cursor__newindex(lua_State* L)
   } else if (streq(key, "theme")) {
     catnip_cursor_set_theme(luaL_checkstring(L, 3));
   } else {
-    lua_log_error(L, "unknown userdata field (%s)", key);
+    return false;
   }
 
-  return 0;
+  return true;
 }
-
-static const struct luaL_Reg lua_catnip_cursor_mt[] = {
-  {"__index", lua_catnip_cursor__index},
-  {"__newindex", lua_catnip_cursor__newindex},
-  {NULL, NULL}
-};
 
 void
 lua_catnip_cursor_publish_button_event(
@@ -74,7 +65,7 @@ lua_catnip_cursor_publish_button_event(
 
   lua_catnip_events_publish(
     L,
-    lua_catnip_cursor_subscriptions,
+    lua_catnip_cursor->subscriptions,
     event->state == WLR_BUTTON_PRESSED ? "button::press" : "button:release",
     1
   );
@@ -85,14 +76,9 @@ lua_catnip_cursor_publish_button_event(
 void
 lua_catnip_cursor_init(lua_State* L)
 {
-  luaL_newmetatable(L, "catnip.cursor");
-  luaL_setfuncs(L, lua_catnip_cursor_mt, 0);
-  lua_pop(L, 1);
-
-  lua_newuserdata(L, 0);
-  luaL_setmetatable(L, "catnip.cursor");
-  lua_catnip_cursor = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  lua_newtable(L);
-  lua_catnip_cursor_subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_catnip_cursor = lua_catnip_resource_create(L);
+  lua_catnip_cursor->data = catnip_cursor;
+  lua_catnip_cursor->namespace = "cursor";
+  lua_catnip_cursor->__index = lua_catnip_cursor__index;
+  lua_catnip_cursor->__newindex = lua_catnip_cursor__newindex;
 }

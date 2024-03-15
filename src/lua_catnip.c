@@ -115,6 +115,7 @@ static const struct luaL_Reg lua_catnip_lib[] = {
   {"subscribe", lua_catnip_subscribe},
   {"unsubscribe", lua_catnip_unsubscribe},
   {"publish", lua_catnip_publish},
+  {"canvas", lua_catnip_canvas},
   {NULL, NULL}
 };
 
@@ -158,13 +159,9 @@ lua_catnip_init(lua_State* L)
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
   lua_setfield(L, -2, "outputs");
 
-  lua_catnip_cursor_init(L);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor);
+  lua_catnip_cursor_init(L); // must init after resource
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor->ref);
   lua_setfield(L, -2, "cursor");
-
-  lua_catnip_canvas_init(L);
-  lua_pushcfunction(L, lua_catnip_canvas_create);
-  lua_setfield(L, -2, "canvas");
 
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);

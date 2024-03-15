@@ -13,4 +13,7 @@ catnip_canvas_resize(
   int new_height
 );
 
+void
+catnip_canvas_clear(struct catnip_canvas* canvas);
+
 #endif

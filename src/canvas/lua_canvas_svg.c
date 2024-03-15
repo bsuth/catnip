@@ -1,5 +1,6 @@
 #include "lua_canvas_svg.h"
 #include "canvas/canvas_methods.h"
+#include "lua_resource.h"
 #include "utils/lua.h"
 #include <lauxlib.h>
 #include <librsvg/rsvg.h>
@@ -15,9 +16,7 @@ is_svg_filename(const char* filename)
 int
 lua_catnip_canvas_svg(lua_State* L)
 {
-  struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
-  struct catnip_canvas* canvas = *lua_canvas;
-
+  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
   GError* error = NULL;
 
   const char* svg = luaL_checkstring(L, 2);

@@ -1,11 +1,10 @@
 #ifndef CATNIP_LUA_CURSOR_H
 #define CATNIP_LUA_CURSOR_H
 
-#include "utils/lua.h"
+#include "lua_resource.h"
 #include <wlr/types/wlr_pointer.h>
 
-extern lua_Ref lua_catnip_cursor;
-extern lua_Ref lua_catnip_cursor_subscriptions;
+extern struct catnip_lua_resource* lua_catnip_cursor;
 
 void
 lua_catnip_cursor_publish_button_event(

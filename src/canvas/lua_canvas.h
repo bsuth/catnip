@@ -3,10 +3,7 @@
 
 #include <lua.h>
 
-void
-lua_catnip_canvas_init(lua_State* L);
-
 int
-lua_catnip_canvas_create(lua_State* L);
+lua_catnip_canvas(lua_State* L);
 
 #endif

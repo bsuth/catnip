@@ -1,5 +1,6 @@
 #include "lua_canvas_path.h"
 #include "canvas/canvas_methods.h"
+#include "lua_resource.h"
 #include "utils/cairo.h"
 #include "utils/lua.h"
 #include "utils/string.h"
@@ -129,8 +130,7 @@ lua_catnip_canvas_path_bezier(
 int
 lua_catnip_canvas_path(lua_State* L)
 {
-  struct catnip_canvas** lua_canvas = luaL_checkudata(L, 1, "catnip.canvas");
-  struct catnip_canvas* canvas = *lua_canvas;
+  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
 
   luaL_checktype(L, 2, LUA_TTABLE);
   cairo_save(canvas->cr);
