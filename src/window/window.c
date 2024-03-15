@@ -28,10 +28,7 @@ catnip_window_map(struct wl_listener* listener, void* data)
   window->xdg_toplevel->scheduled.height =
     window->xdg_surface->surface->current.height;
 
-  if (catnip_L != NULL) {
-    // Do not create the window in Lua until it has actually been mapped
-    lua_catnip_window_create(catnip_L, window);
-  }
+  lua_catnip_window_create(catnip_L, window);
 
   // Do not add the window to the `catnip_windows` list until it has actually
   // been mapped. This is to prevent double creating the Lua window in the case
@@ -45,6 +42,10 @@ catnip_window_unmap(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.unmap);
+
+  lua_catnip_window_destroy(catnip_L, window->lua_resource);
+
+  wl_list_remove(&window->link);
 }
 
 static void
@@ -57,52 +58,12 @@ catnip_window_configure(struct wl_listener* listener, void* data)
   struct wlr_xdg_toplevel_configure* toplevel_configure =
     configure->toplevel_configure;
 
-  if (toplevel_configure->width != window->latest.width) {
-    window->latest.width = toplevel_configure->width;
-    lua_catnip_resource_publish(
-      catnip_L,
-      window->lua_resource,
-      "property::width",
-      0
-    );
-  }
-
-  if (toplevel_configure->height != window->latest.height) {
-    window->latest.height = toplevel_configure->height;
-    lua_catnip_resource_publish(
-      catnip_L,
-      window->lua_resource,
-      "property::height",
-      0
-    );
-  }
-
   if (toplevel_configure->activated != window->latest.focused) {
     window->latest.focused = toplevel_configure->activated;
     lua_catnip_resource_publish(
       catnip_L,
       window->lua_resource,
       "property::focused",
-      0
-    );
-  }
-
-  if (toplevel_configure->fullscreen != window->latest.fullscreen) {
-    window->latest.fullscreen = toplevel_configure->fullscreen;
-    lua_catnip_resource_publish(
-      catnip_L,
-      window->lua_resource,
-      "property::fullscreen",
-      0
-    );
-  }
-
-  if (toplevel_configure->maximized != window->latest.maximized) {
-    window->latest.maximized = toplevel_configure->maximized;
-    lua_catnip_resource_publish(
-      catnip_L,
-      window->lua_resource,
-      "property::maximized",
       0
     );
   }
@@ -167,9 +128,10 @@ catnip_window_request_maximize(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_maximize);
 
-  // Don't do anything here, just emit the event (in `catnip_window_configure`)
-  // and let the user decide how to handle maximization.
+  lua_catnip_resource_publish(catnip_L, window->lua_resource, "maximize", 0);
 
+  // The xdg-shell protocol requires us to send a configure. We use
+  // `wlr_xdg_surface_schedule_configure` to just send an empty reply.
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
@@ -179,9 +141,10 @@ catnip_window_request_fullscreen(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.request_fullscreen);
 
-  // Don't do anything here, just emit the event (in `catnip_window_configure`)
-  // and let the user decide how to handle fullscreen.
+  lua_catnip_resource_publish(catnip_L, window->lua_resource, "fullscreen", 0);
 
+  // The xdg-shell protocol requires us to send a configure. We use
+  // `wlr_xdg_surface_schedule_configure` to just send an empty reply.
   wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
 }
 
@@ -191,11 +154,6 @@ catnip_window_destroy(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.destroy);
 
-  if (catnip_L != NULL) {
-    lua_catnip_window_destroy(catnip_L, window->lua_resource);
-  }
-
-  wl_list_remove(&window->link);
   wl_list_remove(&window->listeners.map.link);
   wl_list_remove(&window->listeners.unmap.link);
   wl_list_remove(&window->listeners.destroy.link);
@@ -222,23 +180,23 @@ catnip_window_create(struct wl_listener* listener, void* data)
     xdg_surface->data = wlr_scene_xdg_surface_create(parent->data, xdg_surface);
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
     struct catnip_window* window = calloc(1, sizeof(struct catnip_window));
+
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;
     window->scene_tree = wlr_scene_xdg_surface_create(
       &catnip_scene->tree,
       window->xdg_toplevel->base
     );
-    window->scene_tree->node.data = window;
+
+    // wlroots provides a helper for adding xdg popups to the scene graph, but
+    // it requires the popup parent's scene node. For convenience, we always
+    // store the scene node in `xdg_surface->data`.
+    xdg_surface->data = window->scene_tree;
 
     wl_setup_listener(
       &window->listeners.map,
       &window->xdg_surface->surface->events.map,
       catnip_window_map
-    );
-    wl_setup_listener(
-      &window->listeners.unmap,
-      &window->xdg_surface->surface->events.unmap,
-      catnip_window_unmap
     );
     wl_setup_listener(
       &window->listeners.configure,
@@ -270,11 +228,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
       &window->xdg_surface->events.destroy,
       catnip_window_destroy
     );
-
-    // wlroots provides a helper for adding xdg popups to the scene graph, but
-    // it requires the popup parent's scene node. For convenience, we always
-    // store the scene node in `xdg_surface->data`.
-    xdg_surface->data = window->scene_tree;
   }
 }
 

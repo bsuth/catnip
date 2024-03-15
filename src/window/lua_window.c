@@ -35,10 +35,6 @@ lua_catnip_window__index(
     lua_pushboolean(L, catnip_window_get_visible(window));
   } else if (streq(key, "focused")) {
     lua_pushboolean(L, catnip_window_get_focused(window));
-  } else if (streq(key, "fullscreen")) {
-    lua_pushboolean(L, catnip_window_get_fullscreen(window));
-  } else if (streq(key, "maximized")) {
-    lua_pushboolean(L, catnip_window_get_maximized(window));
   } else if (streq(key, "destroy")) {
     lua_pushcfunction(L, lua_catnip_window_method_destroy);
   } else {
@@ -71,10 +67,6 @@ lua_catnip_window__newindex(
     catnip_window_set_visible(window, lua_toboolean(L, 3));
   } else if (streq(key, "focused")) {
     catnip_window_set_focused(window, lua_toboolean(L, 3));
-  } else if (streq(key, "fullscreen")) {
-    catnip_window_set_fullscreen(window, lua_toboolean(L, 3));
-  } else if (streq(key, "maximized")) {
-    catnip_window_set_maximized(window, lua_toboolean(L, 3));
   } else {
     return false;
   }

@@ -38,8 +38,6 @@ struct catnip_window {
   struct {
     int32_t width;
     int32_t height;
-    bool fullscreen;
-    bool maximized;
     bool resizing;
 
     // Even though we sync the `activated` state with whether or not the window

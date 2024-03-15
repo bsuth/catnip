@@ -4,11 +4,6 @@
 #include "utils/wayland.h"
 #include <wlr/types/wlr_scene.h>
 
-// NOTE: Publishing `property::xxx` events for `wlr_scene_node` properties is a
-// _best effort_ implementation. These events are _not_ published if the
-// `wlr_scene_node` is mutated externally without using the methods listed here,
-// since wlroots does not expose events for when these properties change.
-
 int
 catnip_window_get_x(struct catnip_window* window)
 {
@@ -176,54 +171,6 @@ catnip_window_set_focused(struct catnip_window* window, bool new_focused)
     catnip_L,
     window->lua_resource,
     "property::focused",
-    0
-  );
-}
-
-bool
-catnip_window_get_fullscreen(struct catnip_window* window)
-{
-  return window->latest.fullscreen;
-}
-
-void
-catnip_window_set_fullscreen(struct catnip_window* window, bool new_fullscreen)
-{
-  if (catnip_window_get_fullscreen(window) == new_fullscreen) {
-    return;
-  }
-
-  wlr_xdg_toplevel_set_fullscreen(window->xdg_toplevel, new_fullscreen);
-  window->latest.fullscreen = new_fullscreen;
-
-  lua_catnip_resource_publish(
-    catnip_L,
-    window->lua_resource,
-    "property::fullscreen",
-    0
-  );
-}
-
-bool
-catnip_window_get_maximized(struct catnip_window* window)
-{
-  return window->latest.maximized;
-}
-
-void
-catnip_window_set_maximized(struct catnip_window* window, bool new_maximized)
-{
-  if (catnip_window_get_maximized(window) == new_maximized) {
-    return;
-  }
-
-  wlr_xdg_toplevel_set_maximized(window->xdg_toplevel, new_maximized);
-  window->latest.maximized = new_maximized;
-
-  lua_catnip_resource_publish(
-    catnip_L,
-    window->lua_resource,
-    "property::maximized",
     0
   );
 }
