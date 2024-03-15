@@ -14,9 +14,8 @@ catnip_canvas_create(int width, int height)
   canvas->cr = cairo_create(canvas->cairo_surface);
 
   wlr_buffer_init(&canvas->buffer, &catnip_canvas_buffer, width, height);
-  canvas->scene_tree = wlr_scene_tree_create(&catnip_scene->tree);
   canvas->scene_buffer =
-    wlr_scene_buffer_create(canvas->scene_tree, &canvas->buffer);
+    wlr_scene_buffer_create(&catnip_scene->tree, &canvas->buffer);
 
   return canvas;
 }
@@ -29,7 +28,6 @@ catnip_canvas_destroy(struct catnip_canvas* canvas)
 
   wlr_buffer_drop(&canvas->buffer);
   wlr_scene_node_destroy(&canvas->scene_buffer->node);
-  wlr_scene_node_destroy(&canvas->scene_tree->node);
 
   if (canvas->refresh_task != NULL) {
     wl_event_source_remove(canvas->refresh_task);

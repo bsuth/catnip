@@ -6,7 +6,6 @@
 
 struct catnip_canvas {
   struct wlr_buffer buffer;
-  struct wlr_scene_tree* scene_tree;
   struct wlr_scene_buffer* scene_buffer;
 
   cairo_surface_t* cairo_surface;

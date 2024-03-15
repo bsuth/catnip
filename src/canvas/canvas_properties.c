@@ -5,14 +5,14 @@
 int
 catnip_canvas_get_x(struct catnip_canvas* canvas)
 {
-  return canvas->scene_tree->node.x;
+  return canvas->scene_buffer->node.x;
 }
 
 void
 catnip_canvas_set_x(struct catnip_canvas* canvas, int new_x)
 {
   wlr_scene_node_set_position(
-    &canvas->scene_tree->node,
+    &canvas->scene_buffer->node,
     new_x,
     catnip_canvas_get_y(canvas)
   );
@@ -21,14 +21,14 @@ catnip_canvas_set_x(struct catnip_canvas* canvas, int new_x)
 int
 catnip_canvas_get_y(struct catnip_canvas* canvas)
 {
-  return canvas->scene_tree->node.y;
+  return canvas->scene_buffer->node.y;
 }
 
 void
 catnip_canvas_set_y(struct catnip_canvas* canvas, int new_y)
 {
   wlr_scene_node_set_position(
-    &canvas->scene_tree->node,
+    &canvas->scene_buffer->node,
     catnip_canvas_get_x(canvas),
     new_y
   );
@@ -37,13 +37,13 @@ catnip_canvas_set_y(struct catnip_canvas* canvas, int new_y)
 int
 catnip_canvas_get_z(struct catnip_canvas* canvas)
 {
-  return wlr_scene_node_get_zindex(&canvas->scene_tree->node);
+  return wlr_scene_node_get_zindex(&canvas->scene_buffer->node);
 }
 
 void
 catnip_canvas_set_z(struct catnip_canvas* canvas, int new_z)
 {
-  wlr_scene_node_set_zindex(&canvas->scene_tree->node, new_z);
+  wlr_scene_node_set_zindex(&canvas->scene_buffer->node, new_z);
 }
 
 int
@@ -73,11 +73,11 @@ catnip_canvas_set_height(struct catnip_canvas* canvas, int new_height)
 bool
 catnip_canvas_get_visible(struct catnip_canvas* canvas)
 {
-  return canvas->scene_tree->node.enabled;
+  return canvas->scene_buffer->node.enabled;
 }
 
 void
 catnip_canvas_set_visible(struct catnip_canvas* canvas, bool new_visible)
 {
-  wlr_scene_node_set_enabled(&canvas->scene_tree->node, new_visible);
+  wlr_scene_node_set_enabled(&canvas->scene_buffer->node, new_visible);
 }
