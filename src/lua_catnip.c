@@ -147,15 +147,15 @@ lua_catnip_init(lua_State* L)
   lua_catnip_resource_init(L);
   lua_catnip_resource_list_init(L);
 
-  lua_catnip_keyboard_list_init(L); // must init after resource / events
+  lua_catnip_keyboard_list_init(L); // must init after resource
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboard_list->ref);
   lua_setfield(L, -2, "keyboards");
 
-  lua_catnip_window_list_init(L); // must init after resource / events
+  lua_catnip_window_list_init(L); // must init after resource
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_window_list->ref);
   lua_setfield(L, -2, "windows");
 
-  lua_catnip_output_list_init(L); // must init after resource / events
+  lua_catnip_output_list_init(L); // must init after resource
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
   lua_setfield(L, -2, "outputs");
 
@@ -165,4 +165,12 @@ lua_catnip_init(lua_State* L)
 
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
+}
+
+void
+lua_catnip_populate(lua_State* L)
+{
+  lua_catnip_keyboard_list_populate(L);
+  lua_catnip_output_list_populate(L);
+  lua_catnip_window_list_populate(L);
 }

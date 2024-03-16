@@ -9,7 +9,11 @@ lua_catnip_output_list_init(lua_State* L)
 {
   lua_catnip_output_list = lua_catnip_resource_list_create(L);
   lua_catnip_output_list->__destroy = lua_catnip_output_destroy;
+}
 
+void
+lua_catnip_output_list_populate(lua_State* L)
+{
   struct catnip_output* output = NULL;
   wl_list_for_each(output, &catnip_outputs, link)
   {

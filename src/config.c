@@ -21,37 +21,41 @@ catnip_config_try(const char* path)
     return false;
   }
 
+  char* path_copy;
+
   char cwd[PATH_MAX];
   getcwd(cwd, PATH_MAX);
 
-  char* path_dirname_copy = strdup(path);
-  chdir(dirname(path_dirname_copy));
-  free(path_dirname_copy);
+  path_copy = strdup(path);
+  chdir(dirname(path_copy));
+  free(path_copy);
 
-  lua_State* new_catnip_L = lua_open();
+  lua_State* new_catnip_L = luaL_newstate();
   luaL_openlibs(new_catnip_L);
   lua_catnip_init(new_catnip_L);
 
+  path_copy = strdup(path);
   catnip_config_loading = true;
-  char* path_basename_copy = strdup(path);
-  const char* path_basename = basename(path_basename_copy);
-  bool loaded = !luaL_loadfile(new_catnip_L, path_basename)
+  bool loaded = !luaL_loadfile(new_catnip_L, basename(path_copy))
     && !lua_pcall(new_catnip_L, 0, 0, 0);
-  free(path_basename_copy);
   catnip_config_loading = false;
+  free(path_copy);
 
   if (!loaded) {
-    log_error("%s: %s", path, lua_tostring(new_catnip_L, -1));
+    log_error("%s", lua_tostring(new_catnip_L, -1));
     lua_close(new_catnip_L);
     chdir(cwd);
     return false;
   }
+
+  lua_catnip_populate(new_catnip_L);
 
   if (catnip_L != NULL) {
     lua_close(catnip_L);
   }
 
   catnip_L = new_catnip_L;
+
   return true;
 }
 
@@ -63,27 +67,43 @@ catnip_config_load()
   }
 
   const char* xdg_config_home = getenv("XDG_CONFIG_HOME");
+  char* default_config_path_1 = NULL;
 
   if (xdg_config_home != NULL && xdg_config_home[0] != '\0') {
-    char* path = strfmt("%s/catnip/init.lua", xdg_config_home);
-    bool loaded = catnip_config_try(path);
-    free(path);
+    default_config_path_1 = strfmt("%s/catnip/init.lua", xdg_config_home);
 
-    if (loaded) {
+    if (catnip_config_try(default_config_path_1)) {
+      free(default_config_path_1);
       return true;
     }
   }
 
   const char* home = getenv("HOME");
+  char* default_config_path_2 = NULL;
 
   if (home != NULL && home[0] != '\0') {
-    char* path = strfmt("%s/.config/catnip/init.lua", home);
-    bool loaded = catnip_config_try(path);
-    free(path);
+    default_config_path_2 = strfmt("%s/.config/catnip/init.lua", home);
 
-    if (loaded) {
-      return true;
+    if (default_config_path_1 == NULL) {
+      if (catnip_config_try(default_config_path_2)) {
+        free(default_config_path_2);
+        return true;
+      }
+    } else if (!streq(default_config_path_1, default_config_path_2)) {
+      if (catnip_config_try(default_config_path_2)) {
+        free(default_config_path_1);
+        free(default_config_path_2);
+        return true;
+      }
     }
+  }
+
+  if (default_config_path_1 != NULL) {
+    free(default_config_path_1);
+  }
+
+  if (default_config_path_2 != NULL) {
+    free(default_config_path_2);
   }
 
   return false;

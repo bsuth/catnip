@@ -45,9 +45,7 @@ catnip_output_destroy(struct wl_listener* listener, void* data)
   struct catnip_output* output =
     wl_container_of(listener, output, listeners.destroy);
 
-  if (catnip_L != NULL) {
-    lua_catnip_output_destroy(catnip_L, output->lua_resource);
-  }
+  lua_catnip_output_destroy(catnip_L, output->lua_resource);
 
   wl_list_remove(&output->link);
   wl_list_remove(&output->listeners.frame.link);
@@ -107,9 +105,7 @@ catnip_output_create(struct wl_listener* listener, void* data)
 
   wl_list_insert(&catnip_outputs, &output->link);
 
-  if (catnip_L != NULL) {
-    lua_catnip_output_create(catnip_L, output);
-  }
+  lua_catnip_output_create(catnip_L, output);
 
   // Ensure we have loaded a scaled cursor theme for the new output's scale
   wlr_xcursor_manager_load(catnip_xcursor_manager, wlr_output->scale);

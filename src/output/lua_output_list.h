@@ -9,4 +9,7 @@ extern struct catnip_lua_resource_list* lua_catnip_output_list;
 void
 lua_catnip_output_list_init(lua_State* L);
 
+void
+lua_catnip_output_list_populate(lua_State* L);
+
 #endif

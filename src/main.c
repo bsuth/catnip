@@ -41,6 +41,7 @@ main(int argc, char* argv[])
   catnip_window_init(); // must init after xdg_shell
   catnip_output_init(); // must init after backend + scene
   catnip_cursor_init(); // must init after output
+  catnip_config_init(); // must init last
 
   wlr_compositor_create(
     catnip_display,
@@ -59,11 +60,6 @@ main(int argc, char* argv[])
     log_error("failed to start backend");
     exit(EXIT_FAILURE);
   }
-
-  // Init config AFTER the backend has started. Otherwise, the Wayland objects
-  // (outputs, windows, etc) will not have been initialized yet and the user
-  // will be unable to access them from their config.
-  catnip_config_init();
 
   while (catnip_display_run) {
     wl_display_flush_clients(catnip_display);
