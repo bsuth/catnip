@@ -108,7 +108,7 @@ lua_catnip_canvas(lua_State* L)
   struct catnip_canvas* canvas = catnip_canvas_create(width, height);
 
   lua_resource->data = canvas;
-  lua_resource->namespace = "canvas";
+  lua_resource->name = "canvas";
   lua_resource->__index = lua_catnip_canvas__index;
   lua_resource->__newindex = lua_catnip_canvas__newindex;
   lua_resource->__gc = lua_catnip_canvas__gc;

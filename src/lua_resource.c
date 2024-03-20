@@ -150,13 +150,13 @@ lua_catnip_resource_destroy(
 }
 
 void*
-lua_catnip_resource_checkmethod(lua_State* L, const char* namespace)
+lua_catnip_resource_checkmethod(lua_State* L, const char* name)
 {
   struct catnip_lua_resource* lua_resource =
     luaL_checkudata(L, 1, "catnip.resource");
 
-  if (!streq(namespace, lua_resource->namespace)) {
-    luaL_typerror(L, 1, namespace);
+  if (!streq(name, lua_resource->name)) {
+    luaL_typerror(L, 1, name);
   }
 
   return lua_resource->data;
@@ -172,8 +172,8 @@ lua_catnip_resource_publish(
 {
   lua_catnip_events_publish(L, lua_resource->subscriptions, event, nargs);
 
-  if (lua_resource->namespace != NULL) {
-    char* global_event = strfmt("%s::%s", lua_resource->namespace, event);
+  if (lua_resource->name != NULL) {
+    char* global_event = strfmt("%s::%s", lua_resource->name, event);
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
     lua_insert(L, -1 - nargs);

@@ -81,7 +81,7 @@ lua_catnip_window_create(lua_State* L, struct catnip_window* window)
   window->lua_resource = lua_resource;
 
   lua_resource->data = window;
-  lua_resource->namespace = "window";
+  lua_resource->name = "window";
   lua_resource->__index = lua_catnip_window__index;
   lua_resource->__newindex = lua_catnip_window__newindex;
 

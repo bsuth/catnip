@@ -78,7 +78,7 @@ lua_catnip_cursor_init(lua_State* L)
 {
   lua_catnip_cursor = lua_catnip_resource_create(L);
   lua_catnip_cursor->data = catnip_cursor;
-  lua_catnip_cursor->namespace = "cursor";
+  lua_catnip_cursor->name = "cursor";
   lua_catnip_cursor->__index = lua_catnip_cursor__index;
   lua_catnip_cursor->__newindex = lua_catnip_cursor__newindex;
 }

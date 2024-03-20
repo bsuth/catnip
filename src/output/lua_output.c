@@ -95,7 +95,7 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
   output->lua_mode_list = lua_catnip_output_mode_list_create(L, output);
 
   lua_resource->data = output;
-  lua_resource->namespace = "output";
+  lua_resource->name = "output";
   lua_resource->__index = lua_catnip_output__index;
   lua_resource->__newindex = lua_catnip_output__newindex;
 

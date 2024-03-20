@@ -31,7 +31,7 @@ struct catnip_lua_resource {
   lua_Ref subscriptions;
 
   void* data;
-  const char* namespace;
+  const char* name;
   catnip_lua_resource__index __index;
   catnip_lua_resource__newindex __newindex;
   catnip_lua_resource__gc __gc;
@@ -47,7 +47,7 @@ lua_catnip_resource_destroy(
 );
 
 void*
-lua_catnip_resource_checkmethod(lua_State* L, const char* namespace);
+lua_catnip_resource_checkmethod(lua_State* L, const char* name);
 
 void
 lua_catnip_resource_publish(

@@ -81,7 +81,7 @@ lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
   keyboard->lua_resource = lua_resource;
 
   lua_resource->data = keyboard;
-  lua_resource->namespace = "keyboard";
+  lua_resource->name = "keyboard";
   lua_resource->__index = lua_catnip_keyboard__index;
   lua_resource->__newindex = lua_catnip_keyboard__newindex;
 
