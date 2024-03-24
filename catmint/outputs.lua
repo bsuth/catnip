@@ -5,7 +5,7 @@ local M = {}
 
 --- @return CatnipOutput | nil
 function M.get_focused_output()
-  for _, output in pairs(catnip.outputs) do
+  for output in catnip.outputs do
     if geometry.is_point_in_box(catnip.cursor, output) then
       return output
     end

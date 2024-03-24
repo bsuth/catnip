@@ -130,7 +130,7 @@ lua_catnip_canvas_path_bezier(
 int
 lua_catnip_canvas_path(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
 
   luaL_checktype(L, 2, LUA_TTABLE);
   cairo_save(canvas->cr);

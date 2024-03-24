@@ -1,7 +1,7 @@
 #include "lua_canvas.h"
 #include "canvas/canvas.h"
 #include "canvas/canvas_methods.h"
-#include "canvas/canvas_properties.h"
+#include "canvas/lua_canvas_methods.h"
 #include "canvas/lua_canvas_path.h"
 #include "canvas/lua_canvas_png.h"
 #include "canvas/lua_canvas_svg.h"
@@ -9,15 +9,8 @@
 #include "lua_resource.h"
 #include "utils/lua.h"
 #include "utils/string.h"
+#include "utils/wayland.h"
 #include <lauxlib.h>
-
-static int
-lua_catnip_canvas_method_clear(lua_State* L)
-{
-  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
-  catnip_canvas_clear(canvas);
-  return 0;
-}
 
 static bool
 lua_catnip_canvas__index(
@@ -29,19 +22,17 @@ lua_catnip_canvas__index(
   struct catnip_canvas* canvas = lua_resource->data;
 
   if (streq(key, "x")) {
-    lua_pushnumber(L, catnip_canvas_get_x(canvas));
+    lua_pushnumber(L, canvas->scene_buffer->node.x);
   } else if (streq(key, "y")) {
-    lua_pushnumber(L, catnip_canvas_get_y(canvas));
+    lua_pushnumber(L, canvas->scene_buffer->node.y);
   } else if (streq(key, "z")) {
-    lua_pushnumber(L, catnip_canvas_get_z(canvas));
+    lua_pushnumber(L, wlr_scene_node_get_zindex(&canvas->scene_buffer->node));
   } else if (streq(key, "width")) {
-    lua_pushnumber(L, catnip_canvas_get_width(canvas));
+    lua_pushnumber(L, canvas->buffer.width);
   } else if (streq(key, "height")) {
-    lua_pushnumber(L, catnip_canvas_get_height(canvas));
+    lua_pushnumber(L, canvas->buffer.height);
   } else if (streq(key, "visible")) {
-    lua_pushboolean(L, catnip_canvas_get_visible(canvas));
-  } else if (streq(key, "clear")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_clear);
+    lua_pushboolean(L, canvas->scene_buffer->node.enabled);
   } else if (streq(key, "path")) {
     lua_pushcfunction(L, lua_catnip_canvas_path);
   } else if (streq(key, "text")) {
@@ -50,6 +41,14 @@ lua_catnip_canvas__index(
     lua_pushcfunction(L, lua_catnip_canvas_svg);
   } else if (streq(key, "png")) {
     lua_pushcfunction(L, lua_catnip_canvas_png);
+  } else if (streq(key, "clear")) {
+    lua_pushcfunction(L, lua_catnip_canvas_method_clear);
+  } else if (streq(key, "move")) {
+    lua_pushcfunction(L, lua_catnip_canvas_method_move);
+  } else if (streq(key, "resize")) {
+    lua_pushcfunction(L, lua_catnip_canvas_method_resize);
+  } else if (streq(key, "destroy")) {
+    lua_pushcfunction(L, lua_catnip_canvas_method_destroy);
   } else {
     return false;
   }
@@ -67,29 +66,36 @@ lua_catnip_canvas__newindex(
   struct catnip_canvas* canvas = lua_resource->data;
 
   if (streq(key, "x")) {
-    catnip_canvas_set_x(canvas, luaL_checknumber(L, 3));
+    wlr_scene_node_set_position(
+      &canvas->scene_buffer->node,
+      luaL_checknumber(L, 3),
+      canvas->scene_buffer->node.y
+    );
   } else if (streq(key, "y")) {
-    catnip_canvas_set_y(canvas, luaL_checknumber(L, 3));
+    wlr_scene_node_set_position(
+      &canvas->scene_buffer->node,
+      canvas->scene_buffer->node.x,
+      luaL_checknumber(L, 3)
+    );
   } else if (streq(key, "z")) {
-    catnip_canvas_set_z(canvas, luaL_checknumber(L, 3));
+    wlr_scene_node_set_zindex(
+      &canvas->scene_buffer->node,
+      luaL_checknumber(L, 3)
+    );
   } else if (streq(key, "width")) {
-    catnip_canvas_set_width(canvas, luaL_checknumber(L, 3));
+    catnip_canvas_resize(canvas, luaL_checknumber(L, 3), canvas->buffer.height);
   } else if (streq(key, "height")) {
-    catnip_canvas_set_height(canvas, luaL_checknumber(L, 3));
+    catnip_canvas_resize(canvas, canvas->buffer.width, luaL_checknumber(L, 3));
   } else if (streq(key, "visible")) {
-    catnip_canvas_set_visible(canvas, lua_toboolean(L, 3));
+    wlr_scene_node_set_enabled(
+      &canvas->scene_buffer->node,
+      lua_toboolean(L, 3)
+    );
   } else {
     return false;
   }
 
   return true;
-}
-
-static void
-lua_catnip_canvas__gc(lua_State* L, struct catnip_lua_resource* lua_resource)
-{
-  struct catnip_canvas* canvas = lua_resource->data;
-  catnip_canvas_destroy(canvas);
 }
 
 int
@@ -104,22 +110,34 @@ lua_catnip_canvas(lua_State* L)
     lua_hasnumberfield(L, 1, "height") && (height = lua_popinteger(L));
   }
 
-  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
   struct catnip_canvas* canvas = catnip_canvas_create(width, height);
 
-  lua_resource->data = canvas;
-  lua_resource->name = "canvas";
-  lua_resource->__index = lua_catnip_canvas__index;
-  lua_resource->__newindex = lua_catnip_canvas__newindex;
-  lua_resource->__gc = lua_catnip_canvas__gc;
-
   if (has_options_table) {
+    wlr_scene_node_set_position(
+      &canvas->scene_buffer->node,
+      lua_hasnumberfield(L, 1, "x") ? lua_popinteger(L) : 0,
+      lua_hasnumberfield(L, 1, "y") ? lua_popinteger(L) : 0
+    );
+
+    if (lua_hasnumberfield(L, 1, "z")) {
+      wlr_scene_node_set_zindex(&canvas->scene_buffer->node, lua_popinteger(L));
+    }
+
     if (lua_hasbooleanfield(L, 1, "visible")) {
-      catnip_canvas_set_visible(canvas, lua_popboolean(L));
+      wlr_scene_node_set_enabled(
+        &canvas->scene_buffer->node,
+        lua_popboolean(L)
+      );
     }
   }
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  canvas->lua_resource = lua_catnip_resource_create(L);
+  canvas->lua_resource->data = canvas;
+  canvas->lua_resource->name = "canvas";
+  canvas->lua_resource->__index = lua_catnip_canvas__index;
+  canvas->lua_resource->__newindex = lua_catnip_canvas__newindex;
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, canvas->lua_resource->ref);
 
   return 1;
 }

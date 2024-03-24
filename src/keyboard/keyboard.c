@@ -110,8 +110,6 @@ catnip_keyboard_create(struct wl_listener* listener, void* data)
 
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
   keyboard->wlr_keyboard = wlr_keyboard;
-
-  keyboard->xkb_keymap_event_source = NULL;
   catnip_keyboard_reload_keymap(keyboard);
 
   wl_setup_listener(

@@ -1,5 +1,7 @@
 #include "canvas.h"
 #include "canvas/canvas_buffer.h"
+#include "config.h"
+#include "lua_resource.h"
 #include "scene.h"
 #include <stdlib.h>
 #include <wlr/interfaces/wlr_buffer.h>
@@ -23,6 +25,8 @@ catnip_canvas_create(int width, int height)
 void
 catnip_canvas_destroy(struct catnip_canvas* canvas)
 {
+  lua_catnip_resource_destroy(catnip_L, canvas->lua_resource);
+
   cairo_surface_destroy(canvas->cairo_surface);
   cairo_destroy(canvas->cr);
 

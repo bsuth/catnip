@@ -20,14 +20,6 @@ catnip_window_map(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.map);
 
-  // Initialize `xdg_toplevel->scheduled` to match the `xdg_toplevel` initial
-  // state since we always query `xdg_toplevel->scheduled` for window
-  // properties.
-  window->xdg_toplevel->scheduled.width =
-    window->xdg_surface->surface->current.width;
-  window->xdg_toplevel->scheduled.height =
-    window->xdg_surface->surface->current.height;
-
   lua_catnip_window_create(catnip_L, window);
 
   // Do not add the window to the `catnip_windows` list until it has actually
@@ -46,80 +38,6 @@ catnip_window_unmap(struct wl_listener* listener, void* data)
   lua_catnip_window_destroy(catnip_L, window->lua_resource);
 
   wl_list_remove(&window->link);
-}
-
-static void
-catnip_window_configure(struct wl_listener* listener, void* data)
-{
-  struct catnip_window* window =
-    wl_container_of(listener, window, listeners.configure);
-
-  struct wlr_xdg_surface_configure* configure = data;
-  struct wlr_xdg_toplevel_configure* toplevel_configure =
-    configure->toplevel_configure;
-
-  if (toplevel_configure->activated != window->latest.focused) {
-    window->latest.focused = toplevel_configure->activated;
-    lua_catnip_resource_publish(
-      catnip_L,
-      window->lua_resource,
-      "property::focused",
-      0
-    );
-  }
-
-  // Sync the `activated` state with whether this windows surface is the focused
-  // keyboard surface. Note that this should be done when handling the
-  // `configure` event and _not_ when updating from Lua, since
-  // `wlr_seat_keyboard_notify_enter` will queue events immediately and queueing
-  // multiple `focus_change` events with varying surfaces will cause the earlier
-  // events to incorrectly sync the `activated` properties.
-  if (toplevel_configure->activated != window->latest.activated) {
-    window->latest.activated = toplevel_configure->activated;
-
-    struct wlr_surface* window_surface = window->xdg_toplevel->base->surface;
-    struct wlr_surface* focused_surface =
-      catnip_seat->keyboard_state.focused_surface;
-
-    if (toplevel_configure->activated != (window_surface == focused_surface)) {
-      if (!toplevel_configure->activated) {
-        wlr_seat_keyboard_notify_clear_focus(catnip_seat);
-      } else {
-        struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
-        if (keyboard != NULL) {
-          wlr_seat_keyboard_notify_enter(
-            catnip_seat,
-            window_surface,
-            keyboard->keycodes,
-            keyboard->num_keycodes,
-            &keyboard->modifiers
-          );
-        }
-      }
-    }
-  }
-}
-
-static void
-catnip_window_request_move(struct wl_listener* listener, void* data)
-{
-  struct wlr_xdg_toplevel_move_event* event = data;
-
-  struct catnip_window* window =
-    wl_container_of(listener, window, listeners.request_move);
-
-  // TODO
-}
-
-static void
-catnip_window_request_resize(struct wl_listener* listener, void* data)
-{
-  struct wlr_xdg_toplevel_resize_event* event = data;
-
-  struct catnip_window* window =
-    wl_container_of(listener, window, listeners.request_resize);
-
-  // TODO
 }
 
 static void
@@ -197,21 +115,6 @@ catnip_window_create(struct wl_listener* listener, void* data)
       &window->listeners.map,
       &window->xdg_surface->surface->events.map,
       catnip_window_map
-    );
-    wl_setup_listener(
-      &window->listeners.configure,
-      &window->xdg_surface->events.configure,
-      catnip_window_configure
-    );
-    wl_setup_listener(
-      &window->listeners.request_move,
-      &window->xdg_toplevel->events.request_move,
-      catnip_window_request_move
-    );
-    wl_setup_listener(
-      &window->listeners.request_resize,
-      &window->xdg_toplevel->events.request_resize,
-      catnip_window_request_resize
     );
     wl_setup_listener(
       &window->listeners.request_maximize,

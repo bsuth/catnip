@@ -10,7 +10,11 @@ struct catnip_keyboard {
 
   struct wlr_keyboard* wlr_keyboard;
 
-  struct xkb_rule_names xkb_rule_names;
+  char* xkb_rules;
+  char* xkb_model;
+  char* xkb_layout;
+  char* xkb_variant;
+  char* xkb_options;
   struct wl_event_source* xkb_keymap_event_source;
 
   struct {

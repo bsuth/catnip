@@ -18,11 +18,6 @@ typedef bool (*catnip_lua_resource__newindex)(
   const char* key
 );
 
-typedef void (*catnip_lua_resource__gc)(
-  lua_State* L,
-  struct catnip_lua_resource* lua_resource
-);
-
 struct catnip_lua_resource {
   int id;
   struct wl_list link;
@@ -34,7 +29,6 @@ struct catnip_lua_resource {
   const char* name;
   catnip_lua_resource__index __index;
   catnip_lua_resource__newindex __newindex;
-  catnip_lua_resource__gc __gc;
 };
 
 struct catnip_lua_resource*
@@ -47,7 +41,7 @@ lua_catnip_resource_destroy(
 );
 
 void*
-lua_catnip_resource_checkmethod(lua_State* L, const char* name);
+lua_catnip_resource_checkname(lua_State* L, int index, const char* name);
 
 void
 lua_catnip_resource_publish(

@@ -103,22 +103,9 @@ lua_catnip_resource__newindex(lua_State* L)
   return 0;
 }
 
-static int
-lua_catnip_resource__gc(lua_State* L)
-{
-  struct catnip_lua_resource* lua_resource = lua_touserdata(L, 1);
-
-  if (lua_resource->__gc != NULL) {
-    lua_resource->__gc(L, lua_resource);
-  }
-
-  return 0;
-}
-
 static const struct luaL_Reg lua_catnip_resource_mt[] = {
   {"__index", lua_catnip_resource__index},
   {"__newindex", lua_catnip_resource__newindex},
-  {"__gc", lua_catnip_resource__gc},
   {NULL, NULL}
 };
 
@@ -131,6 +118,11 @@ lua_catnip_resource_create(lua_State* L)
 
   lua_resource->id = catnip_lua_resource_id_counter++;
   lua_resource->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  lua_resource->data = NULL;
+  lua_resource->name = NULL;
+  lua_resource->__index = NULL;
+  lua_resource->__newindex = NULL;
 
   lua_newtable(L);
   lua_resource->subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
@@ -150,13 +142,13 @@ lua_catnip_resource_destroy(
 }
 
 void*
-lua_catnip_resource_checkmethod(lua_State* L, const char* name)
+lua_catnip_resource_checkname(lua_State* L, int index, const char* name)
 {
   struct catnip_lua_resource* lua_resource =
-    luaL_checkudata(L, 1, "catnip.resource");
+    luaL_checkudata(L, index, "catnip.resource");
 
   if (!streq(name, lua_resource->name)) {
-    luaL_typerror(L, 1, name);
+    luaL_typerror(L, index, name);
   }
 
   return lua_resource->data;

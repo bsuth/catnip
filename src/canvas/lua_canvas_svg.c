@@ -16,7 +16,7 @@ is_svg_filename(const char* filename)
 int
 lua_catnip_canvas_svg(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
   GError* error = NULL;
 
   const char* svg = luaL_checkstring(L, 2);

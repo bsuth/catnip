@@ -25,10 +25,8 @@ local M = {}
 -- -------------------------
 function M.max(windows, space)
   for _, window in ipairs(windows) do
-    window.x = space.x
-    window.y = space.y
-    window.width = space.width
-    window.height = space.height
+    window:move(space.x, space.y)
+    window:resize(space.width, space.height)
   end
 end
 
@@ -50,10 +48,8 @@ function M.split_horizontal(windows, space)
   local window_width = (space.width - total_gap) / num_windows
 
   for i, window in ipairs(windows) do
-    window.x = space.x + (i - 1) * (window_width + space.gap)
-    window.y = space.y
-    window.width = window_width
-    window.height = space.height
+    window:move(space.x + (i - 1) * (window_width + space.gap), space.y)
+    window:resize(window_width, space.height)
   end
 end
 
@@ -76,10 +72,8 @@ function M.split_vertical(windows, space)
   local window_height = (space.height - total_gap) / num_windows
 
   for i, window in ipairs(windows) do
-    window.x = space.x
-    window.y = space.y + (i - 1) * (window_height + space.gap)
-    window.width = space.width
-    window.height = window_height
+    window:move(space.x, space.y + (i - 1) * (window_height + space.gap))
+    window:resize(space.width, window_height)
   end
 end
 

@@ -5,6 +5,8 @@
 #include <wlr/types/wlr_scene.h>
 
 struct catnip_canvas {
+  struct catnip_lua_resource* lua_resource;
+
   struct wlr_buffer buffer;
   struct wlr_scene_buffer* scene_buffer;
 

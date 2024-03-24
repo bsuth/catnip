@@ -2,6 +2,7 @@
 #define CATNIP_OUTPUT_H
 
 #include "lua_resource.h"
+#include "lua_resource_list.h"
 #include <wlr/types/wlr_output.h>
 
 struct catnip_output {

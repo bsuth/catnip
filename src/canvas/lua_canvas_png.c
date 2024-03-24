@@ -7,7 +7,7 @@
 int
 lua_catnip_canvas_png(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkmethod(L, "canvas");
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
 
   const char* filename = luaL_checkstring(L, 2);
   cairo_surface_t* png_surface = cairo_image_surface_create_from_png(filename);

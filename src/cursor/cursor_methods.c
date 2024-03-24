@@ -1,7 +1,9 @@
 #include "cursor_methods.h"
 #include "cursor/cursor.h"
+#include "output/output.h"
 #include "scene.h"
 #include "seat/seat.h"
+#include "utils/time.h"
 
 void
 catnip_cursor_notify(uint32_t time_msec)
@@ -37,4 +39,34 @@ catnip_cursor_notify(uint32_t time_msec)
 
     wlr_seat_pointer_notify_motion(catnip_seat, time_msec, sx, sy);
   }
+}
+
+void
+catnip_cursor_xcursor(const char* name, int size)
+{
+  struct wlr_xcursor_manager* new_wlr_xcursor_manager =
+    wlr_xcursor_manager_create(name, size);
+
+  // Always load scale 1
+  wlr_xcursor_manager_load(new_wlr_xcursor_manager, 1);
+
+  // Ensure we have loaded a scaled theme for each output's scale
+  struct catnip_output* output = NULL;
+  wl_list_for_each(output, &catnip_outputs, link)
+  {
+    wlr_xcursor_manager_load(
+      new_wlr_xcursor_manager,
+      output->wlr_output->scale
+    );
+  }
+
+  wlr_xcursor_manager_destroy(catnip_xcursor_manager);
+  catnip_xcursor_manager = new_wlr_xcursor_manager;
+}
+
+void
+catnip_cursor_move(double x, double y)
+{
+  wlr_cursor_warp_closest(catnip_cursor, NULL, x, y);
+  catnip_cursor_notify(get_time_msec());
 }
