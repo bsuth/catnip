@@ -3,6 +3,7 @@
 #include "canvas/canvas_methods.h"
 #include "canvas/lua_canvas_methods.h"
 #include "canvas/lua_canvas_path.h"
+#include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_text.h"
 #include "lua_resource.h"
 #include "utils/lua.h"
@@ -33,6 +34,8 @@ lua_catnip_canvas__index(
     lua_pushboolean(L, canvas->scene_buffer->node.enabled);
   } else if (streq(key, "path")) {
     lua_pushcfunction(L, lua_catnip_canvas_path);
+  } else if (streq(key, "rectangle")) {
+    lua_pushcfunction(L, lua_catnip_canvas_rectangle);
   } else if (streq(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
   } else if (streq(key, "svg")) {
