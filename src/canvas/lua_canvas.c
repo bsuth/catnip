@@ -3,8 +3,6 @@
 #include "canvas/canvas_methods.h"
 #include "canvas/lua_canvas_methods.h"
 #include "canvas/lua_canvas_path.h"
-#include "canvas/lua_canvas_png.h"
-#include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
 #include "lua_resource.h"
 #include "utils/lua.h"
@@ -38,9 +36,9 @@ lua_catnip_canvas__index(
   } else if (streq(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
   } else if (streq(key, "svg")) {
-    lua_pushcfunction(L, lua_catnip_canvas_svg);
+    lua_pushcfunction(L, lua_catnip_canvas_method_svg);
   } else if (streq(key, "png")) {
-    lua_pushcfunction(L, lua_catnip_canvas_png);
+    lua_pushcfunction(L, lua_catnip_canvas_method_png);
   } else if (streq(key, "clear")) {
     lua_pushcfunction(L, lua_catnip_canvas_method_clear);
   } else if (streq(key, "move")) {

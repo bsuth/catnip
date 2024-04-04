@@ -13,6 +13,12 @@ int
 lua_catnip_canvas_method_resize(lua_State* L);
 
 int
+lua_catnip_canvas_method_png(lua_State* L);
+
+int
+lua_catnip_canvas_method_svg(lua_State* L);
+
+int
 lua_catnip_canvas_method_destroy(lua_State* L);
 
 #endif

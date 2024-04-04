@@ -97,7 +97,7 @@ lua_catnip_resource__newindex(lua_State* L)
     && lua_resource->__newindex(L, lua_resource, key);
 
   if (!success) {
-    lua_log_warning(L, "attempt set unknown index '%s'", key);
+    lua_log_warning(L, "attempt to set unknown index '%s'", key);
   }
 
   return 0;

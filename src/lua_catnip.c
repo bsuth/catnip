@@ -1,5 +1,7 @@
 #include "lua_catnip.h"
 #include "canvas/lua_canvas.h"
+#include "canvas/lua_png.h"
+#include "canvas/lua_svg.h"
 #include "config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
@@ -116,6 +118,8 @@ static const struct luaL_Reg lua_catnip_lib[] = {
   {"unsubscribe", lua_catnip_unsubscribe},
   {"publish", lua_catnip_publish},
   {"canvas", lua_catnip_canvas},
+  {"png", lua_catnip_png},
+  {"svg", lua_catnip_svg},
   {NULL, NULL}
 };
 
@@ -162,6 +166,9 @@ lua_catnip_init(lua_State* L)
   lua_catnip_cursor_init(L); // must init after resource
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor->ref);
   lua_setfield(L, -2, "cursor");
+
+  lua_catnip_png_init(L);
+  lua_catnip_svg_init(L);
 
   lua_setfield(L, -2, "catnip");
   lua_pop(L, 2);
