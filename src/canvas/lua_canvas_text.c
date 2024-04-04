@@ -20,6 +20,7 @@ lua_catnip_canvas_text(lua_State* L)
 
   int x = 0;
   int y = 0;
+  int height = -1;
 
   if (lua_type(L, 3) == LUA_TTABLE) {
     x = lua_hasnumberfield(L, 3, "x") ? lua_popnumber(L) : x;
@@ -30,7 +31,8 @@ lua_catnip_canvas_text(lua_State* L)
     }
 
     if (lua_hasnumberfield(L, 3, "height")) {
-      pango_layout_set_height(layout, PANGO_SCALE * lua_popnumber(L));
+      height = lua_popnumber(L);
+      pango_layout_set_height(layout, PANGO_SCALE * height);
     }
 
     if (lua_hasnumberfield(L, 3, "font")) {
@@ -95,6 +97,19 @@ lua_catnip_canvas_text(lua_State* L)
         pango_layout_set_alignment(layout, PANGO_ALIGN_CENTER);
       } else if (streq(alignment, "right")) {
         pango_layout_set_alignment(layout, PANGO_ALIGN_RIGHT);
+      }
+    }
+
+    if (height != -1 && lua_hasstringfield(L, 3, "valign")) {
+      const char* alignment = lua_popstring(L);
+
+      int content_height;
+      pango_layout_get_pixel_size(layout, NULL, &content_height);
+
+      if (streq(alignment, "center")) {
+        y += (height - content_height) / 2;
+      } else if (streq(alignment, "bottom")) {
+        y += height - content_height;
       }
     }
 
