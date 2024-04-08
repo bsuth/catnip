@@ -24,6 +24,7 @@ struct catnip_lua_resource {
 
   lua_Ref ref;
   lua_Ref subscriptions;
+  lua_Ref lua_data;
 
   void* data;
   const char* name;

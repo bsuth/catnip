@@ -61,6 +61,8 @@ lua_catnip_resource__index(lua_State* L)
 
   if (streq(key, "id")) {
     lua_pushnumber(L, lua_resource->id);
+  } else if (streq(key, "data")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->lua_data);
   } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_resource_method_subscribe);
   } else if (streq(key, "unsubscribe")) {
@@ -127,6 +129,9 @@ lua_catnip_resource_create(lua_State* L)
   lua_newtable(L);
   lua_resource->subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 
+  lua_newtable(L);
+  lua_resource->lua_data = luaL_ref(L, LUA_REGISTRYINDEX);
+
   return lua_resource;
 }
 
@@ -139,6 +144,7 @@ lua_catnip_resource_destroy(
   lua_resource->data = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->ref);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->subscriptions);
+  luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->lua_data);
 }
 
 void*
