@@ -13,7 +13,6 @@
 #include "lua_resource_list.h"
 #include "output/lua_output_list.h"
 #include "utils/lua.h"
-#include "utils/string.h"
 #include "window/lua_window_list.h"
 #include <lauxlib.h>
 #include <stdlib.h>
@@ -127,20 +126,6 @@ void
 lua_catnip_init(lua_State* L)
 {
   lua_getglobal(L, "package");
-
-  lua_getfield(L, -1, "path");
-
-  char* lua_path = strfmt(
-    "%s/?.lua;%s/?/init.lua;%s",
-    CATNIP_INSTALL_DIR,
-    CATNIP_INSTALL_DIR,
-    lua_popstring(L)
-  );
-
-  lua_pushstring(L, lua_path);
-  lua_setfield(L, -2, "path");
-  free(lua_path);
-
   lua_getfield(L, -1, "loaded");
 
   luaL_newlib(L, lua_catnip_lib);

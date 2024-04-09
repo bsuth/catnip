@@ -12,15 +12,11 @@ DEPENDENCIES = \
 	wlroots \
 	wayland-server
 
-ROOT_DIR := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
-
 SOURCE_DIR := src
 SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
 
 BUILD_DIR := build
 $(shell mkdir -p $(BUILD_DIR))
-
-INSTALL_DIR := /usr/share/catnip
 
 .PHONY = default dev clean format test
 
@@ -28,15 +24,11 @@ INSTALL_DIR := /usr/share/catnip
 # Builds
 # ------------------------------------------------------------------------------
 
-default: CFLAGS += \
-	-DCATNIP_INSTALL_DIR=\"$(INSTALL_DIR)\"
-
 default: $(BUILD_DIR)/$(EXECUTABLE)
 
-dev: CFLAGS += -g \
-	-DCATNIP_INSTALL_DIR=\"$(ROOT_DIR)\"
-
+dev: CFLAGS += -g
 dev: $(BUILD_DIR)/$(EXECUTABLE)
+	@echo "$(LUA_CONFIG)"
 	@$(BUILD_DIR)/$(EXECUTABLE)
 
 # ------------------------------------------------------------------------------
@@ -71,6 +63,13 @@ CFLAGS := \
 OBJECT_BUILD_DIR := $(BUILD_DIR)/objects
 $(shell mkdir -p $(OBJECT_BUILD_DIR))
 
+$(OBJECT_BUILD_DIR)/default_config.o: $(SOURCE_DIR)/default_config.lua
+	@cat $< | \
+	sed 's/"/\\"/g' | \
+	tr '\n' ' ' | \
+	xargs -0  printf '#include "default_config.h"\nconst char* catnip_default_config = "%s";' | \
+	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ -xc -
+
 $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@-mkdir -p $(@D)
 	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ $<
@@ -83,7 +82,7 @@ LIBS := \
 	-lrt \
 	$(shell pkg-config --libs $(DEPENDENCIES))
 
-OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o)
+OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o) $(OBJECT_BUILD_DIR)/default_config.o
 
 PROTOCOL_HEADERS = \
 	$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h \

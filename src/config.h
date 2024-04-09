@@ -5,13 +5,13 @@
 #include <stdbool.h>
 
 extern lua_State* catnip_L;
-extern char* catnip_config_path;
+extern char* catnip_config_user_path;
 extern bool catnip_config_loading;
+
+bool
+catnip_config_reload();
 
 void
 catnip_config_init();
-
-void
-catnip_config_reload();
 
 #endif

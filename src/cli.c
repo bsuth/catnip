@@ -54,7 +54,7 @@ catnip_cli_init(int argc, char* argv[])
         printf("%s\n", catnip_version);
         exit(0);
       case 'c':
-        catnip_config_path = strdup(optarg);
+        catnip_config_user_path = strdup(optarg);
         break;
       case 'l': {
         if (streq(optarg, "silent")) {
