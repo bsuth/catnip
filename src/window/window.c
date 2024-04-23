@@ -74,11 +74,9 @@ catnip_window_destroy(struct wl_listener* listener, void* data)
 
   wl_list_remove(&window->listeners.map.link);
   wl_list_remove(&window->listeners.unmap.link);
-  wl_list_remove(&window->listeners.destroy.link);
-  wl_list_remove(&window->listeners.request_move.link);
-  wl_list_remove(&window->listeners.request_resize.link);
   wl_list_remove(&window->listeners.request_maximize.link);
   wl_list_remove(&window->listeners.request_fullscreen.link);
+  wl_list_remove(&window->listeners.destroy.link);
 
   free(window);
 }
@@ -115,6 +113,11 @@ catnip_window_create(struct wl_listener* listener, void* data)
       &window->listeners.map,
       &window->xdg_surface->surface->events.map,
       catnip_window_map
+    );
+    wl_setup_listener(
+      &window->listeners.unmap,
+      &window->xdg_surface->surface->events.unmap,
+      catnip_window_unmap
     );
     wl_setup_listener(
       &window->listeners.request_maximize,
