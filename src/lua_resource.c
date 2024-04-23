@@ -145,6 +145,7 @@ lua_catnip_resource_destroy(
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->ref);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->subscriptions);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource->lua_data);
+  wl_list_remove(&lua_resource->link);
 }
 
 void*
