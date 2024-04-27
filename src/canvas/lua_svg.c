@@ -22,13 +22,13 @@ lua_catnip_svg_reload(lua_State* L, struct lua_catnip_svg* lua_svg)
   lua_svg->width = 0;
   lua_svg->height = 0;
 
-  lua_svg->rsvg = is_svg_filename(lua_svg->data)
-    ? rsvg_handle_new_from_file(lua_svg->data, &error)
+  lua_svg->rsvg = is_svg_filename(lua_svg->document)
+    ? rsvg_handle_new_from_file(lua_svg->document, &error)
     : rsvg_handle_new_from_data(
-      (const guint8*) lua_svg,
-      strlen(lua_svg->data),
-      &error
-    );
+        (const guint8*) lua_svg,
+        strlen(lua_svg->document),
+        &error
+      );
 
   if (error != NULL) {
     lua_log_error(L, "bad svg (%s)", error->message);
@@ -43,15 +43,14 @@ lua_catnip_svg_reload(lua_State* L, struct lua_catnip_svg* lua_svg)
   );
 }
 
-static void
-lua_catnip_svg_apply_styles(
-  lua_State* L,
-  struct lua_catnip_svg* lua_svg,
-  const char* stylesheet
-)
+static int
+lua_catnip_svg_method_apply(lua_State* L)
 {
+  struct lua_catnip_svg* lua_svg = luaL_checkudata(L, 1, "catnip.svg");
+  const char* stylesheet = luaL_checkstring(L, 2);
+
   if (lua_svg->rsvg == NULL) {
-    return;
+    return 0;
   }
 
   GError* error = NULL;
@@ -67,16 +66,6 @@ lua_catnip_svg_apply_styles(
     lua_log_error(L, "bad stylesheet (%s)", error->message);
     g_error_free(error);
   }
-}
-
-static int
-lua_catnip_svg_method_apply_styles(lua_State* L)
-{
-  lua_catnip_svg_apply_styles(
-    L,
-    luaL_checkudata(L, 1, "catnip.svg"),
-    luaL_checkstring(L, 2)
-  );
 
   return 0;
 }
@@ -92,10 +81,10 @@ lua_catnip_svg__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "data")) {
-    lua_pushstring(L, lua_svg->data);
-  } else if (streq(key, "apply_styles")) {
-    lua_pushcfunction(L, lua_catnip_svg_method_apply_styles);
+  if (streq(key, "document")) {
+    lua_pushstring(L, lua_svg->document);
+  } else if (streq(key, "apply")) {
+    lua_pushcfunction(L, lua_catnip_svg_method_apply);
   } else {
     lua_pushnil(L);
   }
@@ -119,10 +108,10 @@ lua_catnip_svg__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "data")) {
-    const char* data = luaL_checkstring(L, 3);
-    free(lua_svg->data);
-    lua_svg->data = strdup(data);
+  if (streq(key, "document")) {
+    const char* document = luaL_checkstring(L, 3);
+    free(lua_svg->document);
+    lua_svg->document = strdup(document);
     lua_catnip_svg_reload(L, lua_svg);
   } else {
     lua_log_warning(L, "attempt to set unknown index '%s'", key);
@@ -135,7 +124,7 @@ static int
 lua_catnip_svg__gc(lua_State* L)
 {
   struct lua_catnip_svg* lua_svg = lua_touserdata(L, 1);
-  free(lua_svg->data);
+  free(lua_svg->document);
   g_object_unref(lua_svg->rsvg);
   return 0;
 }
@@ -150,21 +139,15 @@ static const struct luaL_Reg lua_catnip_svg_mt[] = {
 int
 lua_catnip_svg(lua_State* L)
 {
-  const char* data = luaL_checkstring(L, 1);
+  const char* document = luaL_checkstring(L, 1);
 
   struct lua_catnip_svg* lua_svg =
     lua_newuserdata(L, sizeof(struct lua_catnip_svg));
   luaL_setmetatable(L, "catnip.svg");
 
-  lua_svg->data = strdup(data);
+  lua_svg->document = strdup(document);
   lua_svg->rsvg = NULL;
   lua_catnip_svg_reload(L, lua_svg);
-
-  if (lua_type(L, 2) == LUA_TTABLE) {
-    if (lua_hasstringfield(L, 2, "stylesheet")) {
-      lua_catnip_svg_apply_styles(L, lua_svg, lua_popstring(L));
-    }
-  }
 
   return 1;
 }

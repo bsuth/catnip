@@ -6,7 +6,7 @@
 #include <lua.h>
 
 struct lua_catnip_svg {
-  char* data;
+  char* document;
   double width;
   double height;
   RsvgHandle* rsvg;
