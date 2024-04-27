@@ -146,7 +146,8 @@ catnip_window_sync_keyboard_focus(struct wl_listener* listener, void* data)
     struct wlr_xdg_toplevel* old_toplevel =
       wlr_xdg_toplevel_try_from_wlr_surface(event->old_surface);
 
-    if (old_toplevel != NULL && old_toplevel->base->initialized && old_toplevel->scheduled.activated) {
+    if (old_toplevel != NULL && old_toplevel->base->initialized
+        && old_toplevel->scheduled.activated) {
       wlr_xdg_toplevel_set_activated(old_toplevel, false);
     }
   }
@@ -155,7 +156,8 @@ catnip_window_sync_keyboard_focus(struct wl_listener* listener, void* data)
     struct wlr_xdg_toplevel* new_toplevel =
       wlr_xdg_toplevel_try_from_wlr_surface(event->new_surface);
 
-    if (new_toplevel != NULL && new_toplevel->base->initialized && new_toplevel->scheduled.activated) {
+    if (new_toplevel != NULL && new_toplevel->base->initialized
+        && new_toplevel->scheduled.activated) {
       wlr_xdg_toplevel_set_activated(new_toplevel, true);
     }
   }

@@ -39,7 +39,8 @@ catnip_canvas_resize(
   int new_height
 )
 {
-  if (new_width == canvas->buffer.width && new_height == canvas->buffer.height) {
+  if (new_width == canvas->buffer.width
+      && new_height == canvas->buffer.height) {
     return; // nothing to do
   }
 

@@ -69,7 +69,8 @@ lua_catnip_resource__index(lua_State* L)
     lua_pushcfunction(L, lua_catnip_resource_method_unsubscribe);
   } else if (streq(key, "publish")) {
     lua_pushcfunction(L, lua_catnip_resource_method_publish);
-  } else if (lua_resource->__index == NULL || !lua_resource->__index(L, lua_resource, key)) {
+  } else if (lua_resource->__index == NULL
+             || !lua_resource->__index(L, lua_resource, key)) {
     lua_pushnil(L);
   }
 

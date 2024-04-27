@@ -10,7 +10,6 @@ struct lua_catnip_png {
   double width;
   double height;
   cairo_surface_t* surface;
-  char* stylesheet;
 };
 
 int

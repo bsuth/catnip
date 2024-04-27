@@ -26,7 +26,8 @@ lua_catnip_canvas_rectangle(lua_State* L)
   int radius_bottom_left =
     lua_hasnumberfield(L, 2, "radius_bottom_left") ? lua_popnumber(L) : radius;
 
-  if (radius_top_left != 0 || radius_top_right != 0 || radius_bottom_right != 0 || radius_bottom_left != 0) {
+  if (radius_top_left != 0 || radius_top_right != 0 || radius_bottom_right != 0
+      || radius_bottom_left != 0) {
     cairo_rounded_rectangle(
       canvas->cr,
       x,
