@@ -103,6 +103,10 @@ lua_catnip_resource__newindex(lua_State* L)
     lua_log_warning(L, "attempt to set unknown index '%s'", key);
   }
 
+  char* change_event = strfmt("update::%s", key);
+  lua_catnip_resource_publish(L, lua_resource, change_event, 0);
+  free(change_event);
+
   return 0;
 }
 
