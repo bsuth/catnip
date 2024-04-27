@@ -7,12 +7,6 @@ int
 lua_catnip_canvas_method_clear(lua_State* L);
 
 int
-lua_catnip_canvas_method_move(lua_State* L);
-
-int
-lua_catnip_canvas_method_resize(lua_State* L);
-
-int
 lua_catnip_canvas_method_png(lua_State* L);
 
 int

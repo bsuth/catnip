@@ -34,10 +34,6 @@ lua_catnip_window__index(
       window->xdg_toplevel->base->surface
         == catnip_seat->keyboard_state.focused_surface
     );
-  } else if (streq(key, "move")) {
-    lua_pushcfunction(L, lua_catnip_window_method_move);
-  } else if (streq(key, "resize")) {
-    lua_pushcfunction(L, lua_catnip_window_method_resize);
   } else if (streq(key, "destroy")) {
     lua_pushcfunction(L, lua_catnip_window_method_destroy);
   } else {

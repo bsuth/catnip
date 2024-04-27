@@ -1,7 +1,6 @@
 #include "lua_cursor.h"
 #include "cursor/cursor.h"
 #include "cursor/cursor_methods.h"
-#include "cursor/lua_cursor_methods.h"
 #include "lua.h"
 #include "lua_events.h"
 #include "utils/string.h"
@@ -28,8 +27,6 @@ lua_catnip_cursor__index(
     lua_pushnumber(L, catnip_xcursor_manager->size);
   } else if (streq(key, "theme")) {
     lua_pushstring(L, catnip_xcursor_manager->name);
-  } else if (streq(key, "move")) {
-    lua_pushcfunction(L, lua_catnip_cursor_method_move);
   } else {
     return false;
   }

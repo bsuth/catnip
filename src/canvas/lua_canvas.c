@@ -44,10 +44,6 @@ lua_catnip_canvas__index(
     lua_pushcfunction(L, lua_catnip_canvas_method_png);
   } else if (streq(key, "clear")) {
     lua_pushcfunction(L, lua_catnip_canvas_method_clear);
-  } else if (streq(key, "move")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_move);
-  } else if (streq(key, "resize")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_resize);
   } else if (streq(key, "destroy")) {
     lua_pushcfunction(L, lua_catnip_canvas_method_destroy);
   } else {

@@ -1,7 +1,6 @@
 #include "lua_output.h"
 #include "lua_resource.h"
 #include "output/lua_output_list.h"
-#include "output/lua_output_methods.h"
 #include "output/lua_output_mode_list.h"
 #include "output/output_layout.h"
 #include "output/output_methods.h"
@@ -72,10 +71,6 @@ lua_catnip_output__index(
     lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_mode_list->ref);
   } else if (streq(key, "scale")) {
     lua_pushnumber(L, output->wlr_output->pending.scale);
-  } else if (streq(key, "move")) {
-    lua_pushcfunction(L, lua_catnip_output_method_move);
-  } else if (streq(key, "resize")) {
-    lua_pushcfunction(L, lua_catnip_output_method_resize);
   } else {
     return false;
   }
