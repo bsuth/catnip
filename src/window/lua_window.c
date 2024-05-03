@@ -28,6 +28,8 @@ lua_catnip_window__index(
     lua_pushnumber(L, window->xdg_toplevel->current.height);
   } else if (streq(key, "visible")) {
     lua_pushboolean(L, window->scene_tree->node.enabled);
+  } else if (streq(key, "title")) {
+    lua_pushstring(L, window->xdg_toplevel->title);
   } else if (streq(key, "focused")) {
     lua_pushboolean(
       L,
