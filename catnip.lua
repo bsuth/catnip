@@ -83,6 +83,7 @@
 ---@field width number?
 ---@field height number?
 ---@field align ('left' | 'center' | 'right')?
+---@field valign ('left' | 'center' | 'right')?
 ---@field color number?
 ---@field ellipsis (boolean | 'start' | 'middle' | 'end')?
 ---@field font string?
@@ -141,6 +142,7 @@
 ---@field width number
 ---@field height number
 ---@field visible boolean
+---@field title string
 ---@field focused boolean
 ---@field destroy fun(self: CatnipWindow)
 
