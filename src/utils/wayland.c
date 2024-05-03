@@ -14,7 +14,7 @@ wl_setup_listener(
 int
 wlr_scene_node_get_zindex(struct wlr_scene_node* node)
 {
-  int child_zindex = 0;
+  int child_zindex = 1;
   struct wlr_scene_node* child = NULL;
 
   wl_list_for_each(child, &node->parent->children, link)
@@ -32,28 +32,18 @@ wlr_scene_node_get_zindex(struct wlr_scene_node* node)
 void
 wlr_scene_node_set_zindex(struct wlr_scene_node* node, int zindex)
 {
-  int child_zindex = 0;
+  int child_zindex = 1;
   struct wlr_scene_node* child = NULL;
 
-  if (zindex < 0) {
-    wl_list_for_each_reverse(child, &node->parent->children, link)
-    {
-      if (--child_zindex == zindex) {
-        wlr_scene_node_place_above(node, child);
-        return;
+  wl_list_for_each(child, &node->parent->children, link)
+  {
+    if (zindex < ++child_zindex) {
+      if (node != child) {
+        wlr_scene_node_place_below(node, child);
       }
+      return;
     }
-
-    wlr_scene_node_lower_to_bottom(node);
-  } else {
-    wl_list_for_each(child, &node->parent->children, link)
-    {
-      if (++child_zindex == zindex) {
-        wlr_scene_node_place_above(node, child);
-        return;
-      }
-    }
-
-    wlr_scene_node_raise_to_top(node);
   }
+
+  wlr_scene_node_raise_to_top(node);
 }
