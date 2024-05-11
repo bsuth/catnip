@@ -38,6 +38,7 @@
 ---@field visible boolean
 ---@field path fun(self: CatnipCanvas, path: CatnipCanvasPath)
 ---@field rectangle fun(self: CatnipCanvas, path: CatnipCanvasRectangle)
+---@field circle fun(self: CatnipCanvas, path: CatnipCanvasCircle)
 ---@field text fun(self: CatnipCanvas, text: string, options: CatnipCanvasTextOptions?)
 ---@field png fun(self: CatnipCanvas, png: CatnipPng, options: CatnipCanvasPngOptions?)
 ---@field svg fun(self: CatnipCanvas, svg: CatnipSvg, options: CatnipCanvasSvgOptions?)
@@ -70,6 +71,16 @@
 ---@field radius_top_right number?
 ---@field radius_bottom_right number?
 ---@field radius_bottom_left number?
+---@field fill_color number?
+---@field fill_opacity number?
+---@field stroke_color number?
+---@field stroke_opacity number?
+---@field stroke_size number?
+
+---@class CatnipCanvasCircle
+---@field x number?
+---@field y number?
+---@field radius number?
 ---@field fill_color number?
 ---@field fill_opacity number?
 ---@field stroke_color number?
