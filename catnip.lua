@@ -11,9 +11,9 @@
 
 ---@class (exact) Catnip
 ---@field cursor CatnipCursor
----@field keyboards CatnipResourceList<CatnipKeyboard>
 ---@field outputs CatnipResourceList<CatnipOutput>
 ---@field windows CatnipResourceList<CatnipWindow>
+---@field keyboards CatnipResourceList<CatnipKeyboard>
 ---@field canvas fun(params: table): CatnipCanvas
 ---@field png fun(path: string): CatnipPng
 ---@field svg fun(document: string): CatnipSvg

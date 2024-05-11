@@ -1,0 +1,11 @@
+[book]
+title = "catnip"
+authors = ["bsuth"]
+language = "en"
+src = "docs"
+
+[build]
+create-missing = false
+
+[output.html.code.hidelines]
+lua = "!"
