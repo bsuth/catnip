@@ -35,7 +35,9 @@ lua_catnip_output__index(
 {
   struct catnip_output* output = lua_resource->data;
 
-  if (streq(key, "x")) {
+  if (streq(key, "id")) {
+    lua_pushnumber(L, output->id);
+  } else if (streq(key, "x")) {
     int x = wlr_output_layout_get(catnip_output_layout, output->wlr_output)->x;
     lua_pushnumber(L, x);
   } else if (streq(key, "y")) {

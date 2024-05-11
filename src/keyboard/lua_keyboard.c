@@ -16,7 +16,9 @@ lua_catnip_keyboard__index(
 {
   struct catnip_keyboard* keyboard = lua_resource->data;
 
-  if (streq(key, "name")) {
+  if (streq(key, "id")) {
+    lua_pushnumber(L, keyboard->id);
+  } else if (streq(key, "name")) {
     lua_pushstring(L, keyboard->wlr_keyboard->base.name);
   } else if (streq(key, "xkb_rules")) {
     keyboard->xkb_rules == NULL ? lua_pushnil(L)

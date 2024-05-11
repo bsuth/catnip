@@ -5,6 +5,8 @@
 #include <wlr/types/wlr_xdg_shell.h>
 
 struct catnip_window {
+  int id;
+
   struct wl_list link;
   struct catnip_lua_resource* lua_resource;
 

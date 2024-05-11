@@ -1,6 +1,7 @@
 #include "keyboard.h"
 #include "backend.h"
 #include "config.h"
+#include "id.h"
 #include "keyboard/keyboard_methods.h"
 #include "keyboard/lua_key_event.h"
 #include "keyboard/lua_keyboard.h"
@@ -109,6 +110,7 @@ catnip_keyboard_create(struct wl_listener* listener, void* data)
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
+  keyboard->id = generate_catnip_id();
   keyboard->wlr_keyboard = wlr_keyboard;
   catnip_keyboard_reload_keymap(keyboard);
 

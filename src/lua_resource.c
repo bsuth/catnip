@@ -4,8 +4,6 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 
-static int catnip_lua_resource_id_counter = 1;
-
 static int
 lua_catnip_resource_method_subscribe(lua_State* L)
 {
@@ -59,9 +57,7 @@ lua_catnip_resource__index(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "id")) {
-    lua_pushnumber(L, lua_resource->id);
-  } else if (streq(key, "data")) {
+  if (streq(key, "data")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->lua_data);
   } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_resource_method_subscribe);
@@ -96,7 +92,7 @@ lua_catnip_resource__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  bool success = !streq(key, "id") && lua_resource->__newindex != NULL
+  bool success = lua_resource->__newindex != NULL
     && lua_resource->__newindex(L, lua_resource, key);
 
   if (!success) {
@@ -123,9 +119,7 @@ lua_catnip_resource_create(lua_State* L)
     lua_newuserdata(L, sizeof(struct catnip_lua_resource));
   luaL_setmetatable(L, "catnip.resource");
 
-  lua_resource->id = catnip_lua_resource_id_counter++;
   lua_resource->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-
   lua_resource->data = NULL;
   lua_resource->name = NULL;
   lua_resource->__index = NULL;
@@ -197,7 +191,6 @@ lua_catnip_resource_publish(
 void
 lua_catnip_resource_init(lua_State* L)
 {
-  catnip_lua_resource_id_counter = 1;
   luaL_newmetatable(L, "catnip.resource");
   luaL_setfuncs(L, lua_catnip_resource_mt, 0);
   lua_pop(L, 1);

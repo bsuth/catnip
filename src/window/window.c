@@ -1,5 +1,6 @@
 #include "window.h"
 #include "config.h"
+#include "id.h"
 #include "scene.h"
 #include "seat/seat.h"
 #include "utils/wayland.h"
@@ -97,6 +98,7 @@ catnip_window_create(struct wl_listener* listener, void* data)
   } else if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
     struct catnip_window* window = calloc(1, sizeof(struct catnip_window));
 
+    window->id = generate_catnip_id();
     window->xdg_surface = xdg_surface;
     window->xdg_toplevel = xdg_surface->toplevel;
     window->scene_tree = wlr_scene_xdg_surface_create(

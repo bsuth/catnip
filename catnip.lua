@@ -3,7 +3,6 @@
 ---@alias CatnipResourceList<T> { [number]: T } | fun(): T
 
 ---@class CatnipResource
----@field id number
 ---@field data table
 ---@field subscribe fun(self: self, event: string, callback: fun(...)): fun(...)
 ---@field unsubscribe fun(self: self, event: string, callback: fun(...))
@@ -113,6 +112,7 @@
 ---@field theme string
 
 ---@class (exact) CatnipKeyboard: CatnipResource
+---@field id number
 ---@field name string
 ---@field xkb_rules string?
 ---@field xkb_model string?
@@ -121,6 +121,7 @@
 ---@field xkb_options string?
 
 ---@class (exact) CatnipOutput: CatnipResource
+---@field id number
 ---@field x number
 ---@field y number
 ---@field width number
@@ -136,6 +137,7 @@
 ---@field refresh number
 
 ---@class (exact) CatnipWindow: CatnipResource
+---@field id number
 ---@field x number
 ---@field y number
 ---@field z number

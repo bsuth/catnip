@@ -19,7 +19,6 @@ typedef bool (*catnip_lua_resource__newindex)(
 );
 
 struct catnip_lua_resource {
-  int id;
   struct wl_list link;
 
   lua_Ref ref;

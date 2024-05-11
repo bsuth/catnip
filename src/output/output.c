@@ -3,6 +3,7 @@
 #include "backend.h"
 #include "config.h"
 #include "cursor/cursor.h"
+#include "id.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
 #include "renderer.h"
@@ -76,6 +77,7 @@ catnip_output_create(struct wl_listener* listener, void* data)
 
   struct catnip_output* output = calloc(1, sizeof(struct catnip_output));
 
+  output->id = generate_catnip_id();
   output->wlr_output = wlr_output;
   output->layout_output =
     wlr_output_layout_add_auto(catnip_output_layout, wlr_output);

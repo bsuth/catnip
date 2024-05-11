@@ -16,7 +16,9 @@ lua_catnip_window__index(
 {
   struct catnip_window* window = lua_resource->data;
 
-  if (streq(key, "x")) {
+  if (streq(key, "id")) {
+    lua_pushnumber(L, window->id);
+  } else if (streq(key, "x")) {
     lua_pushnumber(L, window->scene_tree->node.x);
   } else if (streq(key, "y")) {
     lua_pushnumber(L, window->scene_tree->node.y);

@@ -3,25 +3,6 @@
 #include <lauxlib.h>
 
 static int
-lua_catnip_resource_list__index(lua_State* L)
-{
-  struct catnip_lua_resource_list* lua_resource_list = lua_touserdata(L, 1);
-  int id = luaL_checknumber(L, 2);
-
-  struct catnip_lua_resource* lua_resource = NULL;
-  wl_list_for_each(lua_resource, &lua_resource_list->head, link)
-  {
-    if (lua_resource->id == id) {
-      lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
-      return 1;
-    }
-  }
-
-  lua_pushnil(L);
-  return 1;
-}
-
-static int
 lua_catnip_resource_list__call(lua_State* L)
 {
   struct catnip_lua_resource_list* lua_resource_list = lua_touserdata(L, 1);
@@ -42,7 +23,6 @@ lua_catnip_resource_list__call(lua_State* L)
 }
 
 static const struct luaL_Reg lua_catnip_resource_list_mt[] = {
-  {"__index", lua_catnip_resource_list__index},
   {"__call", lua_catnip_resource_list__call},
   {NULL, NULL}
 };

@@ -6,6 +6,8 @@
 #include <wlr/types/wlr_output.h>
 
 struct catnip_output {
+  int id;
+
   struct wl_list link;
   struct catnip_lua_resource* lua_resource;
   struct catnip_lua_resource_list* lua_mode_list;
