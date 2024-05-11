@@ -36,6 +36,7 @@ lua_catnip_resource_list_create(lua_State* L)
 
   wl_list_init(&lua_resource_list->head);
   lua_resource_list->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_resource_list->__destroy = NULL;
 
   return lua_resource_list;
 }

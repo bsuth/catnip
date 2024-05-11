@@ -18,6 +18,11 @@ typedef bool (*catnip_lua_resource__newindex)(
   const char* key
 );
 
+typedef void (*catnip_lua_resource__gc)(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource
+);
+
 struct catnip_lua_resource {
   struct wl_list link;
 
@@ -27,8 +32,10 @@ struct catnip_lua_resource {
 
   void* data;
   const char* name;
+
   catnip_lua_resource__index __index;
   catnip_lua_resource__newindex __newindex;
+  catnip_lua_resource__gc __gc;
 };
 
 struct catnip_lua_resource*

@@ -106,9 +106,22 @@ lua_catnip_resource__newindex(lua_State* L)
   return 0;
 }
 
+static int
+lua_catnip_resource__gc(lua_State* L)
+{
+  struct catnip_lua_resource* lua_resource = lua_touserdata(L, 1);
+
+  if (lua_resource->__gc != NULL) {
+    lua_resource->__gc(L, lua_resource);
+  }
+
+  return 0;
+}
+
 static const struct luaL_Reg lua_catnip_resource_mt[] = {
   {"__index", lua_catnip_resource__index},
   {"__newindex", lua_catnip_resource__newindex},
+  {"__gc", lua_catnip_resource__gc},
   {NULL, NULL}
 };
 
@@ -119,11 +132,17 @@ lua_catnip_resource_create(lua_State* L)
     lua_newuserdata(L, sizeof(struct catnip_lua_resource));
   luaL_setmetatable(L, "catnip.resource");
 
+  // Initialize the link as a list (and in particular, also as a list item) just
+  // in case it is never inserted into another list since we always remove the
+  // link in `lua_catnip_resource_destroy`.
+  wl_list_init(&lua_resource->link);
+
   lua_resource->ref = luaL_ref(L, LUA_REGISTRYINDEX);
   lua_resource->data = NULL;
   lua_resource->name = NULL;
   lua_resource->__index = NULL;
   lua_resource->__newindex = NULL;
+  lua_resource->__gc = NULL;
 
   lua_newtable(L);
   lua_resource->subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);

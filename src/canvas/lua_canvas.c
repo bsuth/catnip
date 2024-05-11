@@ -98,6 +98,14 @@ lua_catnip_canvas__newindex(
   return true;
 }
 
+static void
+lua_catnip_canvas__gc(lua_State* L, struct catnip_lua_resource* lua_resource)
+{
+  if (lua_resource->data != NULL) {
+    catnip_canvas_destroy(lua_resource->data);
+  }
+}
+
 int
 lua_catnip_canvas(lua_State* L)
 {
@@ -136,6 +144,7 @@ lua_catnip_canvas(lua_State* L)
   canvas->lua_resource->name = "canvas";
   canvas->lua_resource->__index = lua_catnip_canvas__index;
   canvas->lua_resource->__newindex = lua_catnip_canvas__newindex;
+  canvas->lua_resource->__gc = lua_catnip_canvas__gc;
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, canvas->lua_resource->ref);
 

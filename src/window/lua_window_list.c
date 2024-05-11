@@ -9,7 +9,6 @@ void
 lua_catnip_window_list_init(lua_State* L)
 {
   lua_catnip_window_list = lua_catnip_resource_list_create(L);
-  lua_catnip_window_list->__destroy = lua_catnip_window_destroy;
 }
 
 void
