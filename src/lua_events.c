@@ -88,12 +88,21 @@ lua_catnip_events_publish(
   if (lua_hasfield(L, -1, event)) {
     size_t num_subscriptions = lua_objlen(L, -1);
 
-    for (int sub_index = 0; sub_index < num_subscriptions; ++sub_index) {
-      lua_rawgeti(L, -1, sub_index + 1);
+    // NOTE: We clone the subscriptions table here in order to "freeze" the
+    // callbacks. This keeps behavior consistent when a callback itself adds or
+    // removes subscriptions (i.e. calls `subscribe` / `unsubscribe`).
+    lua_newtable(L);
 
-      // -3 to offset 3 new objects on the stack
-      for (int arg_index = arg_start; arg_index < arg_end; ++arg_index) {
-        lua_pushvalue(L, arg_index);
+    for (int i = 0; i < num_subscriptions; ++i) {
+      lua_rawgeti(L, -2, i + 1);
+      lua_rawseti(L, -2, i + 1);
+    }
+
+    for (int i = 0; i < num_subscriptions; ++i) {
+      lua_rawgeti(L, -1, i + 1);
+
+      for (int j = arg_start; j < arg_end; ++j) {
+        lua_pushvalue(L, j);
       }
 
       if (lua_pcall(L, nargs, 0, 0) != 0) {
@@ -101,7 +110,7 @@ lua_catnip_events_publish(
       }
     }
 
-    lua_pop(L, 1);
+    lua_pop(L, 2);
   }
 
   lua_pop(L, 1);
