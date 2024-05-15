@@ -159,5 +159,17 @@
 ---@field focused boolean
 ---@field destroy fun(self: CatnipWindow)
 
+---@class (exact) CatnipKeyEvent
+---@field code number
+---@field name string
+---@field shift boolean
+---@field ctrl boolean
+---@field mod1 boolean
+---@field mod2 boolean
+---@field mod3 boolean
+---@field mod4 boolean
+---@field mod5 boolean
+---@field prevent_notify boolean
+
 local catnip ---@type Catnip
 return catnip
