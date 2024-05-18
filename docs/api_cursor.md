@@ -1,4 +1,4 @@
-# Cursor
+# `cursor`
 
 TODO
 

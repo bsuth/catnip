@@ -13,7 +13,7 @@
 ---@field outputs CatnipResourceList<CatnipOutput>
 ---@field windows CatnipResourceList<CatnipWindow>
 ---@field keyboards CatnipResourceList<CatnipKeyboard>
----@field canvas fun(params: table): CatnipCanvas
+---@field canvas fun(options: CatnipCanvasOptions): CatnipCanvas
 ---@field png fun(path: string): CatnipPng
 ---@field svg fun(document: string): CatnipSvg
 ---@field subscribe fun(event: string, callback: fun(...)): fun(...)
@@ -28,6 +28,14 @@
 ---@class (exact) CatnipSvg
 ---@field document string
 ---@field apply fun(self: CatnipSvg, stylesheet: string)
+
+---@class CatnipCanvasOptions
+---@field x number?
+---@field y number?
+---@field z number?
+---@field width number?
+---@field height number?
+---@field visible boolean?
 
 ---@class (exact) CatnipCanvas: CatnipResource
 ---@field x number
