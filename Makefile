@@ -103,7 +103,7 @@ clean:
 # ------------------------------------------------------------------------------
 
 format:
-	clang-format -i $(shell find $(SOURCE_DIR) -type f)
+	clang-format -i $(shell find $(SOURCE_DIR) -type f -regex .*\.[ch]$)
 
 # ------------------------------------------------------------------------------
 # Tests
