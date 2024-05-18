@@ -7,6 +7,7 @@
 extern lua_State* catnip_L;
 extern char* catnip_config_user_path;
 extern bool catnip_config_loading;
+extern bool catnip_config_request_reload;
 
 bool
 catnip_config_reload();

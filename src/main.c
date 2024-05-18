@@ -69,6 +69,10 @@ main(int argc, char* argv[])
     }
 
     lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "tick", 0);
+
+    if (catnip_config_request_reload) {
+      catnip_config_reload();
+    }
   }
 
   lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "quit", 0);

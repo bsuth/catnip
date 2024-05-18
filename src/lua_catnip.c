@@ -5,7 +5,6 @@
 #include "config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
-#include "event_loop.h"
 #include "keyboard/lua_keyboard_list.h"
 #include "lua_event.h"
 #include "lua_events.h"
@@ -17,8 +16,6 @@
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
-
-static struct wl_event_source* lua_catnip_reload_event_source = NULL;
 
 static int
 lua_catnip_subscribe(lua_State* L)
@@ -60,30 +57,16 @@ lua_catnip_publish(lua_State* L)
   return 0;
 }
 
-static void
-__lua_catnip_reload()
-{
-  lua_catnip_reload_event_source = NULL;
-  lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "reload", 0);
-  catnip_config_reload();
-}
-
 static int
 lua_catnip_reload(lua_State* L)
 {
-  if (lua_catnip_reload_event_source != NULL) {
-    return 0;
-  }
-
   if (catnip_config_loading) {
     lua_log_warning(L, "attempted to reload during startup, ignoring...");
     return 0;
+  } else {
+    catnip_config_request_reload = true;
+    return 0;
   }
-
-  lua_catnip_reload_event_source =
-    wl_event_loop_add_idle(catnip_event_loop, __lua_catnip_reload, NULL);
-
-  return 0;
 }
 
 static int

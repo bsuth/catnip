@@ -1,6 +1,7 @@
 #include "config.h"
 #include "default_config.h"
 #include "lua_catnip.h"
+#include "lua_events.h"
 #include "utils/log.h"
 #include "utils/string.h"
 #include <lauxlib.h>
@@ -14,6 +15,7 @@
 lua_State* catnip_L = NULL;
 char* catnip_config_user_path = NULL;
 bool catnip_config_loading = false;
+bool catnip_config_request_reload = false;
 
 static char* catnip_config_xdg_path = NULL;
 static char* catnip_config_default_path = NULL;
@@ -76,6 +78,14 @@ catnip_config_load_path(const char* path)
 bool
 catnip_config_reload()
 {
+  if (catnip_L != NULL) {
+    lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "reload", 0);
+  }
+
+  // Set this _after_ publishing the event, just in case somebody calls
+  // `catnip.reload()` during the `reload` event...
+  catnip_config_request_reload = false;
+
   if (catnip_config_user_path != NULL) {
     return catnip_config_load_path(catnip_config_user_path);
   } else if (catnip_config_xdg_path != NULL) {
