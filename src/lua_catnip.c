@@ -19,7 +19,6 @@
 #include <string.h>
 
 static struct wl_event_source* lua_catnip_reload_event_source = NULL;
-static struct wl_event_source* lua_catnip_quit_event_source = NULL;
 
 static int
 lua_catnip_subscribe(lua_State* L)
@@ -88,22 +87,14 @@ lua_catnip_reload(lua_State* L)
   return 0;
 }
 
-static void
-__lua_catnip_quit()
-{
-  lua_catnip_quit_event_source = NULL;
-  catnip_display_run = false;
-}
-
 static int
 lua_catnip_quit(lua_State* L)
 {
-  if (lua_catnip_quit_event_source != NULL) {
+  if (!catnip_display_run) {
     return 0;
   }
 
-  lua_catnip_quit_event_source =
-    wl_event_loop_add_idle(catnip_event_loop, __lua_catnip_quit, NULL);
+  catnip_display_run = false;
 
   lua_catnip_events_publish(L, lua_catnip_subscriptions, "quit", 0);
 
