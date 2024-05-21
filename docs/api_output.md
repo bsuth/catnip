@@ -15,19 +15,47 @@ TODO
 
 ### `output.x`
 
-TODO
+```lua
+!---@class CatnipOutput
+!...
+---@field x number
+!...
+```
+
+The x-coordinate of the output (in pixels).
 
 ### `output.y`
 
-TODO
+```lua
+!---@class CatnipOutput
+!...
+---@field y number
+!...
+```
+
+The y-coordinate of the output (in pixels).
 
 ### `output.width`
 
-TODO
+```lua
+!---@class CatnipOutput
+!...
+---@field width number
+!...
+```
+
+The width of the output (in pixels).
 
 ### `output.height`
 
-TODO
+```lua
+!---@class CatnipOutput
+!...
+---@field height number
+!...
+```
+
+The height of the output (in pixels).
 
 ### `output.refresh`
 

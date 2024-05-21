@@ -82,7 +82,7 @@ end
 ---@field height number?
 ---@field visible boolean?
 
----@param options CatnipCanvasOptions
+---@param options? CatnipCanvasOptions
 ---@return CatnipCanvas
 ```
 

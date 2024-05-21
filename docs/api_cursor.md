@@ -10,11 +10,25 @@ TODO
 
 ### `cursor.x`
 
-TODO
+```lua
+!---@class CatnipCursor
+!...
+---@field x number
+!...
+```
+
+The x-coordinate of the cursor (in pixels).
 
 ### `cursor.y`
 
-TODO
+```lua
+!---@class CatnipCursor
+!...
+---@field y number
+!...
+```
+
+The y-coordinate of the cursor (in pixels).
 
 ### `cursor.name`
 
