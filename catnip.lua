@@ -13,7 +13,7 @@
 ---@field outputs CatnipResourceList<CatnipOutput>
 ---@field windows CatnipResourceList<CatnipWindow>
 ---@field keyboards CatnipResourceList<CatnipKeyboard>
----@field canvas fun(options: CatnipCanvasOptions): CatnipCanvas
+---@field canvas fun(options: CatnipCanvasOptions?): CatnipCanvas
 ---@field png fun(path: string): CatnipPng
 ---@field svg fun(document: string): CatnipSvg
 ---@field subscribe fun(event: string, callback: fun(...)): fun(...)
