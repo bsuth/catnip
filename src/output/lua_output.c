@@ -1,13 +1,11 @@
 #include "lua_output.h"
-#include "lua_resource.h"
 #include "output/lua_output_list.h"
-#include "output/lua_output_mode_list.h"
+#include "output/lua_output_mode.h"
 #include "output/output_layout.h"
-#include "output/output_methods.h"
 #include "utils/string.h"
 #include <lauxlib.h>
 
-void
+static void
 lua_catnip_output_push_mode(
   lua_State* L,
   struct catnip_output* output,
@@ -128,7 +126,16 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
 {
   struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
   output->lua_resource = lua_resource;
-  output->lua_mode_list = lua_catnip_output_mode_list_create(L, output);
+  output->lua_mode_list = lua_catnip_resource_list_create(L);
+
+  struct wlr_output_mode* output_mode = NULL;
+  wl_list_for_each(output_mode, &output->wlr_output->modes, link)
+  {
+    wl_list_insert(
+      &output->lua_mode_list->head,
+      &lua_catnip_output_mode_create(L, output_mode)->link
+    );
+  }
 
   lua_resource->data = output;
   lua_resource->name = "output";
@@ -149,7 +156,15 @@ lua_catnip_output_destroy(
 )
 {
   struct catnip_output* output = lua_resource->data;
+
   lua_catnip_resource_publish(L, lua_resource, "destroy", 0);
+
+  struct catnip_lua_resource* lua_output_mode = NULL;
+  wl_list_for_each(lua_output_mode, &output->lua_mode_list->head, link)
+  {
+    lua_catnip_output_mode_destroy(L, lua_output_mode);
+  }
+
   lua_catnip_resource_list_destroy(L, output->lua_mode_list);
   lua_catnip_resource_destroy(L, lua_resource);
 }

@@ -1,5 +1,6 @@
 #include "lua_png.h"
-#include "canvas/canvas_methods.h"
+#include "canvas/canvas.h"
+#include "lua_resource.h"
 #include "utils/lua.h"
 #include "utils/string.h"
 #include <lauxlib.h>
@@ -78,6 +79,14 @@ static const struct luaL_Reg lua_catnip_png_mt[] = {
   {NULL, NULL}
 };
 
+void
+lua_catnip_png_init(lua_State* L)
+{
+  luaL_newmetatable(L, "catnip.png");
+  luaL_setfuncs(L, lua_catnip_png_mt, 0);
+  lua_pop(L, 1);
+}
+
 int
 lua_catnip_png(lua_State* L)
 {
@@ -93,16 +102,18 @@ lua_catnip_png(lua_State* L)
   return 1;
 }
 
-void
-lua_catnip_png_render(
-  struct lua_catnip_png* lua_png,
-  struct catnip_canvas* canvas,
-  double x,
-  double y,
-  double width,
-  double height
-)
+int
+lua_catnip_canvas_png(lua_State* L)
 {
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct lua_catnip_png* lua_png = luaL_checkudata(L, 2, "catnip.png");
+  luaL_checktype(L, 3, LUA_TTABLE);
+
+  double x = lua_hasfield(L, 3, "x") ? lua_popnumber(L) : 0;
+  double y = lua_hasfield(L, 3, "y") ? lua_popnumber(L) : 0;
+  double width = lua_hasfield(L, 3, "width") ? lua_popnumber(L) : -1;
+  double height = lua_hasfield(L, 3, "height") ? lua_popnumber(L) : -1;
+
   double scale_x = width != -1 ? width / lua_png->width : 1;
   double scale_y = height != -1 ? height / lua_png->height : 1;
 
@@ -123,12 +134,6 @@ lua_catnip_png_render(
   cairo_paint(canvas->cr);
   cairo_restore(canvas->cr);
   catnip_canvas_refresh(canvas);
-}
 
-void
-lua_catnip_png_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.png");
-  luaL_setfuncs(L, lua_catnip_png_mt, 0);
-  lua_pop(L, 1);
+  return 0;
 }

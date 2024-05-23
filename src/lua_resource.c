@@ -5,7 +5,7 @@
 #include <stdlib.h>
 
 static int
-lua_catnip_resource_method_subscribe(lua_State* L)
+lua_catnip_resource_subscribe(lua_State* L)
 {
   struct catnip_lua_resource* lua_resource =
     luaL_checkudata(L, 1, "catnip.resource");
@@ -19,7 +19,7 @@ lua_catnip_resource_method_subscribe(lua_State* L)
 }
 
 static int
-lua_catnip_resource_method_unsubscribe(lua_State* L)
+lua_catnip_resource_unsubscribe(lua_State* L)
 {
   struct catnip_lua_resource* lua_resource =
     luaL_checkudata(L, 1, "catnip.resource");
@@ -34,7 +34,7 @@ lua_catnip_resource_method_unsubscribe(lua_State* L)
 }
 
 static int
-lua_catnip_resource_method_publish(lua_State* L)
+__lua_catnip_resource_publish(lua_State* L)
 {
   struct catnip_lua_resource* lua_resource =
     luaL_checkudata(L, 1, "catnip.resource");
@@ -60,11 +60,11 @@ lua_catnip_resource__index(lua_State* L)
   if (streq(key, "data")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->lua_data);
   } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, lua_catnip_resource_method_subscribe);
+    lua_pushcfunction(L, lua_catnip_resource_subscribe);
   } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, lua_catnip_resource_method_unsubscribe);
+    lua_pushcfunction(L, lua_catnip_resource_unsubscribe);
   } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, lua_catnip_resource_method_publish);
+    lua_pushcfunction(L, __lua_catnip_resource_publish);
   } else if (lua_resource->__index == NULL
              || !lua_resource->__index(L, lua_resource, key)) {
     lua_pushnil(L);
@@ -124,6 +124,14 @@ static const struct luaL_Reg lua_catnip_resource_mt[] = {
   {"__gc", lua_catnip_resource__gc},
   {NULL, NULL}
 };
+
+void
+lua_catnip_resource_init(lua_State* L)
+{
+  luaL_newmetatable(L, "catnip.resource");
+  luaL_setfuncs(L, lua_catnip_resource_mt, 0);
+  lua_pop(L, 1);
+}
 
 struct catnip_lua_resource*
 lua_catnip_resource_create(lua_State* L)
@@ -205,12 +213,4 @@ lua_catnip_resource_publish(
     free(global_event);
     lua_remove(L, -1 - nargs);
   };
-}
-
-void
-lua_catnip_resource_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.resource");
-  luaL_setfuncs(L, lua_catnip_resource_mt, 0);
-  lua_pop(L, 1);
 }

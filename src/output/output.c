@@ -1,6 +1,5 @@
 #include "output.h"
 #include "allocator.h"
-#include "backend.h"
 #include "config.h"
 #include "cursor/cursor.h"
 #include "id.h"
@@ -11,17 +10,11 @@
 #include "utils/wayland.h"
 #include <stdlib.h>
 
-struct wl_list catnip_outputs;
-
-static struct {
-  struct wl_listener new_output;
-} listeners;
-
 static void
-catnip_output_frame(struct wl_listener* listener, void* data)
+on_output_frame(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
-    wl_container_of(listener, output, listeners.frame);
+    wl_container_of(listener, output, frame_listener);
 
   struct wlr_scene_output* scene_output =
     wlr_scene_get_scene_output(catnip_scene, output->wlr_output);
@@ -34,23 +27,24 @@ catnip_output_frame(struct wl_listener* listener, void* data)
 }
 
 static void
-catnip_output_request_state(struct wl_listener* listener, void* data)
+on_output_request_state(struct wl_listener* listener, void* data)
 {
   struct wlr_output_event_request_state* event = data;
   wlr_output_commit_state(event->output, event->state);
 }
 
 static void
-catnip_output_destroy(struct wl_listener* listener, void* data)
+on_output_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
-    wl_container_of(listener, output, listeners.destroy);
+    wl_container_of(listener, output, destroy_listener);
 
   lua_catnip_output_destroy(catnip_L, output->lua_resource);
 
   wl_list_remove(&output->link);
-  wl_list_remove(&output->listeners.frame.link);
-  wl_list_remove(&output->listeners.destroy.link);
+  wl_list_remove(&output->frame_listener.link);
+  wl_list_remove(&output->request_state_listener.link);
+  wl_list_remove(&output->destroy_listener.link);
 
   wlr_output_layout_remove(catnip_output_layout, output->wlr_output);
   wlr_scene_output_destroy(output->scene_output);
@@ -58,11 +52,9 @@ catnip_output_destroy(struct wl_listener* listener, void* data)
   free(output);
 }
 
-static void
-catnip_output_create(struct wl_listener* listener, void* data)
+struct catnip_output*
+catnip_output_create(struct wlr_output* wlr_output)
 {
-  struct wlr_output* wlr_output = data;
-
   wlr_output_init_render(wlr_output, catnip_allocator, catnip_renderer);
   wlr_output_enable(wlr_output, true);
 
@@ -90,39 +82,56 @@ catnip_output_create(struct wl_listener* listener, void* data)
   );
 
   wl_setup_listener(
-    &output->listeners.frame,
+    &output->frame_listener,
     &wlr_output->events.frame,
-    catnip_output_frame
+    on_output_frame
   );
   wl_setup_listener(
-    &output->listeners.request_state,
+    &output->request_state_listener,
     &wlr_output->events.request_state,
-    catnip_output_request_state
+    on_output_request_state
   );
   wl_setup_listener(
-    &output->listeners.destroy,
+    &output->destroy_listener,
     &wlr_output->events.destroy,
-    catnip_output_destroy
+    on_output_destroy
   );
-
-  wl_list_insert(&catnip_outputs, &output->link);
 
   lua_catnip_output_create(catnip_L, output);
 
   // Ensure we have loaded a scaled cursor theme for the new output's scale
   wlr_xcursor_manager_load(catnip_xcursor_manager, wlr_output->scale);
+
+  return output;
 }
 
 void
-catnip_output_init()
+catnip_output_configure(
+  struct catnip_output* output,
+  int width,
+  int height,
+  int refresh
+)
 {
-  catnip_output_layout_init();
-
-  wl_list_init(&catnip_outputs);
-
-  wl_setup_listener(
-    &listeners.new_output,
-    &catnip_backend->events.new_output,
-    catnip_output_create
+  wlr_output_set_custom_mode(
+    output->wlr_output,
+    width != -1 ? width
+      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
+      ? output->wlr_output->pending.custom_mode.width
+      : output->wlr_output->pending.mode != NULL
+      ? output->wlr_output->pending.mode->width
+      : output->wlr_output->width,
+    height != -1 ? height
+      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
+      ? output->wlr_output->pending.custom_mode.height
+      : output->wlr_output->pending.mode != NULL
+      ? output->wlr_output->pending.mode->height
+      : output->wlr_output->height,
+    refresh != -1 ? refresh
+      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
+      ? output->wlr_output->pending.custom_mode.refresh
+      : output->wlr_output->pending.mode != NULL
+      ? output->wlr_output->pending.mode->refresh
+      : output->wlr_output->refresh
   );
 }

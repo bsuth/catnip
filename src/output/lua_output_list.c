@@ -1,5 +1,6 @@
 #include "lua_output_list.h"
 #include "output/lua_output.h"
+#include "output/outputs.h"
 #include <lauxlib.h>
 
 struct catnip_lua_resource_list* lua_catnip_output_list = NULL;

@@ -2,8 +2,8 @@
 #define CATNIP_LUA_OUTPUT_MODE_H
 
 #include "lua_resource.h"
-#include "output/output.h"
 #include <lua.h>
+#include <wlr/types/wlr_output.h>
 
 struct catnip_lua_resource*
 lua_catnip_output_mode_create(

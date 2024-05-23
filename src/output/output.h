@@ -16,16 +16,20 @@ struct catnip_output {
   struct wlr_output_layout_output* layout_output;
   struct wlr_scene_output* scene_output;
 
-  struct {
-    struct wl_listener frame;
-    struct wl_listener request_state;
-    struct wl_listener destroy;
-  } listeners;
+  struct wl_listener frame_listener;
+  struct wl_listener request_state_listener;
+  struct wl_listener destroy_listener;
 };
 
-extern struct wl_list catnip_outputs;
+struct catnip_output*
+catnip_output_create(struct wlr_output* wlr_output);
 
 void
-catnip_output_init();
+catnip_output_configure(
+  struct catnip_output* output,
+  int width,
+  int height,
+  int refresh
+);
 
 #endif

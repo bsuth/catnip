@@ -1,16 +1,31 @@
 #include "lua_canvas.h"
 #include "canvas/canvas.h"
-#include "canvas/canvas_methods.h"
 #include "canvas/lua_canvas_circle.h"
-#include "canvas/lua_canvas_methods.h"
 #include "canvas/lua_canvas_path.h"
 #include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_text.h"
+#include "canvas/lua_png.h"
+#include "canvas/lua_svg.h"
 #include "lua_resource.h"
-#include "utils/lua.h"
 #include "utils/string.h"
 #include "utils/wayland.h"
 #include <lauxlib.h>
+
+static int
+lua_catnip_canvas_clear(lua_State* L)
+{
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  catnip_canvas_clear(canvas);
+  return 0;
+}
+
+static int
+lua_catnip_canvas_destroy(lua_State* L)
+{
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  catnip_canvas_destroy(canvas);
+  return 0;
+}
 
 static bool
 lua_catnip_canvas__index(
@@ -42,13 +57,13 @@ lua_catnip_canvas__index(
   } else if (streq(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
   } else if (streq(key, "svg")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_svg);
+    lua_pushcfunction(L, lua_catnip_canvas_svg);
   } else if (streq(key, "png")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_png);
+    lua_pushcfunction(L, lua_catnip_canvas_png);
   } else if (streq(key, "clear")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_clear);
+    lua_pushcfunction(L, lua_catnip_canvas_clear);
   } else if (streq(key, "destroy")) {
-    lua_pushcfunction(L, lua_catnip_canvas_method_destroy);
+    lua_pushcfunction(L, lua_catnip_canvas_destroy);
   } else {
     return false;
   }

@@ -1,8 +1,7 @@
-#include "canvas/canvas_methods.h"
-#include "lua_resource.h"
+#include "lua_canvas_circle.h"
+#include "canvas/canvas.h"
 #include "utils/cairo.h"
 #include <lauxlib.h>
-#include <math.h>
 
 int
 lua_catnip_canvas_circle(lua_State* L)

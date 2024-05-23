@@ -1,26 +1,18 @@
 #include "keyboard.h"
-#include "backend.h"
 #include "config.h"
+#include "event_loop.h"
 #include "id.h"
-#include "keyboard/keyboard_methods.h"
 #include "keyboard/lua_key_event.h"
 #include "keyboard/lua_keyboard.h"
-#include "seat/seat.h"
+#include "seat.h"
 #include "utils/wayland.h"
 #include <stdlib.h>
-#include <xkbcommon/xkbcommon.h>
-
-struct wl_list catnip_keyboards;
-
-static struct {
-  struct wl_listener new_input;
-} listeners;
 
 static void
-catnip_keyboard_modifiers(struct wl_listener* listener, void* data)
+on_keyboard_modifiers(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
-    wl_container_of(listener, keyboard, listeners.modifiers);
+    wl_container_of(listener, keyboard, modifiers_listener);
 
   // Wayland only allows a single keyboard per seat. Thus, we assign all
   // keyboards to the same seat, swapping them out on key events.
@@ -33,10 +25,10 @@ catnip_keyboard_modifiers(struct wl_listener* listener, void* data)
 }
 
 static void
-catnip_keyboard_key(struct wl_listener* listener, void* data)
+on_keyboard_key(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
-    wl_container_of(listener, keyboard, listeners.key);
+    wl_container_of(listener, keyboard, key_listener);
 
   struct wlr_keyboard_key_event* wlr_event = data;
 
@@ -82,67 +74,98 @@ catnip_keyboard_key(struct wl_listener* listener, void* data)
 }
 
 static void
-catnip_keyboard_destroy(struct wl_listener* listener, void* data)
+on_keyboard_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_keyboard* keyboard =
-    wl_container_of(listener, keyboard, listeners.destroy);
+    wl_container_of(listener, keyboard, destroy_listener);
 
   lua_catnip_keyboard_destroy(catnip_L, keyboard->lua_resource);
 
   wl_list_remove(&keyboard->link);
-  wl_list_remove(&keyboard->listeners.modifiers.link);
-  wl_list_remove(&keyboard->listeners.key.link);
-  wl_list_remove(&keyboard->listeners.destroy.link);
+  wl_list_remove(&keyboard->modifiers_listener.link);
+  wl_list_remove(&keyboard->key_listener.link);
+  wl_list_remove(&keyboard->destroy_listener.link);
 
   free(keyboard);
 }
 
-static void
-catnip_keyboard_create(struct wl_listener* listener, void* data)
+struct catnip_keyboard*
+catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard)
 {
-  struct wlr_input_device* device = data;
-
-  if (device->type != WLR_INPUT_DEVICE_KEYBOARD) {
-    return;
-  }
-
-  struct wlr_keyboard* wlr_keyboard = wlr_keyboard_from_input_device(device);
   wlr_keyboard_set_repeat_info(wlr_keyboard, 25, 600);
 
   struct catnip_keyboard* keyboard = calloc(1, sizeof(struct catnip_keyboard));
   keyboard->id = generate_catnip_id();
   keyboard->wlr_keyboard = wlr_keyboard;
+
+  keyboard->xkb_rules = NULL;
+  keyboard->xkb_model = NULL;
+  keyboard->xkb_layout = NULL;
+  keyboard->xkb_variant = NULL;
+  keyboard->xkb_options = NULL;
+
+  keyboard->reload_keymap_event_source = NULL;
   catnip_keyboard_reload_keymap(keyboard);
 
   wl_setup_listener(
-    &keyboard->listeners.modifiers,
+    &keyboard->modifiers_listener,
     &wlr_keyboard->events.modifiers,
-    catnip_keyboard_modifiers
+    on_keyboard_modifiers
   );
   wl_setup_listener(
-    &keyboard->listeners.key,
+    &keyboard->key_listener,
     &wlr_keyboard->events.key,
-    catnip_keyboard_key
+    on_keyboard_key
   );
   wl_setup_listener(
-    &keyboard->listeners.destroy,
-    &device->events.destroy,
-    catnip_keyboard_destroy
+    &keyboard->destroy_listener,
+    &wlr_keyboard->base.events.destroy,
+    on_keyboard_destroy
   );
-
-  wl_list_insert(&catnip_keyboards, &keyboard->link);
 
   lua_catnip_keyboard_create(catnip_L, keyboard);
+
+  return keyboard;
+}
+
+static void
+__catnip_keyboard_reload_keymap(void* data)
+{
+  struct catnip_keyboard* keyboard = data;
+
+  struct xkb_rule_names xkb_rule_names = {
+    .rules = keyboard->xkb_rules,
+    .model = keyboard->xkb_model,
+    .layout = keyboard->xkb_layout,
+    .variant = keyboard->xkb_variant,
+    .options = keyboard->xkb_options,
+  };
+
+  struct xkb_context* xkb_context = xkb_context_new(XKB_CONTEXT_NO_FLAGS);
+  struct xkb_keymap* xkb_keymap = xkb_keymap_new_from_names(
+    xkb_context,
+    &xkb_rule_names,
+    XKB_KEYMAP_COMPILE_NO_FLAGS
+  );
+
+  wlr_keyboard_set_keymap(keyboard->wlr_keyboard, xkb_keymap);
+
+  xkb_keymap_unref(xkb_keymap);
+  xkb_context_unref(xkb_context);
+
+  keyboard->reload_keymap_event_source = NULL;
 }
 
 void
-catnip_keyboard_init()
+catnip_keyboard_reload_keymap(struct catnip_keyboard* keyboard)
 {
-  wl_list_init(&catnip_keyboards);
+  if (keyboard->reload_keymap_event_source != NULL) {
+    return;
+  }
 
-  wl_setup_listener(
-    &listeners.new_input,
-    &catnip_backend->events.new_input,
-    catnip_keyboard_create
+  keyboard->reload_keymap_event_source = wl_event_loop_add_idle(
+    catnip_event_loop,
+    __catnip_keyboard_reload_keymap,
+    keyboard
   );
 }

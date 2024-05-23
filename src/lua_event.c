@@ -55,6 +55,14 @@ static const struct luaL_Reg lua_catnip_event_mt[] = {
   {NULL, NULL}
 };
 
+void
+lua_catnip_event_init(lua_State* L)
+{
+  luaL_newmetatable(L, "catnip.event");
+  luaL_setfuncs(L, lua_catnip_event_mt, 0);
+  lua_pop(L, 1);
+}
+
 struct catnip_lua_event*
 lua_catnip_event_create(lua_State* L)
 {
@@ -70,12 +78,4 @@ lua_catnip_event_destroy(lua_State* L, struct catnip_lua_event* lua_event)
 {
   lua_event->data = NULL;
   luaL_unref(L, LUA_REGISTRYINDEX, lua_event->ref);
-}
-
-void
-lua_catnip_event_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.event");
-  luaL_setfuncs(L, lua_catnip_event_mt, 0);
-  lua_pop(L, 1);
 }

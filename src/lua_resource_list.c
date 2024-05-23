@@ -27,6 +27,14 @@ static const struct luaL_Reg lua_catnip_resource_list_mt[] = {
   {NULL, NULL}
 };
 
+void
+lua_catnip_resource_list_init(lua_State* L)
+{
+  luaL_newmetatable(L, "catnip.resource.list");
+  luaL_setfuncs(L, lua_catnip_resource_list_mt, 0);
+  lua_pop(L, 1);
+}
+
 struct catnip_lua_resource_list*
 lua_catnip_resource_list_create(lua_State* L)
 {
@@ -36,7 +44,6 @@ lua_catnip_resource_list_create(lua_State* L)
 
   wl_list_init(&lua_resource_list->head);
   lua_resource_list->ref = luaL_ref(L, LUA_REGISTRYINDEX);
-  lua_resource_list->__destroy = NULL;
 
   return lua_resource_list;
 }
@@ -48,20 +55,5 @@ lua_catnip_resource_list_destroy(
 )
 {
   luaL_unref(L, LUA_REGISTRYINDEX, lua_resource_list->ref);
-
-  if (lua_resource_list->__destroy != NULL) {
-    struct catnip_lua_resource* lua_resource = NULL;
-    wl_list_for_each(lua_resource, &lua_resource_list->head, link)
-    {
-      lua_resource_list->__destroy(L, lua_resource);
-    }
-  }
-}
-
-void
-lua_catnip_resource_list_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.resource.list");
-  luaL_setfuncs(L, lua_catnip_resource_list_mt, 0);
-  lua_pop(L, 1);
+  wl_list_remove(&lua_resource_list->head);
 }

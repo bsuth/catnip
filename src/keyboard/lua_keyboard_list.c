@@ -1,7 +1,6 @@
 #include "lua_keyboard_list.h"
+#include "keyboard/keyboards.h"
 #include "keyboard/lua_keyboard.h"
-#include "lua_resource_list.h"
-#include <lauxlib.h>
 
 struct catnip_lua_resource_list* lua_catnip_keyboard_list = NULL;
 

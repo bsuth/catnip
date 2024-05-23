@@ -38,6 +38,9 @@ struct catnip_lua_resource {
   catnip_lua_resource__gc __gc;
 };
 
+void
+lua_catnip_resource_init(lua_State* L);
+
 struct catnip_lua_resource*
 lua_catnip_resource_create(lua_State* L);
 
@@ -57,8 +60,5 @@ lua_catnip_resource_publish(
   const char* event,
   int nargs
 );
-
-void
-lua_catnip_resource_init(lua_State* L);
 
 #endif

@@ -1,5 +1,5 @@
 #include "lua_canvas_path.h"
-#include "canvas/canvas_methods.h"
+#include "canvas/canvas.h"
 #include "lua_resource.h"
 #include "utils/cairo.h"
 #include "utils/lua.h"

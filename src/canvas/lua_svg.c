@@ -1,5 +1,6 @@
 #include "lua_svg.h"
-#include "canvas/canvas_methods.h"
+#include "canvas/canvas.h"
+#include "lua_resource.h"
 #include "utils/lua.h"
 #include "utils/string.h"
 #include <lauxlib.h>
@@ -44,7 +45,7 @@ lua_catnip_svg_reload(lua_State* L, struct lua_catnip_svg* lua_svg)
 }
 
 static int
-lua_catnip_svg_method_apply(lua_State* L)
+lua_catnip_svg_apply(lua_State* L)
 {
   struct lua_catnip_svg* lua_svg = luaL_checkudata(L, 1, "catnip.svg");
   const char* stylesheet = luaL_checkstring(L, 2);
@@ -84,7 +85,7 @@ lua_catnip_svg__index(lua_State* L)
   if (streq(key, "document")) {
     lua_pushstring(L, lua_svg->document);
   } else if (streq(key, "apply")) {
-    lua_pushcfunction(L, lua_catnip_svg_method_apply);
+    lua_pushcfunction(L, lua_catnip_svg_apply);
   } else {
     lua_pushnil(L);
   }
@@ -136,6 +137,14 @@ static const struct luaL_Reg lua_catnip_svg_mt[] = {
   {NULL, NULL}
 };
 
+void
+lua_catnip_svg_init(lua_State* L)
+{
+  luaL_newmetatable(L, "catnip.svg");
+  luaL_setfuncs(L, lua_catnip_svg_mt, 0);
+  lua_pop(L, 1);
+}
+
 int
 lua_catnip_svg(lua_State* L)
 {
@@ -152,16 +161,18 @@ lua_catnip_svg(lua_State* L)
   return 1;
 }
 
-void
-lua_catnip_svg_render(
-  struct lua_catnip_svg* lua_svg,
-  struct catnip_canvas* canvas,
-  double x,
-  double y,
-  double width,
-  double height
-)
+int
+lua_catnip_canvas_svg(lua_State* L)
 {
+  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct lua_catnip_svg* lua_svg = luaL_checkudata(L, 2, "catnip.svg");
+  luaL_checktype(L, 3, LUA_TTABLE);
+
+  double x = lua_hasfield(L, 3, "x") ? lua_popnumber(L) : 0;
+  double y = lua_hasfield(L, 3, "y") ? lua_popnumber(L) : 0;
+  double width = lua_hasfield(L, 3, "width") ? lua_popnumber(L) : -1;
+  double height = lua_hasfield(L, 3, "height") ? lua_popnumber(L) : -1;
+
   RsvgRectangle viewport = {
     .x = x,
     .y = y,
@@ -177,12 +188,6 @@ lua_catnip_svg_render(
 
   rsvg_handle_render_document(lua_svg->rsvg, canvas->cr, &viewport, NULL);
   catnip_canvas_refresh(canvas);
-}
 
-void
-lua_catnip_svg_init(lua_State* L)
-{
-  luaL_newmetatable(L, "catnip.svg");
-  luaL_setfuncs(L, lua_catnip_svg_mt, 0);
-  lua_pop(L, 1);
+  return 0;
 }

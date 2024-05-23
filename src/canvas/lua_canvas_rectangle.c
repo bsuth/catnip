@@ -1,4 +1,5 @@
-#include "canvas/canvas_methods.h"
+#include "lua_canvas_rectangle.h"
+#include "canvas/canvas.h"
 #include "lua_resource.h"
 #include "utils/cairo.h"
 #include <lauxlib.h>

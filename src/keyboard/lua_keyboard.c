@@ -1,7 +1,5 @@
 #include "lua_keyboard.h"
-#include "keyboard/keyboard_methods.h"
 #include "keyboard/lua_keyboard_list.h"
-#include "lua_resource.h"
 #include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>

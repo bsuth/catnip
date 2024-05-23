@@ -3,6 +3,7 @@
 
 #include "lua_resource.h"
 #include <wlr/types/wlr_seat.h>
+#include <xkbcommon/xkbcommon.h>
 
 struct catnip_keyboard {
   int id;
@@ -17,13 +18,12 @@ struct catnip_keyboard {
   char* xkb_layout;
   char* xkb_variant;
   char* xkb_options;
-  struct wl_event_source* xkb_keymap_event_source;
 
-  struct {
-    struct wl_listener modifiers;
-    struct wl_listener key;
-    struct wl_listener destroy;
-  } listeners;
+  struct wl_listener modifiers_listener;
+  struct wl_listener key_listener;
+  struct wl_listener destroy_listener;
+
+  struct wl_event_source* reload_keymap_event_source;
 };
 
 struct catnip_key_event {
@@ -34,9 +34,10 @@ struct catnip_key_event {
   bool prevent_notify;
 };
 
-extern struct wl_list catnip_keyboards;
+struct catnip_keyboard*
+catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard);
 
 void
-catnip_keyboard_init();
+catnip_keyboard_reload_keymap(struct catnip_keyboard* keyboard);
 
 #endif

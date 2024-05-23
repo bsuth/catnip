@@ -1,5 +1,5 @@
 #include "lua_canvas_text.h"
-#include "canvas/canvas_methods.h"
+#include "canvas/canvas.h"
 #include "lua_resource.h"
 #include "utils/lua.h"
 #include "utils/string.h"

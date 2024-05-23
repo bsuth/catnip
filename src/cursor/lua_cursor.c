@@ -1,7 +1,5 @@
 #include "lua_cursor.h"
 #include "cursor/cursor.h"
-#include "cursor/cursor_methods.h"
-#include "lua.h"
 #include "lua_events.h"
 #include "utils/string.h"
 #include <lauxlib.h>
@@ -71,6 +69,16 @@ lua_catnip_cursor__newindex(
 }
 
 void
+lua_catnip_cursor_init(lua_State* L)
+{
+  lua_catnip_cursor = lua_catnip_resource_create(L);
+  lua_catnip_cursor->data = catnip_cursor;
+  lua_catnip_cursor->name = "cursor";
+  lua_catnip_cursor->__index = lua_catnip_cursor__index;
+  lua_catnip_cursor->__newindex = lua_catnip_cursor__newindex;
+}
+
+void
 lua_catnip_cursor_publish_button_event(
   lua_State* L,
   struct wlr_pointer_button_event* event
@@ -86,14 +94,4 @@ lua_catnip_cursor_publish_button_event(
   );
 
   lua_pop(L, 1);
-}
-
-void
-lua_catnip_cursor_init(lua_State* L)
-{
-  lua_catnip_cursor = lua_catnip_resource_create(L);
-  lua_catnip_cursor->data = catnip_cursor;
-  lua_catnip_cursor->name = "cursor";
-  lua_catnip_cursor->__index = lua_catnip_cursor__index;
-  lua_catnip_cursor->__newindex = lua_catnip_cursor__newindex;
 }

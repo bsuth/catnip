@@ -1,11 +1,18 @@
 #include "lua_window.h"
-#include "seat/seat.h"
+#include "seat.h"
 #include "utils/string.h"
 #include "utils/wayland.h"
 #include "window/lua_window_list.h"
-#include "window/lua_window_methods.h"
 #include <lauxlib.h>
 #include <wlr/types/wlr_scene.h>
+
+static int
+lua_catnip_window_close(lua_State* L)
+{
+  struct catnip_window* window = lua_catnip_resource_checkname(L, 1, "window");
+  wlr_xdg_toplevel_send_close(window->xdg_toplevel);
+  return 0;
+}
 
 static bool
 lua_catnip_window__index(
@@ -39,7 +46,7 @@ lua_catnip_window__index(
         == catnip_seat->keyboard_state.focused_surface
     );
   } else if (streq(key, "destroy")) {
-    lua_pushcfunction(L, lua_catnip_window_method_destroy);
+    lua_pushcfunction(L, lua_catnip_window_close);
   } else {
     return false;
   }

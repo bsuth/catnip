@@ -6,6 +6,9 @@
 extern lua_Ref lua_catnip_subscriptions;
 
 void
+lua_catnip_events_init(lua_State* L);
+
+void
 lua_catnip_events_subscribe(
   lua_State* L,
   lua_Ref subscriptions,
@@ -26,8 +29,5 @@ lua_catnip_events_publish(
   const char* event,
   int nargs
 );
-
-void
-lua_catnip_events_init(lua_State* L);
 
 #endif

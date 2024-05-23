@@ -1,7 +1,6 @@
 #include "canvas_buffer.h"
 #include "canvas/canvas.h"
 #include <drm_fourcc.h>
-#include <wlr/interfaces/wlr_buffer.h>
 
 static void
 catnip_canvas_buffer_destroy(struct wlr_buffer* wlr_buffer)

@@ -26,13 +26,13 @@ struct catnip_lua_event {
   catnip_lua_event__newindex __newindex;
 };
 
+void
+lua_catnip_event_init(lua_State* L);
+
 struct catnip_lua_event*
 lua_catnip_event_create(lua_State* L);
 
 void
 lua_catnip_event_destroy(lua_State* L, struct catnip_lua_event* lua_event);
-
-void
-lua_catnip_event_init(lua_State* L);
 
 #endif

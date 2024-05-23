@@ -14,21 +14,14 @@ struct catnip_window {
   struct wlr_xdg_toplevel* xdg_toplevel;
   struct wlr_scene_tree* scene_tree;
 
-  struct {
-    struct wl_listener map;
-    struct wl_listener unmap;
-    struct wl_listener configure;
-    struct wl_listener request_move;
-    struct wl_listener request_resize;
-    struct wl_listener request_maximize;
-    struct wl_listener request_fullscreen;
-    struct wl_listener destroy;
-  } listeners;
+  struct wl_listener map_listener;
+  struct wl_listener unmap_listener;
+  struct wl_listener request_maximize_listener;
+  struct wl_listener request_fullscreen_listener;
+  struct wl_listener destroy_listener;
 };
 
-extern struct wl_list catnip_windows;
-
-void
-catnip_window_init();
+struct catnip_window*
+catnip_window_create(struct wlr_xdg_surface* xdg_surface);
 
 #endif
