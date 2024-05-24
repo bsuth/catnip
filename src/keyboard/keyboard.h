@@ -26,14 +26,6 @@ struct catnip_keyboard {
   struct wl_event_source* reload_keymap_event_source;
 };
 
-struct catnip_key_event {
-  uint32_t modifiers;
-  xkb_keysym_t xkb_keysym;
-  const char* xkb_name;
-  enum wl_keyboard_key_state state;
-  bool prevent_notify;
-};
-
 struct catnip_keyboard*
 catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard);
 

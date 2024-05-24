@@ -1,6 +1,7 @@
 #ifndef CATNIP_LUA_KEY_EVENT_H
 #define CATNIP_LUA_KEY_EVENT_H
 
+#include "keyboard/key_event.h"
 #include "keyboard/keyboard.h"
 #include <lua.h>
 
