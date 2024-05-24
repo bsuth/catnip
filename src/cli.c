@@ -1,5 +1,6 @@
 #include "cli.h"
 #include "config.h"
+#include "luacats.h"
 #include "utils/log.h"
 #include "utils/string.h"
 #include <getopt.h>
@@ -10,13 +11,14 @@
 
 static const char* catnip_version = "0.1.0";
 
-static const char* catnip_short_options = "hvc:l:";
+static const char* catnip_short_options = "hvc:l:a";
 
 static const struct option catnip_long_options[] = {
   {"help", no_argument, NULL, 'h'},
   {"version", no_argument, NULL, 'v'},
   {"config", required_argument, NULL, 'c'},
   {"loglevel", required_argument, NULL, 'l'},
+  {"annotations", no_argument, NULL, 'a'},
   {0, 0, 0, 0}
 };
 
@@ -25,6 +27,7 @@ static const char* catnip_help =
   "  -c, --config FILE     specify lua config path\n"
   "  -l, --loglevel LEVEL  specify log level, must be one of:\n"
   "                        silent, error, warning, info, debug \n"
+  "  -a, --annotations     print LuaCATS annotations and exit\n"
   "  -v, --version         print help and exit\n"
   "  -h, --help            print version and exit\n";
 
@@ -74,6 +77,9 @@ catnip_cli_init(int argc, char* argv[])
           wlr_log_init(WLR_ERROR, NULL);
         }
       }; break;
+      case 'a':
+        printf("%s", catnip_luacats);
+        exit(0);
       default:
         printf("%s", catnip_help);
         exit(1);

@@ -66,8 +66,15 @@ $(shell mkdir -p $(OBJECT_BUILD_DIR))
 $(OBJECT_BUILD_DIR)/default_config.o: $(SOURCE_DIR)/default_config.lua
 	@cat $< | \
 	sed 's/"/\\"/g' | \
-	tr '\n' ' ' | \
+	awk '{ printf "%s%s", separator, $$0; separator = "\\n" }' - | \
 	xargs -0  printf '#include "default_config.h"\nconst char* catnip_default_config = "%s";' | \
+	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ -xc -
+
+$(OBJECT_BUILD_DIR)/luacats.o: $(SOURCE_DIR)/luacats.lua
+	@cat $< | \
+	sed 's/"/\\"/g' | \
+	awk '{ printf "%s%s", separator, $$0; separator = "\\n" }' - | \
+	xargs -0  printf '#include "luacats.h"\nconst char* catnip_luacats = "%s";' | \
 	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ -xc -
 
 $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
@@ -82,7 +89,7 @@ LIBS := \
 	-lrt \
 	$(shell pkg-config --libs $(DEPENDENCIES))
 
-OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o) $(OBJECT_BUILD_DIR)/default_config.o
+OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o) $(OBJECT_BUILD_DIR)/default_config.o $(OBJECT_BUILD_DIR)/luacats.o
 
 PROTOCOL_HEADERS = \
 	$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h \
