@@ -6,7 +6,4 @@
 void
 lua_catnip_init(lua_State* L);
 
-void
-lua_catnip_populate(lua_State* L);
-
 #endif

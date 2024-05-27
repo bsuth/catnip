@@ -6,16 +6,11 @@
 #include "cursor/lua_cursor.h"
 #include "display.h"
 #include "keyboard/lua_keyboard_list.h"
-#include "lua_event.h"
 #include "lua_events.h"
-#include "lua_resource.h"
-#include "lua_resource_list.h"
 #include "output/lua_output_list.h"
-#include "utils/lua.h"
+#include "utils/string.h"
 #include "window/lua_window_list.h"
 #include <lauxlib.h>
-#include <stdlib.h>
-#include <string.h>
 
 static int
 lua_catnip_subscribe(lua_State* L)
@@ -76,59 +71,60 @@ lua_catnip_quit(lua_State* L)
   return 0;
 }
 
-static const struct luaL_Reg lua_catnip_lib[] = {
-  {"canvas", lua_catnip_canvas},
-  {"png", lua_catnip_png},
-  {"svg", lua_catnip_svg},
-  {"subscribe", lua_catnip_subscribe},
-  {"unsubscribe", lua_catnip_unsubscribe},
-  {"publish", lua_catnip_publish},
-  {"reload", lua_catnip_reload},
-  {"quit", lua_catnip_quit},
+static int
+lua_catnip__index(lua_State* L)
+{
+  const char* key = luaL_checkstring(L, 2);
+
+  if (streq(key, "cursor")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor->ref);
+  } else if (streq(key, "keyboards")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboard_list->ref);
+  } else if (streq(key, "outputs")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
+  } else if (streq(key, "windows")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_window_list->ref);
+  } else if (streq(key, "canvas")) {
+    lua_pushcfunction(L, lua_catnip_canvas);
+  } else if (streq(key, "png")) {
+    lua_pushcfunction(L, lua_catnip_png);
+  } else if (streq(key, "svg")) {
+    lua_pushcfunction(L, lua_catnip_svg);
+  } else if (streq(key, "subscribe")) {
+    lua_pushcfunction(L, lua_catnip_subscribe);
+  } else if (streq(key, "unsubscribe")) {
+    lua_pushcfunction(L, lua_catnip_unsubscribe);
+  } else if (streq(key, "publish")) {
+    lua_pushcfunction(L, lua_catnip_publish);
+  } else if (streq(key, "reload")) {
+    lua_pushcfunction(L, lua_catnip_reload);
+  } else if (streq(key, "quit")) {
+    lua_pushcfunction(L, lua_catnip_quit);
+  } else {
+    lua_pushnil(L);
+  }
+
+  return 1;
+}
+
+static int
+lua_catnip__newindex(lua_State* L)
+{
+  const char* key = luaL_checkstring(L, 2);
+
+  return 0;
+}
+
+static const struct luaL_Reg lua_catnip_mt[] = {
+  {"__index", lua_catnip__index},
+  {"__newindex", lua_catnip__newindex},
   {NULL, NULL}
 };
 
 void
 lua_catnip_init(lua_State* L)
 {
-  lua_getglobal(L, "package");
-  lua_getfield(L, -1, "loaded");
-
-  luaL_newlib(L, lua_catnip_lib);
-
-  lua_catnip_event_init(L);
-  lua_catnip_events_init(L);
-
-  lua_catnip_resource_init(L);
-  lua_catnip_resource_list_init(L);
-
-  lua_catnip_png_init(L);
-  lua_catnip_svg_init(L);
-
-  lua_catnip_cursor_init(L); // must init after resource
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_cursor->ref);
-  lua_setfield(L, -2, "cursor");
-
-  lua_catnip_keyboard_list_init(L); // must init after resource
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_keyboard_list->ref);
-  lua_setfield(L, -2, "keyboards");
-
-  lua_catnip_output_list_init(L); // must init after resource
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
-  lua_setfield(L, -2, "outputs");
-
-  lua_catnip_window_list_init(L); // must init after resource
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_window_list->ref);
-  lua_setfield(L, -2, "windows");
-
-  lua_setfield(L, -2, "catnip");
-  lua_pop(L, 2);
-}
-
-void
-lua_catnip_populate(lua_State* L)
-{
-  lua_catnip_keyboard_list_populate(L);
-  lua_catnip_output_list_populate(L);
-  lua_catnip_window_list_populate(L);
+  luaL_newmetatable(L, "catnip");
+  luaL_setfuncs(L, lua_catnip_mt, 0);
+  lua_pop(L, 1);
 }

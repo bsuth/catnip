@@ -1,7 +1,7 @@
 #include "config.h"
 #include "default_config.h"
-#include "lua_catnip.h"
 #include "lua_events.h"
+#include "lua_state.h"
 #include "utils/log.h"
 #include "utils/string.h"
 #include <lauxlib.h>
@@ -28,7 +28,7 @@ catnip_config_load(
 {
   lua_State* new_catnip_L = luaL_newstate();
   luaL_openlibs(new_catnip_L);
-  lua_catnip_init(new_catnip_L);
+  lua_catnip_state_init(new_catnip_L);
 
   catnip_config_loading = true;
   bool loaded = !load(new_catnip_L, data) && !lua_pcall(new_catnip_L, 0, 0, 0);
@@ -40,7 +40,7 @@ catnip_config_load(
     return false;
   }
 
-  lua_catnip_populate(new_catnip_L);
+  lua_catnip_state_populate(new_catnip_L);
 
   if (catnip_L != NULL) {
     lua_close(catnip_L);
