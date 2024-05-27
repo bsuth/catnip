@@ -18,7 +18,7 @@ SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
 BUILD_DIR := build
 $(shell mkdir -p $(BUILD_DIR))
 
-.PHONY = default dev clean format test
+.PHONY = default dev clean format
 
 # ------------------------------------------------------------------------------
 # Builds
@@ -111,10 +111,3 @@ clean:
 
 format:
 	clang-format -i $(shell find $(SOURCE_DIR) -type f -regex .*\.[ch]$)
-
-# ------------------------------------------------------------------------------
-# Tests
-# ------------------------------------------------------------------------------
-
-test: default
-	@luajit test/_runner.lua
