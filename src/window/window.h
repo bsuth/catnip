@@ -24,4 +24,7 @@ struct catnip_window {
 struct catnip_window*
 catnip_window_create(struct wlr_xdg_surface* xdg_surface);
 
+void
+catnip_window_focus(struct catnip_window* window);
+
 #endif

@@ -2,6 +2,7 @@
 #include "config.h"
 #include "id.h"
 #include "scene.h"
+#include "seat.h"
 #include "utils/wayland.h"
 #include "window/lua_window.h"
 #include <stdlib.h>
@@ -117,4 +118,20 @@ catnip_window_create(struct wlr_xdg_surface* xdg_surface)
   );
 
   return window;
+}
+
+void
+catnip_window_focus(struct catnip_window* window)
+{
+  struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
+
+  if (keyboard != NULL) {
+    wlr_seat_keyboard_notify_enter(
+      catnip_seat,
+      window->xdg_toplevel->base->surface,
+      keyboard->keycodes,
+      keyboard->num_keycodes,
+      &keyboard->modifiers
+    );
+  }
 }

@@ -13,6 +13,7 @@
 ---@field outputs CatnipResourceList<CatnipOutput>
 ---@field windows CatnipResourceList<CatnipWindow>
 ---@field keyboards CatnipResourceList<CatnipKeyboard>
+---@field focused CatnipWindow | nil
 ---@field canvas fun(options: CatnipCanvasOptions?): CatnipCanvas
 ---@field png fun(path: string): CatnipPng
 ---@field svg fun(document: string): CatnipSvg
@@ -164,7 +165,6 @@
 ---@field height number
 ---@field visible boolean
 ---@field title string
----@field focused boolean
 ---@field destroy fun(self: CatnipWindow)
 
 ---@class (exact) CatnipKeyEvent

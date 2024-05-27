@@ -14,6 +14,7 @@ local catnip = require('catnip')
 - [`catnip.outputs`](#catnipoutputs)
 - [`catnip.windows`](#catnipwindows)
 - [`catnip.keyboards`](#catnipkeyboards)
+- [`catnip.focused`](#catnipfocused)
 - [`catnip.canvas(options)`](#catnipcanvasoptions)
 - [`catnip.png(path)`](#catnippngpath)
 - [`catnip.svg(document)`](#catnipsvgdocument)
@@ -68,6 +69,26 @@ An iterator to traverse through all currently available [keyboards](api_keyboard
 !
 for keyboard in catnip.keyboards do
     print(keyboard.title) -- firefox
+end
+```
+
+### `catnip.focused`
+
+The currently focused window, or `nil` if no window is focused.
+
+```lua
+!local catnip = require('catnip')
+!
+catnip.subscribe('window::create', function(window)
+    catnip.focused = window -- auto focus new windows
+end)
+```
+
+```lua
+!local catnip = require('catnip')
+!
+local function clear_focus()
+    catnip.focused = nil -- unfocus the currently focused window
 end
 ```
 

@@ -8,8 +8,11 @@
 #include "keyboard/lua_keyboard_list.h"
 #include "lua_events.h"
 #include "output/lua_output_list.h"
+#include "seat.h"
 #include "utils/string.h"
 #include "window/lua_window_list.h"
+#include "window/window.h"
+#include "window/windows.h"
 #include <lauxlib.h>
 
 static int
@@ -84,6 +87,13 @@ lua_catnip__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_output_list->ref);
   } else if (streq(key, "windows")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_catnip_window_list->ref);
+  } else if (streq(key, "focused")) {
+    struct catnip_window* focused_window = catnip_windows_get_focused();
+    if (focused_window == NULL) {
+      lua_pushnil(L);
+    } else {
+      lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_resource->ref);
+    }
   } else if (streq(key, "canvas")) {
     lua_pushcfunction(L, lua_catnip_canvas);
   } else if (streq(key, "png")) {
@@ -111,6 +121,14 @@ static int
 lua_catnip__newindex(lua_State* L)
 {
   const char* key = luaL_checkstring(L, 2);
+
+  if (streq(key, "focused")) {
+    if (lua_type(L, 3) == LUA_TNIL) {
+      wlr_seat_keyboard_notify_clear_focus(catnip_seat);
+    } else {
+      catnip_window_focus(lua_catnip_resource_checkname(L, 3, "window"));
+    }
+  }
 
   return 0;
 }

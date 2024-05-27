@@ -8,4 +8,7 @@ extern struct wl_list catnip_windows;
 void
 catnip_windows_init();
 
+struct catnip_window*
+catnip_windows_get_focused();
+
 #endif

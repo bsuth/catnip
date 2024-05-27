@@ -11,7 +11,6 @@ TODO
 - [`window.height`](#windowheight)
 - [`window.visible`](#windowvisible)
 - [`window.title`](#windowtitle)
-- [`window.focused`](#windowfocused)
 - [`window.destroy()`](#windowdestroy)
 
 ### `window.x`
@@ -110,10 +109,6 @@ Controls whether the window should be rendered or not.
 Invisible windows do not receive user input such as mouse / keyboard events.
 
 ### `window.title`
-
-TODO
-
-### `window.focused`
 
 TODO
 

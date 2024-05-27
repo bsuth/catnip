@@ -1,5 +1,4 @@
 #include "lua_window.h"
-#include "seat.h"
 #include "utils/string.h"
 #include "utils/wayland.h"
 #include "window/lua_window_list.h"
@@ -39,12 +38,6 @@ lua_catnip_window__index(
     lua_pushboolean(L, window->scene_tree->node.enabled);
   } else if (streq(key, "title")) {
     lua_pushstring(L, window->xdg_toplevel->title);
-  } else if (streq(key, "focused")) {
-    lua_pushboolean(
-      L,
-      window->xdg_toplevel->base->surface
-        == catnip_seat->keyboard_state.focused_surface
-    );
   } else if (streq(key, "destroy")) {
     lua_pushcfunction(L, lua_catnip_window_close);
   } else {
@@ -94,21 +87,6 @@ lua_catnip_window__newindex(
     );
   } else if (streq(key, "visible")) {
     wlr_scene_node_set_enabled(&window->scene_tree->node, lua_toboolean(L, 3));
-  } else if (streq(key, "focused")) {
-    if (!lua_toboolean(L, 3)) {
-      wlr_seat_keyboard_notify_clear_focus(catnip_seat);
-    } else {
-      struct wlr_keyboard* keyboard = wlr_seat_get_keyboard(catnip_seat);
-      if (keyboard != NULL) {
-        wlr_seat_keyboard_notify_enter(
-          catnip_seat,
-          window->xdg_toplevel->base->surface,
-          keyboard->keycodes,
-          keyboard->num_keycodes,
-          &keyboard->modifiers
-        );
-      }
-    }
   } else {
     return false;
   }
