@@ -15,20 +15,11 @@
 ---@field keyboards CatnipResourceList<CatnipKeyboard>
 ---@field focused CatnipWindow | nil
 ---@field canvas fun(options: CatnipCanvasOptions?): CatnipCanvas
----@field png fun(path: string): CatnipPng
----@field svg fun(document: string): CatnipSvg
 ---@field subscribe fun(event: string, callback: fun(...)): fun(...)
 ---@field unsubscribe fun(event: string, callback: fun(...))
 ---@field publish fun(event: string, ...)
 ---@field reload fun()
 ---@field quit fun()
-
----@class (exact) CatnipPng
----@field path string
-
----@class (exact) CatnipSvg
----@field document string
----@field apply fun(self: CatnipSvg, stylesheet: string)
 
 ---@class CatnipCanvasOptions
 ---@field x number?
@@ -49,8 +40,8 @@
 ---@field rectangle fun(self: CatnipCanvas, path: CatnipCanvasRectangle)
 ---@field circle fun(self: CatnipCanvas, path: CatnipCanvasCircle)
 ---@field text fun(self: CatnipCanvas, text: string, options: CatnipCanvasTextOptions?)
----@field png fun(self: CatnipCanvas, png: CatnipPng, options: CatnipCanvasPngOptions?)
----@field svg fun(self: CatnipCanvas, svg: CatnipSvg, options: CatnipCanvasSvgOptions?)
+---@field png fun(self: CatnipCanvas, png: string, options: CatnipCanvasPngOptions?)
+---@field svg fun(self: CatnipCanvas, svg: string, options: CatnipCanvasSvgOptions?)
 ---@field clear fun(self: CatnipCanvas)
 ---@field destroy fun(self: CatnipCanvas)
 
@@ -117,12 +108,15 @@
 ---@field y number?
 ---@field width number?
 ---@field height number?
+---@field cache boolean?
 
 ---@class CatnipCanvasSvgOptions
 ---@field x number?
 ---@field y number?
 ---@field width number?
 ---@field height number?
+---@field cache boolean?
+---@field styles string?
 
 ---@class (exact) CatnipCursor: CatnipResource
 ---@field x number

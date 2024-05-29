@@ -1,5 +1,6 @@
 #include "canvas.h"
 #include "canvas/canvas_buffer.h"
+#include "canvas/canvas_cache.h"
 #include "config.h"
 #include "event_loop.h"
 #include "scene.h"
@@ -18,6 +19,8 @@ catnip_canvas_create(int width, int height)
   canvas->scene_buffer =
     wlr_scene_buffer_create(&catnip_scene->tree, &canvas->buffer);
 
+  canvas->cache = catnip_canvas_cache_create();
+
   return canvas;
 }
 
@@ -31,6 +34,8 @@ catnip_canvas_destroy(struct catnip_canvas* canvas)
 
   wlr_buffer_drop(&canvas->buffer);
   wlr_scene_node_destroy(&canvas->scene_buffer->node);
+
+  catnip_canvas_cache_destroy(canvas->cache);
 
   if (canvas->refresh_event_source != NULL) {
     wl_event_source_remove(canvas->refresh_event_source);
@@ -104,9 +109,11 @@ catnip_canvas_resize(
 void
 catnip_canvas_clear(struct catnip_canvas* canvas)
 {
+  catnip_canvas_cache_clear(canvas->cache);
   cairo_save(canvas->cr);
   cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(canvas->cr);
   cairo_restore(canvas->cr);
   catnip_canvas_refresh(canvas);
+  catnip_canvas_cache_reset(canvas->cache);
 }

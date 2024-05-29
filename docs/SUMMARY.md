@@ -13,8 +13,6 @@
 - [window](api_window.md)
 - [keyboard](api_keyboard.md)
 - [canvas](api_canvas.md)
-- [png](api_png.md)
-- [svg](api_svg.md)
 
 # Other
 

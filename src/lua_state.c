@@ -1,6 +1,4 @@
 #include "lua_state.h"
-#include "canvas/lua_png.h"
-#include "canvas/lua_svg.h"
 #include "cursor/lua_cursor.h"
 #include "keyboard/lua_keyboard_list.h"
 #include "lua_catnip.h"
@@ -19,9 +17,6 @@ lua_catnip_state_init(lua_State* L)
 
   lua_catnip_event_init(L);
   lua_catnip_events_init(L);
-
-  lua_catnip_png_init(L);
-  lua_catnip_svg_init(L);
 
   lua_catnip_resource_init(L);
   lua_catnip_resource_list_init(L);

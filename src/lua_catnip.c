@@ -1,7 +1,5 @@
 #include "lua_catnip.h"
 #include "canvas/lua_canvas.h"
-#include "canvas/lua_png.h"
-#include "canvas/lua_svg.h"
 #include "config.h"
 #include "cursor/lua_cursor.h"
 #include "display.h"
@@ -96,10 +94,6 @@ lua_catnip__index(lua_State* L)
     }
   } else if (streq(key, "canvas")) {
     lua_pushcfunction(L, lua_catnip_canvas);
-  } else if (streq(key, "png")) {
-    lua_pushcfunction(L, lua_catnip_png);
-  } else if (streq(key, "svg")) {
-    lua_pushcfunction(L, lua_catnip_svg);
   } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, lua_catnip_subscribe);
   } else if (streq(key, "unsubscribe")) {

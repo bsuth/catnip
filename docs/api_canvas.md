@@ -122,13 +122,42 @@ TODO
 
 TODO
 
-### `canvas.svg(svg, options)`
+### `canvas.png(path, options)`
 
-TODO
+```lua
+---@param path string
+```
 
-### `canvas.png(png, options)`
+`path` should be a file path to the PNG to load. This may either be an
+absolute path or a path relative to the parent directory of the user config.
 
-TODO
+```lua
+!local catnip = require('catnip')
+!
+canvas:png('assets/wallpaper.png', {})
+```
+
+### `canvas.svg(document, options)`
+
+```lua
+---@param document string
+```
+
+`document` may either be an SVG document itself, or a file path to the SVG to
+load. If this is a file path, it may either be an absolute path or a path
+relative to the parent directory of the user config.
+
+```lua
+!local catnip = require('catnip')
+!
+local battery_icon = catnip.svg('assets/battery.svg')
+
+local my_first_svg = catnip.svg([[
+<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="50" cy="50" r="40" stroke="green" stroke-width="4" fill="yellow" />
+</svg>
+]])
+```
 
 ### `canvas.clear()`
 
