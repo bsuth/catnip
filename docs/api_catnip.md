@@ -8,7 +8,7 @@ module is always preloaded before running the user config
 local catnip = require('catnip')
 ```
 
-## Fields
+### [Fields](#fields) { #- }
 
 - [`catnip.cursor`](#catnipcursor)
 - [`catnip.outputs`](#catnipoutputs)
@@ -22,7 +22,7 @@ local catnip = require('catnip')
 - [`catnip.reload()`](#catnipreload)
 - [`catnip.quit()`](#catnipquit)
 
-## Global Events
+### [Global Events](#global-events) { #- }
 
 - [`tick`](#tick)
 - [`reload`](#reload)

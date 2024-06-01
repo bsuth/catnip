@@ -1,3 +1,0 @@
-# LuaCATS Annotations
-
-TODO

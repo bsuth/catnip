@@ -16,5 +16,5 @@
 
 # Other
 
-- [LuaCATS Annotations](other_luacats_annotations.md)
+- [LuaCATS](other_luacats.md)
 - [catmint](other_catmint.md)

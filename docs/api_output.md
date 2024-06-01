@@ -2,7 +2,7 @@
 
 TODO
 
-`catnip.outputs`
+### [Fields](#fields) { #- }
 
 - [`output.x`](#outputx)
 - [`output.y`](#outputy)
@@ -12,6 +12,13 @@ TODO
 - [`output.mode`](#outputmode)
 - [`output.modes`](#outputmodes)
 - [`output.scale`](#outputscale)
+
+### [Events](#events) { #- }
+
+- [`create`](#create)
+- [`destroy`](#destroy)
+
+## Fields
 
 ### `output.x`
 
@@ -70,5 +77,15 @@ TODO
 TODO
 
 ### `output.scale`
+
+TODO
+
+## Events
+
+### `create`
+
+TODO
+
+### `destroy`
 
 TODO

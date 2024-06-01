@@ -2,7 +2,7 @@
 
 TODO
 
-`catnip.windows`
+### [Fields](#fields) { #- }
 
 - [`window.x`](#windowx)
 - [`window.y`](#windowy)
@@ -11,7 +11,16 @@ TODO
 - [`window.height`](#windowheight)
 - [`window.visible`](#windowvisible)
 - [`window.title`](#windowtitle)
-- [`window.destroy()`](#windowdestroy)
+- [`window:destroy()`](#windowdestroy)
+
+### [Events](#events) { #- }
+
+- [`create`](#create)
+- [`destroy`](#destroy)
+- [`maximize`](#maximize)
+- [`fullscreen`](#fullscreen)
+
+## Fields
 
 ### `window.x`
 
@@ -112,6 +121,24 @@ Invisible windows do not receive user input such as mouse / keyboard events.
 
 TODO
 
-### `window.destroy()`
+### `window:destroy()`
+
+TODO
+
+## Events
+
+### `create`
+
+TODO
+
+### `destroy`
+
+TODO
+
+### `maximize`
+
+TODO
+
+### `fullscreen`
 
 TODO

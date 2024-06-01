@@ -2,7 +2,20 @@
 
 TODO
 
-`catnip.canvas()`
+```lua
+!local catnip = require('catnip')
+!
+local canvas = catnip.canvas({
+    x = 0,
+    y = 0,
+    z = 99,
+    width = 0,
+    height = 0,
+    visible = true,
+})
+```
+
+### [Fields](#fields) { #- }
 
 - [`canvas.x`](#canvasx)
 - [`canvas.y`](#canvasy)
@@ -10,13 +23,15 @@ TODO
 - [`canvas.width`](#canvaswidth)
 - [`canvas.height`](#canvasheight)
 - [`canvas.visible`](#canvasvisible)
-- [`canvas.path(path)`](#canvaspathpath)
-- [`canvas.rectangle(rectangle)`](#canvasrectanglerectangle)
-- [`canvas.text(text, options)`](#canvastexttextoptions)
-- [`canvas.svg(svg, options)`](#canvassvgsvgoptions)
-- [`canvas.png(png, options)`](#canvaspngpngoptions)
-- [`canvas.clear()`](#canvasclear)
-- [`canvas.destroy()`](#canvasdestroy)
+- [`canvas:path(path)`](#canvaspathpath)
+- [`canvas:rectangle(rectangle)`](#canvasrectanglerectangle)
+- [`canvas:text(text, options)`](#canvastexttext-options)
+- [`canvas:svg(document, options)`](#canvassvgdocument-options)
+- [`canvas:png(path, options)`](#canvaspngpath-options)
+- [`canvas:clear()`](#canvasclear)
+- [`canvas:destroy()`](#canvasdestroy)
+
+## Fields
 
 ### `canvas.x`
 
@@ -110,19 +125,19 @@ The height of the canvas (in pixels).
 
 Controls whether the canvas should be rendered or not.
 
-### `canvas.path(path)`
+### `canvas:path(path)`
 
 TODO
 
-### `canvas.rectangle(rectangle)`
+### `canvas:rectangle(rectangle)`
 
 TODO
 
-### `canvas.text(text, options)`
+### `canvas:text(text, options)`
 
 TODO
 
-### `canvas.png(path, options)`
+### `canvas:png(path, options)`
 
 ```lua
 ---@param path string
@@ -137,7 +152,7 @@ absolute path or a path relative to the parent directory of the user config.
 canvas:png('assets/wallpaper.png', {})
 ```
 
-### `canvas.svg(document, options)`
+### `canvas:svg(document, options)`
 
 ```lua
 ---@param document string
@@ -159,10 +174,10 @@ local my_first_svg = catnip.svg([[
 ]])
 ```
 
-### `canvas.clear()`
+### `canvas:clear()`
 
 TODO
 
-### `canvas.destroy()`
+### `canvas:destroy()`
 
 TODO

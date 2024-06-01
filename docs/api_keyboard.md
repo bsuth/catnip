@@ -2,7 +2,7 @@
 
 TODO
 
-`catnip.keyboards`
+### [Fields](#fields) { #- }
 
 - [`keyboard.name`](#keyboardname)
 - [`keyboard.xkb_rules`](#keyboardxkb_rules)
@@ -10,6 +10,14 @@ TODO
 - [`keyboard.xkb_layout`](#keyboardxkb_layout)
 - [`keyboard.xkb_variant`](#keyboardxkb_variant)
 - [`keyboard.xkb_options`](#keyboardxkb_options)
+
+### [Events](#events) { #- }
+
+- [`create`](#create)
+- [`destroy`](#destroy)
+- [`key`](#key)
+
+## Fields
 
 ### `keyboard.name`
 
@@ -32,5 +40,19 @@ TODO
 TODO
 
 ### `keyboard.xkb_options`
+
+TODO
+
+## Events
+
+### `create`
+
+TODO
+
+### `destroy`
+
+TODO
+
+### `key`
 
 TODO
