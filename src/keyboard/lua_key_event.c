@@ -72,8 +72,8 @@ lua_catnip_publish_key_event(
   lua_rawgeti(L, LUA_REGISTRYINDEX, lua_event->ref);
 
   event->state == WL_KEYBOARD_KEY_STATE_PRESSED
-    ? lua_catnip_resource_publish(L, keyboard->lua_resource, "key::press", 1)
-    : lua_catnip_resource_publish(L, keyboard->lua_resource, "key::release", 1);
+    ? lua_catnip_resource_publish(L, keyboard->lua_resource, "keypress", 1)
+    : lua_catnip_resource_publish(L, keyboard->lua_resource, "keyrelease", 1);
 
   lua_pop(L, 1);
 
