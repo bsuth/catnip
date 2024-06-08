@@ -45,7 +45,7 @@ lua_catnip_canvas_text(lua_State* L)
     if (lua_hasnumberfield(L, 3, "size")) {
       pango_attr_list_insert(
         attributes,
-        pango_attr_size_new(lua_popinteger(L))
+        pango_attr_size_new_absolute(PANGO_SCALE * lua_popinteger(L))
       );
     }
 
