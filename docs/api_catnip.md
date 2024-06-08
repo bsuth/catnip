@@ -11,9 +11,9 @@ local catnip = require('catnip')
 ### [Fields](#fields) { #- }
 
 - [`catnip.cursor`](#catnipcursor)
+- [`catnip.keyboards`](#catnipkeyboards)
 - [`catnip.outputs`](#catnipoutputs)
 - [`catnip.windows`](#catnipwindows)
-- [`catnip.keyboards`](#catnipkeyboards)
 - [`catnip.focused`](#catnipfocused)
 - [`catnip.canvas(options)`](#catnipcanvasoptions)
 - [`catnip.subscribe(event, callback)`](#catnipsubscribeevent-callback)
@@ -34,6 +34,18 @@ local catnip = require('catnip')
 
 The global [cursor](api_cursor.md).
 
+### `catnip.keyboards`
+
+An iterator to traverse through all currently available [keyboards](api_keyboard.md).
+
+```lua
+!local catnip = require('catnip')
+!
+for keyboard in catnip.keyboards do
+    print(keyboard.id)
+end
+```
+
 ### `catnip.outputs`
 
 An iterator to traverse through all currently available [outputs](api_output.md).
@@ -42,7 +54,7 @@ An iterator to traverse through all currently available [outputs](api_output.md)
 !local catnip = require('catnip')
 !
 for output in catnip.outputs do
-    print(output.width .. "x" .. output.height) -- 1920x1080
+    print(output.id)
 end
 ```
 
@@ -54,19 +66,7 @@ An iterator to traverse through all currently available [windows](api_window.md)
 !local catnip = require('catnip')
 !
 for window in catnip.windows do
-    print(window.title) -- firefox
-end
-```
-
-### `catnip.keyboards`
-
-An iterator to traverse through all currently available [keyboards](api_keyboard.md).
-
-```lua
-!local catnip = require('catnip')
-!
-for keyboard in catnip.keyboards do
-    print(keyboard.title) -- firefox
+    print(window.id)
 end
 ```
 
@@ -93,16 +93,22 @@ end
 ### `catnip.canvas(options)`
 
 ```lua
----@class CatnipCanvasOptions
----@field x number?
----@field y number?
----@field z number?
----@field width number?
----@field height number?
----@field visible boolean?
-
 ---@param options? CatnipCanvasOptions
 ---@return CatnipCanvas
+
+---@class CatnipCanvasOptions
+---The x-coordinate of the canvas (in pixels).
+---@field x number?
+---The y-coordinate of the canvas (in pixels).
+---@field y number?
+---The z-index of the canvas (1-indexed).
+---@field z number?
+---The width of the canvas (in pixels).
+---@field width number?
+---The height of the canvas (in pixels).
+---@field height number?
+---Controls whether the canvas should be rendered or not.
+---@field visible boolean?
 ```
 
 Creates a new [canvas](api_canvas.md).
@@ -165,7 +171,7 @@ has already been subscribed to `event`, this is a noop.
 ---@param callback fun(...)
 ```
 
-Unregisters a callback previously [subscribed](#catnipsubscribeevent-callback) to `event`.
+Unregisters a previously [subscribed](#catnipsubscribeevent-callback) callback.
 
 ```lua
 !local catnip = require('catnip')
@@ -236,8 +242,8 @@ finished executing (i.e. after the next [`tick`](#tick) event).
 
 ### `tick`
 
-Event that is published at the end of every event loop cycle. It is particularly
-useful for integrating other event loops into catnip, such as [luv](https://github.com/luvit/luv).
+Published at the end of every event loop cycle. It is particularly useful for
+integrating other event loops into catnip, such as [luv](https://github.com/luvit/luv).
 
 ```lua
 !local catnip = require('catnip')
@@ -250,7 +256,7 @@ end)
 
 ### `reload`
 
-Event that is published just before reloading the user config.
+Published just before reloading the user config.
 
 ```lua
 !local catnip = require('catnip')
@@ -262,7 +268,7 @@ end)
 
 ### `quit`
 
-Event that is published just before terminating the compositor.
+Published just before terminating the compositor.
 
 ```lua
 !local catnip = require('catnip')

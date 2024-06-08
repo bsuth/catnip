@@ -1,9 +1,21 @@
 # `window`
 
-TODO
+Windows are clients to the Wayland server that need to render pixels on the
+screen. They are represented by rectangles in 2D (x, y) space whose contents
+are determined by the client itself.
+
+```lua
+!local catnip = require('catnip')
+!
+for window in catnip.windows do
+    print(window.id)
+end
+```
 
 ### [Fields](#fields) { #- }
 
+- [`window.id`](#windowid)
+- [`window.data`](#windowdata)
 - [`window.x`](#windowx)
 - [`window.y`](#windowy)
 - [`window.z`](#windowz)
@@ -11,6 +23,9 @@ TODO
 - [`window.height`](#windowheight)
 - [`window.visible`](#windowvisible)
 - [`window.title`](#windowtitle)
+- [`window:subscribe(event, callback)`](#windowsubscribeevent-callback)
+- [`window:unsubscribe(event, callback)`](#windowunsubscribeevent-callback)
+- [`window:publish(event, ...)`](#windowpublishevent-)
 - [`window:destroy()`](#windowdestroy)
 
 ### [Events](#events) { #- }
@@ -21,6 +36,36 @@ TODO
 - [`fullscreen`](#fullscreen)
 
 ## Fields
+
+### `window.id`
+
+```lua
+!---@class CatnipWindow
+!...
+---@field id number (readonly)
+!...
+```
+
+The window ID. This is a unique number assigned to each window that persists
+across reloads.
+
+### `window.data`
+
+```lua
+!---@class CatnipWindow
+!...
+---@field data table (readonly)
+!...
+```
+
+A table for users to attach custom data to the window.
+
+The table contents are never touched by catnip itself and completely defined by
+the user.
+
+This field is readonly in the sense that users are not allowed to reassign
+`data` itself (for example, `window.data = 34`). This is to ensure consistency
+in case external libraries, plugins, etc are expecting this field to be a table.
 
 ### `window.x`
 
@@ -105,7 +150,6 @@ The height of the window (in pixels).
 
 ### `window.visible`
 
-
 ```lua
 !---@class CatnipWindow
 !...
@@ -119,26 +163,95 @@ Invisible windows do not receive user input such as mouse / keyboard events.
 
 ### `window.title`
 
-TODO
+```lua
+!---@class CatnipWindow
+!...
+---@field title string (readonly)
+!...
+```
+
+The title of the window. This is set by the client itself and is often the name
+of the application.
+
+### `window:subscribe(event, callback)`
+
+Similar to [`catnip.subscribe(event, callback)`](api_catnip.md#catnipsubscribeevent-callback)
+but for events published on the window itself.
+
+### `window:unsubscribe(event, callback)`
+
+Similar to [`catnip.unsubscribe(event, callback)`](api_catnip.md#catnipunsubscribeevent-callback)
+but for events published on the window itself.
+
+### `window:publish(event, ...)`
+
+Publishes a window event.
+
+This publishes a local event where callbacks registered via
+[`window:subscribe(event, callback)`](#windowsubscribeevent-callback) are run.
+
+This also publishes a global event via [`catnip.publish(event, ...)`](api_catnip.md#catnippublishevent-),
+where the event is prefixed w/ `window::` and the window itself is provided
+as the first argument to the callback, followed by the given varargs.
+
+```lua
+!local catnip = require('catnip')
+!
+-- local event
+my_window:subscribe('greet', function(name)
+    print('hello ' .. name)
+end)
+
+-- global event
+catnip.subscribe('window::greet', function(window, name)
+    print(window.id .. 'says: hello ' .. name)
+end)
+
+my_window:publish('greet', 'world')
+```
 
 ### `window:destroy()`
 
-TODO
+Requests the window to be closed. This will trigger a [`destroy`](#windowdestroy)
+event just before the window is actually closed.
 
 ## Events
 
+Window events are published both as local events and global events.
+
+When published as a global event, events are prefixed w/ `window::` and the
+window is passed as the first argument to the callback.
+
+```lua
+!local catnip = require('catnip')
+!
+-- local event
+my_window:subscribe('destroy', function()
+    print('destroy ' .. my_window.id)
+end)
+
+-- global event
+catnip.subscribe('window::destroy', function(window)
+    print('destroy ' .. window.id)
+end)
+```
+
 ### `create`
 
-TODO
+Published when a new window has been created. This is also published after
+(re)loading the user config for any existing windows.
+at a higher dpi.
 
 ### `destroy`
 
-TODO
+Published when a window has been destroyed (closed).
 
 ### `maximize`
 
-TODO
+Published when a window has requested to be maximized. The definition of
+"maximized" and how to handle it is left to the user.
 
 ### `fullscreen`
 
-TODO
+Published when a window has requested to be fullscreen. The definition of
+"fullscreen" and how to handle it is left to the user.
