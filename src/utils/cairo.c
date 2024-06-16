@@ -37,6 +37,18 @@ cairo_rounded_rectangle(
   double radius_bottom_left
 )
 {
+  double half_width = width / 2;
+  double half_height = height / 2;
+  double max_radius = half_width > half_height ? half_width : half_height;
+
+  radius_top_left = radius_top_left > max_radius ? max_radius : radius_top_left;
+  radius_top_right =
+    radius_top_right > max_radius ? max_radius : radius_top_right;
+  radius_bottom_right =
+    radius_bottom_right > max_radius ? max_radius : radius_bottom_right;
+  radius_bottom_left =
+    radius_bottom_left > max_radius ? max_radius : radius_bottom_left;
+
   cairo_new_sub_path(cr);
 
   cairo_arc(
