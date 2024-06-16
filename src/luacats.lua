@@ -174,10 +174,10 @@
 ---@field height number
 ---Controls whether the canvas should be rendered or not.
 ---@field visible boolean
+---Renders a path onto the canvas.
+---@field path fun(self: CatnipCanvas, path: CatnipCanvasPath)
 ---Renders a rectangle onto the canvas.
 ---@field rectangle fun(self: CatnipCanvas, path: CatnipCanvasRectangle)
----Renders a circle onto the canvas.
----@field circle fun(self: CatnipCanvas, path: CatnipCanvasCircle)
 ---Renders text onto the canvas.
 ---@field text fun(self: CatnipCanvas, text: string, options: CatnipCanvasTextOptions?)
 ---Renders a PNG image onto the canvas.
@@ -189,6 +189,49 @@
 ---Destroys the canvas immediately. After this is called, the canvas will no longer be visible nor useable.
 ---This is automatically called when the canvas is garbage collected.
 ---@field destroy fun(self: CatnipCanvas)
+
+---@class CatnipCanvasPathFields
+---The starting x-coordinate of the path (in pixels) relative to the top left corner of the canvas.
+---@field x number?
+---The starting y-coordinate of the path (in pixels) relative to the top left corner of the canvas.
+---@field y number?
+---Whether to close the path.
+---This is not the same as simply adding a line back to the starting point, since such a line will still have line caps.
+---@field close boolean?
+---The color of the path fill as a hexadecimal number.
+---@field fill_color number?
+---The opacity of the path fill as a number between 0-1 (inclusive).
+---@field fill_opacity number?
+---The color of the path stroke as a hexadecimal number.
+---@field stroke_color number?
+---The opacity of the path stroke as a number between 0-1 (inclusive).
+---@field stroke_opacity number?
+---The thickness of the path stroke (in pixels).
+---@field stroke_size number?
+---The caps to use for the start / end of the path stroke.
+---Only applies to open (not closed) paths.
+---butt = no cap applied (default)
+---round = circle cap applied, whose center lies at the start / end points
+---square = square cap applied, whose center lies at the start / end points
+---@field stroke_cap 'butt' | 'round' | 'square'?
+
+---[2] = the relative x-coordinate of the endpoint
+---[3] = the relative y-coordinate of the endpoint
+---@alias CatnipCanvasPathLine { [1]: 'line', [2]: number, [3]: number }
+---[2] = the relative x-coordinate of the center of the circle
+---[3] = the relative y-coordinate of the center of the circle
+---[4] = the rotation amount (in radians), may be either positive or negative to indicate direction
+---@alias CatnipCanvasPathArc { [1]: 'arc', [2]: number, [3]: number, [4]: number }
+---[2] = the relative x-coordinate of the first control point
+---[3] = the relative y-coordinate of the first control point
+---[4] = the relative x-coordinate of the second control point
+---[5] = the relative y-coordinate of the second control point
+---[6] = the relative x-coordinate of the endpoint
+---[7] = the relative y-coordinate of the endpoint
+---@alias CatnipCanvasPathBezier { [1]: 'bezier', [2]: number, [3]: number, [4]: number, [5]: number, [6]: number, [7]: number }
+---@alias CatnipCanvasPathCommand CatnipCanvasPathLine | CatnipCanvasPathArc | CatnipCanvasPathBezier
+
+---@alias CatnipCanvasPath CatnipCanvasPathFields | CatnipCanvasPathCommand[]
 
 ---@class CatnipCanvasRectangle
 ---The x-coordinate of the rectangle (in pixels) relative to the top left corner of the canvas.
@@ -219,24 +262,6 @@
 ---The opacity of the rectangle stroke as a number between 0-1 (inclusive).
 ---@field stroke_opacity number?
 ---The thickness of the rectangle stroke (in pixels).
----@field stroke_size number?
-
----@class CatnipCanvasCircle
----The x-coordinate of the circle (in pixels) relative to the top left corner of the canvas.
----@field x number?
----The y-coordinate of the circle (in pixels) relative to the top left corner of the canvas.
----@field y number?
----The radius of the circle (in pixels).
----@field radius number?
----The color of the circle fill as a hexadecimal number.
----@field fill_color number?
----The opacity of the circle fill as a number between 0-1 (inclusive).
----@field fill_opacity number?
----The color of the circle stroke as a hexadecimal number.
----@field stroke_color number?
----The opacity of the circle stroke as a number between 0-1 (inclusive).
----@field stroke_opacity number?
----The thickness of the circle stroke (in pixels).
 ---@field stroke_size number?
 
 ---@class CatnipCanvasTextOptions

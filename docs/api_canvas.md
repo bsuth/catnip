@@ -25,8 +25,8 @@ local canvas = catnip.canvas({
 - [`canvas.width`](#canvaswidth)
 - [`canvas.height`](#canvasheight)
 - [`canvas.visible`](#canvasvisible)
+- [`canvas:path(path)`](#canvaspathpath)
 - [`canvas:rectangle(rectangle)`](#canvasrectanglerectangle)
-- [`canvas:circle(circle)`](#canvascirclecircle)
 - [`canvas:text(text, options)`](#canvastexttext-options)
 - [`canvas:svg(document, options)`](#canvassvgdocument-options)
 - [`canvas:png(path, options)`](#canvaspngpath-options)
@@ -127,6 +127,89 @@ The height of the canvas (in pixels).
 
 Controls whether the canvas should be rendered or not.
 
+### `canvas:path(path)`
+
+```lua
+---@param path CatnipCanvasPath
+
+---@alias CatnipCanvasPath CatnipCanvasPathFields | CatnipCanvasPathCommand[]
+
+---@class CatnipCanvasPathFields
+---The starting x-coordinate of the path (in pixels) relative to the top left corner of the canvas.
+---@field x number?
+---The starting y-coordinate of the path (in pixels) relative to the top left corner of the canvas.
+---@field y number?
+---Whether to close the path, i.e. connect back to the starting point.
+---This is not the same as simply adding a line back to the starting point, since such a line will still have line caps.
+---@field close boolean?
+---The color of the path fill as a hexadecimal number.
+---@field fill_color number?
+---The opacity of the path fill as a number between 0-1 (inclusive).
+---@field fill_opacity number?
+---The color of the path stroke as a hexadecimal number.
+---@field stroke_color number?
+---The opacity of the path stroke as a number between 0-1 (inclusive).
+---@field stroke_opacity number?
+---The thickness of the path stroke (in pixels).
+---@field stroke_size number?
+---The caps to use for the start / end of the path stroke.
+---Only applies to open (not closed) paths.
+---butt = no cap applied (default)
+---round = circle cap applied, whose center lies at the start / end points
+---square = square cap applied, whose center lies at the start / end points
+---@field stroke_cap 'butt' | 'round' | 'square'?
+
+---[2] = the relative x-coordinate of the endpoint
+---[3] = the relative y-coordinate of the endpoint
+---@alias CatnipCanvasPathLine { [1]: 'line', [2]: number, [3]: number }
+---[2] = the relative x-coordinate of the center of the circle
+---[3] = the relative y-coordinate of the center of the circle
+---[4] = the rotation amount (in radians), may be either positive or negative to indicate direction
+---@alias CatnipCanvasPathArc { [1]: 'arc', [2]: number, [3]: number, [4]: number }
+---[2] = the relative x-coordinate of the first control point
+---[3] = the relative y-coordinate of the first control point
+---[4] = the relative x-coordinate of the second control point
+---[5] = the relative y-coordinate of the second control point
+---[6] = the relative x-coordinate of the endpoint
+---[7] = the relative y-coordinate of the endpoint
+---@alias CatnipCanvasPathBezier { [1]: 'bezier', [2]: number, [3]: number, [4]: number, [5]: number, [6]: number, [7]: number }
+---@alias CatnipCanvasPathCommand CatnipCanvasPathLine | CatnipCanvasPathArc | CatnipCanvasPathBezier
+```
+
+Renders a path onto the canvas.
+
+One way to think of a path is a shape that is drawable using pen and paper
+without lifting the pen from surface of the paper. In catnip, paths are
+constructed using lines, arcs, and bezier curves.
+
+The "fill" of the path always considers the enclosure created as if the path had
+been closed, regardless of whether it has actually been closed.
+
+```lua
+!local catnip = require('catnip')
+!
+!local canvas = catnip.canvas({ ... })
+!
+-- Draw a rectangle with x = 10, y = 20, width = 30, height = 40
+canvas:path({
+    x = 10,
+    y = 20,
+    { 'line', 30, 0 },  -- right 30px
+    { 'line', 0, 40 },  -- down  40px
+    { 'line', -30, 0 }, -- left  30px
+    { 'line', 0, -40 }, -- up    40px
+})
+
+-- Draw the upper half of a semicircle with center x = 10, y = 20 and radius = 30
+canvas:path({
+    x = 10,
+    y = 20,
+    { 'line', -30, 0 },        -- left 30px
+    { 'arc', 30, 0, math.PI }, -- semicircle
+    close = true,              -- close the path
+})
+```
+
 ### `canvas:rectangle(rectangle)`
 
 ```lua
@@ -171,35 +254,6 @@ will take priority over `rectangle.radius` for that corner.
 
 The center of the stroke always matches the bounds of the rectangle, i.e. half
 of the stroke will lie "inside" the rectangle and half will lie "outside".
-
-### `canvas:circle(circle)`
-
-```lua
----@param circle CatnipCanvasCircle
-
----@class CatnipCanvasCircle
----The x-coordinate of the circle (in pixels) relative to the top left corner of the canvas.
----@field x number?
----The y-coordinate of the circle (in pixels) relative to the top left corner of the canvas.
----@field y number?
----The radius of the circle (in pixels).
----@field radius number?
----The color of the circle fill as a hexadecimal number.
----@field fill_color number?
----The opacity of the circle fill as a number between 0-1 (inclusive).
----@field fill_opacity number?
----The color of the circle stroke as a hexadecimal number.
----@field stroke_color number?
----The opacity of the circle stroke as a number between 0-1 (inclusive).
----@field stroke_opacity number?
----The thickness of the circle stroke (in pixels).
----@field stroke_size number?
-```
-
-Renders a circle onto the canvas.
-
-The center of the stroke always matches the bounds of the circle, i.e. half of
-the stroke will lie "inside" the circle and half will lie "outside".
 
 ### `canvas:text(text, options)`
 

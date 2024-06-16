@@ -8,11 +8,7 @@
 #include <math.h>
 
 static void
-lua_catnip_canvas_path_move(
-  lua_State* L,
-  struct catnip_canvas* canvas,
-  bool relative
-)
+lua_catnip_canvas_path_line(lua_State* L, struct catnip_canvas* canvas)
 {
   lua_rawgeti(L, -1, 2);
   double x = lua_popnumber(L);
@@ -20,56 +16,23 @@ lua_catnip_canvas_path_move(
   lua_rawgeti(L, -1, 3);
   double y = lua_popnumber(L);
 
-  if (relative) {
-    cairo_rel_move_to(canvas->cr, x, y);
-  } else {
-    cairo_move_to(canvas->cr, x, y);
-  }
+  cairo_rel_line_to(canvas->cr, x, y);
 }
 
 static void
-lua_catnip_canvas_path_line(
-  lua_State* L,
-  struct catnip_canvas* canvas,
-  bool relative
-)
-{
-  lua_rawgeti(L, -1, 2);
-  double x = lua_popnumber(L);
-
-  lua_rawgeti(L, -1, 3);
-  double y = lua_popnumber(L);
-
-  if (relative) {
-    cairo_rel_line_to(canvas->cr, x, y);
-  } else {
-    cairo_line_to(canvas->cr, x, y);
-  }
-}
-
-static void
-lua_catnip_canvas_path_arc(
-  lua_State* L,
-  struct catnip_canvas* canvas,
-  bool relative
-)
+lua_catnip_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
 {
   double x, y;
   cairo_get_current_point(canvas->cr, &x, &y);
 
   lua_rawgeti(L, -1, 2);
-  double cx = lua_popnumber(L);
+  double cx = x + lua_popnumber(L);
 
   lua_rawgeti(L, -1, 3);
-  double cy = lua_popnumber(L);
+  double cy = y + lua_popnumber(L);
 
   lua_rawgeti(L, -1, 4);
   double radians = lua_popnumber(L);
-
-  if (relative) {
-    cx += x;
-    cy += y;
-  }
 
   double radius = sqrt(pow(x - cx, 2) + pow(y - cy, 2));
 
@@ -80,11 +43,7 @@ lua_catnip_canvas_path_arc(
 }
 
 static void
-lua_catnip_canvas_path_bezier(
-  lua_State* L,
-  struct catnip_canvas* canvas,
-  bool relative
-)
+lua_catnip_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
 {
   lua_rawgeti(L, -1, 2);
   double control1_x = lua_popnumber(L);
@@ -104,27 +63,15 @@ lua_catnip_canvas_path_bezier(
   lua_rawgeti(L, -1, 7);
   double y = lua_popnumber(L);
 
-  if (relative) {
-    cairo_rel_curve_to(
-      canvas->cr,
-      control1_x,
-      control1_y,
-      control2_x,
-      control2_y,
-      x,
-      y
-    );
-  } else {
-    cairo_curve_to(
-      canvas->cr,
-      control1_x,
-      control1_y,
-      control2_x,
-      control2_y,
-      x,
-      y
-    );
-  }
+  cairo_rel_curve_to(
+    canvas->cr,
+    control1_x,
+    control1_y,
+    control2_x,
+    control2_y,
+    x,
+    y
+  );
 }
 
 int
@@ -134,7 +81,12 @@ lua_catnip_canvas_path(lua_State* L)
 
   luaL_checktype(L, 2, LUA_TTABLE);
   cairo_save(canvas->cr);
-  cairo_move_to(canvas->cr, 0, 0);
+
+  cairo_move_to(
+    canvas->cr,
+    lua_hasnumberfield(L, 2, "x") ? lua_popinteger(L) : 0,
+    lua_hasnumberfield(L, 2, "y") ? lua_popinteger(L) : 0
+  );
 
   lua_pushnil(L);
   while (lua_next(L, 2) != 0) {
@@ -142,28 +94,21 @@ lua_catnip_canvas_path(lua_State* L)
       lua_rawgeti(L, -1, 1);
       const char* command = lua_popstring(L);
 
-      if (streq(command, "close") || streq(command, "CLOSE")) {
-        cairo_close_path(canvas->cr);
-      } else if (streq(command, "MOVE")) {
-        lua_catnip_canvas_path_move(L, canvas, false);
-      } else if (streq(command, "move")) {
-        lua_catnip_canvas_path_move(L, canvas, true);
-      } else if (streq(command, "LINE")) {
-        lua_catnip_canvas_path_line(L, canvas, false);
-      } else if (streq(command, "line")) {
-        lua_catnip_canvas_path_line(L, canvas, true);
-      } else if (streq(command, "ARC")) {
-        lua_catnip_canvas_path_arc(L, canvas, false);
+      if (streq(command, "line")) {
+        lua_catnip_canvas_path_line(L, canvas);
       } else if (streq(command, "arc")) {
-        lua_catnip_canvas_path_arc(L, canvas, true);
-      } else if (streq(command, "BEZIER")) {
-        lua_catnip_canvas_path_bezier(L, canvas, false);
+        lua_catnip_canvas_path_arc(L, canvas);
       } else if (streq(command, "bezier")) {
-        lua_catnip_canvas_path_bezier(L, canvas, true);
+        lua_catnip_canvas_path_bezier(L, canvas);
       }
     }
 
     lua_pop(L, 1);
+  }
+
+  lua_getfield(L, 2, "close");
+  if (lua_popboolean(L)) {
+    cairo_close_path(canvas->cr);
   }
 
   int fill_color =
@@ -182,6 +127,16 @@ lua_catnip_canvas_path(lua_State* L)
     lua_hasnumberfield(L, 2, "stroke_opacity") ? lua_popnumber(L) : 1;
   double stroke_size =
     lua_hasnumberfield(L, 2, "stroke_size") ? lua_popnumber(L) : 1;
+  const char* stroke_cap =
+    lua_hasnumberfield(L, 2, "stroke_cap") ? lua_popstring(L) : "butt";
+
+  if (streq(stroke_cap, "butt")) {
+    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_BUTT);
+  } else if (streq(stroke_cap, "round")) {
+    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_ROUND);
+  } else if (streq(stroke_cap, "square")) {
+    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_SQUARE);
+  }
 
   if (stroke_color != -1 && stroke_opacity > 0 && stroke_size > 0) {
     cairo_set_line_width(canvas->cr, stroke_size);

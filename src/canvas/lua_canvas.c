@@ -1,6 +1,5 @@
 #include "lua_canvas.h"
 #include "canvas/canvas.h"
-#include "canvas/lua_canvas_circle.h"
 #include "canvas/lua_canvas_path.h"
 #include "canvas/lua_canvas_png.h"
 #include "canvas/lua_canvas_rectangle.h"
@@ -52,8 +51,6 @@ lua_catnip_canvas__index(
     lua_pushcfunction(L, lua_catnip_canvas_path);
   } else if (streq(key, "rectangle")) {
     lua_pushcfunction(L, lua_catnip_canvas_rectangle);
-  } else if (streq(key, "circle")) {
-    lua_pushcfunction(L, lua_catnip_canvas_circle);
   } else if (streq(key, "text")) {
     lua_pushcfunction(L, lua_catnip_canvas_text);
   } else if (streq(key, "svg")) {
