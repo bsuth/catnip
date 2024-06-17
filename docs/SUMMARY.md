@@ -4,7 +4,7 @@
 
 - [Installation](getting_started_installation.md)
 - [CLI](getting_started_cli.md)
-- [Configuration](getting_started_configuration.md)
+- [User Config](getting_started_user_config.md)
 
 # API
 
@@ -17,5 +17,6 @@
 
 # Other
 
+- [Default User Config](other_default_user_config.md)
 - [LuaCATS](other_luacats.md)
 - [catmint]()
