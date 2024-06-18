@@ -28,7 +28,6 @@ default: $(BUILD_DIR)/$(EXECUTABLE)
 
 dev: CFLAGS += -g
 dev: $(BUILD_DIR)/$(EXECUTABLE)
-	@echo "$(LUA_CONFIG)"
 	@$(BUILD_DIR)/$(EXECUTABLE)
 
 # ------------------------------------------------------------------------------
@@ -68,18 +67,18 @@ $(OBJECT_BUILD_DIR)/default_config.o: $(SOURCE_DIR)/default_config.lua
 	sed 's/"/\\"/g' | \
 	awk '{ printf "%s%s", separator, $$0; separator = "\\n" }' - | \
 	xargs -0  printf '#include "default_config.h"\nconst char* catnip_default_config = "%s";' | \
-	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ -xc -
+	$(CC) $(CFLAGS) -c -o $@ -xc -
 
 $(OBJECT_BUILD_DIR)/luacats.o: $(SOURCE_DIR)/luacats.lua
 	@cat $< | \
 	sed 's/"/\\"/g' | \
 	awk '{ printf "%s%s", separator, $$0; separator = "\\n" }' - | \
 	xargs -0  printf '#include "luacats.h"\nconst char* catnip_luacats = "%s";' | \
-	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ -xc -
+	$(CC) $(CFLAGS) -c -o $@ -xc -
 
 $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
 	@-mkdir -p $(@D)
-	$(CC) $(FLAGS) $(CFLAGS) -c -o $@ $<
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 # ------------------------------------------------------------------------------
 # Executable
@@ -96,7 +95,7 @@ PROTOCOL_HEADERS = \
 	$(PROTOCOLS_BUILD_DIR)/xdg-shell-protocol.h
 
 $(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)
-	$(CC) $(FLAGS) $(LIBS) $(OBJECTS) -o $@
+	$(CC) $(LIBS) $(OBJECTS) -o $@
 
 # ------------------------------------------------------------------------------
 # Clean
