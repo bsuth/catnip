@@ -18,7 +18,7 @@ SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
 BUILD_DIR := build
 $(shell mkdir -p $(BUILD_DIR))
 
-.PHONY = default dev clean format
+.PHONY = default dev clean format install uninstall
 
 # ------------------------------------------------------------------------------
 # Builds
@@ -110,3 +110,17 @@ clean:
 
 format:
 	clang-format -i $(shell find $(SOURCE_DIR) -type f -regex .*\.[ch]$)
+
+# ------------------------------------------------------------------------------
+# Install
+# ------------------------------------------------------------------------------
+
+prefix ?= /usr/local
+exec_prefix ?= $(prefix)
+bindir ?= $(exec_prefix)/bin
+
+install: $(BUILD_DIR)/$(EXECUTABLE)
+	mv $(BUILD_DIR)/$(EXECUTABLE) $(bindir)/$(EXECUTABLE)
+
+uninstall:
+	rm $(bindir)/$(EXECUTABLE)
