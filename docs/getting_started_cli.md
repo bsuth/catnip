@@ -3,8 +3,7 @@
 Catnip ships as a standalone self-contained executable. It does not require any
 additional files to run, as the [LuaCATS annotations](other_luacats.md) and
 [default user config](other_default_user_config.md) are embedded directly into
-the executable itself (shared libraries are still required by default unless
-catnip is linked statically when building).
+the executable itself (although shared libraries are still required).
 
 The available CLI options are documented below.
 
