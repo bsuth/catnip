@@ -3,6 +3,7 @@
 #include "default_config.h"
 #include "luacats.h"
 #include "utils/log.h"
+#include "utils/path.h"
 #include "utils/string.h"
 #include <getopt.h>
 #include <stdio.h>
@@ -60,7 +61,7 @@ catnip_cli_init(int argc, char* argv[])
         printf("%s\n", catnip_version);
         exit(0);
       case 'c':
-        catnip_config_user_path = strdup(optarg);
+        catnip_config_user_path = abspath(optarg);
         break;
       case 'l': {
         if (streq(optarg, "silent")) {
