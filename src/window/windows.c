@@ -13,6 +13,10 @@ catnip_windows_init()
 struct catnip_window*
 catnip_windows_get_focused()
 {
+  if (catnip_seat->keyboard_state.focused_surface == NULL) {
+    return NULL;
+  }
+
   struct wlr_xdg_toplevel* focused_toplevel =
     wlr_xdg_toplevel_try_from_wlr_surface(
       catnip_seat->keyboard_state.focused_surface
