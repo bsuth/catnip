@@ -5,6 +5,7 @@
 - [Installation](getting_started_installation.md)
 - [CLI](getting_started_cli.md)
 - [User Config](getting_started_user_config.md)
+- [LuaCATS](getting_started_luacats.md)
 
 # API
 
@@ -15,8 +16,7 @@
 - [window](api_window.md)
 - [canvas](api_canvas.md)
 
-# Other
+# Examples
 
-- [Default User Config](other_default_user_config.md)
-- [LuaCATS](other_luacats.md)
-- [catmint]()
+- [Index](examples_index.md)
+- [keybind.lua](examples_keybind.md)

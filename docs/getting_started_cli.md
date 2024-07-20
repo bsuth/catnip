@@ -1,9 +1,11 @@
 # CLI
 
-Catnip ships as a standalone self-contained executable. It does not require any
-additional files to run, as the [LuaCATS annotations](other_luacats.md) and
-[default user config](other_default_user_config.md) are embedded directly into
-the executable itself (although shared libraries are still required).
+Catnip ships as a standalone executable and does not require any
+additional files to run other than the
+[dependency shared libraries](getting_started_installation.md#dependencies).
+The [LuaCATS annotations](getting_started_luacats.md) and
+[default user config](getting_started_user_config.md#default-user-config) are embedded directly into
+the executable itself.
 
 The available CLI options are documented below.
 
@@ -41,7 +43,7 @@ Prints the version and exits.
 
 ### `-c, --config FILE`
 
-Specify the path to the Lua config file to use. This may be either an absolute
+Specifies the path to the Lua config file to use. This may be either an absolute
 path or a path relative to the directory where the `catnip` executable is run.
 
 ```
@@ -72,7 +74,7 @@ By default, catnip uses `--loglevel error`.
 
 ### `-t, --types`
 
-Prints the [LuaCATS annotations](other_luacats.md) and exits.
+Prints the [LuaCATS annotations](getting_started_luacats.md) and exits.
 
 ```
 > catnip --types
@@ -82,7 +84,7 @@ Prints the [LuaCATS annotations](other_luacats.md) and exits.
 
 ### `-d, --default`
 
-Prints the [default user config](other_default_user_config.md) and exits.
+Prints the [default user config](getting_started_user_config.md#default-user-config) and exits.
 
 ```
 > catnip --default

@@ -1,3 +1,0 @@
-# `catmint`
-
-WIP (Under Development)
