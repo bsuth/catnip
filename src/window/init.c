@@ -5,19 +5,16 @@
 #include "window/windows.h"
 #include "xdg_shell.h"
 
-static struct wl_listener new_xdg_surface_listener;
+static struct wl_listener new_xdg_toplevel_listener;
 static struct wl_listener keyboard_focus_change_listener;
 
 static void
-on_new_xdg_surface_listener(struct wl_listener* listener, void* data)
+on_new_xdg_toplevel_listener(struct wl_listener* listener, void* data)
 {
-  struct wlr_xdg_surface* xdg_surface = data;
-
-  // TODO: handle popups
-  if (xdg_surface->role == WLR_XDG_SURFACE_ROLE_TOPLEVEL) {
-    struct catnip_window* window = catnip_window_create(xdg_surface);
-    wl_list_insert(&catnip_windows, &window->link);
-  }
+  printf("new toplevel\n");
+  struct wlr_xdg_toplevel* xdg_toplevel = data;
+  struct catnip_window* window = catnip_window_create(xdg_toplevel);
+  wl_list_insert(&catnip_windows, &window->link);
 }
 
 static void
@@ -51,10 +48,12 @@ catnip_window_init()
 {
   catnip_windows_init();
 
+  // TODO: handle popups
+
   wl_setup_listener(
-    &new_xdg_surface_listener,
-    &catnip_xdg_shell->events.new_surface,
-    on_new_xdg_surface_listener
+    &new_xdg_toplevel_listener,
+    &catnip_xdg_shell->events.new_toplevel,
+    on_new_xdg_toplevel_listener
   );
 
   wl_setup_listener(

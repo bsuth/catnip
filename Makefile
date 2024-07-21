@@ -9,7 +9,7 @@ DEPENDENCIES = \
 	pangocairo \
 	luajit \
 	xkbcommon \
-	wlroots \
+	wlroots-0.18 \
 	wayland-server
 
 SOURCE_DIR := src

@@ -42,35 +42,19 @@ lua_catnip_output__index(
     int y = wlr_output_layout_get(catnip_output_layout, output->wlr_output)->y;
     lua_pushnumber(L, y);
   } else if (streq(key, "width")) {
-    output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? lua_pushnumber(L, output->wlr_output->pending.custom_mode.width)
-      : output->wlr_output->pending.mode != NULL
-      ? lua_pushnumber(L, output->wlr_output->pending.mode->width)
-      : lua_pushnumber(L, output->wlr_output->width);
+    lua_pushnumber(L, output->wlr_output->width);
   } else if (streq(key, "height")) {
-    output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? lua_pushnumber(L, output->wlr_output->pending.custom_mode.height)
-      : output->wlr_output->pending.mode != NULL
-      ? lua_pushnumber(L, output->wlr_output->pending.mode->height)
-      : lua_pushnumber(L, output->wlr_output->height);
+    lua_pushnumber(L, output->wlr_output->height);
   } else if (streq(key, "refresh")) {
-    output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? lua_pushnumber(L, output->wlr_output->pending.custom_mode.refresh)
-      : output->wlr_output->pending.mode != NULL
-      ? lua_pushnumber(L, output->wlr_output->pending.mode->refresh)
-      : lua_pushnumber(L, output->wlr_output->refresh);
+    lua_pushnumber(L, output->wlr_output->refresh);
   } else if (streq(key, "mode")) {
-    output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? lua_pushnil(L)
-      : output->wlr_output->pending.mode != NULL
-      ? lua_catnip_output_push_mode(L, output, output->wlr_output->pending.mode)
-      : output->wlr_output->current_mode != NULL
+    output->wlr_output->current_mode != NULL
       ? lua_catnip_output_push_mode(L, output, output->wlr_output->current_mode)
       : lua_pushnil(L);
   } else if (streq(key, "modes")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_mode_list->ref);
   } else if (streq(key, "scale")) {
-    lua_pushnumber(L, output->wlr_output->pending.scale);
+    lua_pushnumber(L, output->wlr_output->scale);
   } else {
     return false;
   }
@@ -108,12 +92,16 @@ lua_catnip_output__newindex(
   } else if (streq(key, "refresh")) {
     catnip_output_configure(output, -1, -1, luaL_checknumber(L, 3));
   } else if (streq(key, "mode")) {
-    wlr_output_set_mode(
-      output->wlr_output,
-      lua_catnip_resource_checkname(L, 3, "mode")
-    );
+    struct wlr_output_mode* mode = lua_catnip_resource_checkname(L, 3, "mode");
+    struct wlr_output_state state = {0};
+    wlr_output_state_set_mode(&state, mode);
+    wlr_output_commit_state(output->wlr_output, &state);
+    wlr_output_state_finish(&state);
   } else if (streq(key, "scale")) {
-    wlr_output_set_scale(output->wlr_output, luaL_checknumber(L, 3));
+    struct wlr_output_state state = {0};
+    wlr_output_state_set_scale(&state, luaL_checknumber(L, 3));
+    wlr_output_commit_state(output->wlr_output, &state);
+    wlr_output_state_finish(&state);
   } else {
     return false;
   }

@@ -56,16 +56,19 @@ struct catnip_output*
 catnip_output_create(struct wlr_output* wlr_output)
 {
   wlr_output_init_render(wlr_output, catnip_allocator, catnip_renderer);
-  wlr_output_enable(wlr_output, true);
+
+  struct wlr_output_state state = {0};
+  wlr_output_state_set_enabled(&state, true);
 
   struct wlr_output_mode* preferred_mode =
     wlr_output_preferred_mode(wlr_output);
 
   if (preferred_mode != NULL) {
-    wlr_output_set_mode(wlr_output, preferred_mode);
+    wlr_output_state_set_mode(&state, preferred_mode);
   }
 
-  wlr_output_commit(wlr_output);
+  wlr_output_commit_state(wlr_output, &state);
+  wlr_output_state_finish(&state);
 
   struct catnip_output* output = calloc(1, sizeof(struct catnip_output));
 
@@ -113,25 +116,15 @@ catnip_output_configure(
   int refresh
 )
 {
-  wlr_output_set_custom_mode(
-    output->wlr_output,
-    width != -1 ? width
-      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? output->wlr_output->pending.custom_mode.width
-      : output->wlr_output->pending.mode != NULL
-      ? output->wlr_output->pending.mode->width
-      : output->wlr_output->width,
-    height != -1 ? height
-      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? output->wlr_output->pending.custom_mode.height
-      : output->wlr_output->pending.mode != NULL
-      ? output->wlr_output->pending.mode->height
-      : output->wlr_output->height,
-    refresh != -1 ? refresh
-      : output->wlr_output->pending.mode_type == WLR_OUTPUT_STATE_MODE_CUSTOM
-      ? output->wlr_output->pending.custom_mode.refresh
-      : output->wlr_output->pending.mode != NULL
-      ? output->wlr_output->pending.mode->refresh
-      : output->wlr_output->refresh
+  struct wlr_output_state state = {0};
+
+  wlr_output_state_set_custom_mode(
+    &state,
+    width != -1 ? width : output->wlr_output->width,
+    height != -1 ? height : output->wlr_output->height,
+    refresh != -1 ? refresh : output->wlr_output->refresh
   );
+
+  wlr_output_commit_state(output->wlr_output, &state);
+  wlr_output_state_finish(&state);
 }

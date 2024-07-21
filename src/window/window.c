@@ -20,6 +20,19 @@ on_window_map(struct wl_listener* listener, void* data)
 }
 
 static void
+on_window_commit(struct wl_listener* listener, void* data)
+{
+  struct catnip_window* window =
+    wl_container_of(listener, window, commit_listener);
+
+  if (window->xdg_toplevel->base->initial_commit) {
+    // When an xdg_surface performs an initial commit, the compositor must
+    // reply with a configure so the client can map the surface.
+    wlr_xdg_surface_schedule_configure(window->xdg_toplevel->base);
+  }
+}
+
+static void
 on_window_unmap(struct wl_listener* listener, void* data)
 {
   struct catnip_window* window =
@@ -74,17 +87,15 @@ on_window_destroy(struct wl_listener* listener, void* data)
 }
 
 struct catnip_window*
-catnip_window_create(struct wlr_xdg_surface* xdg_surface)
+catnip_window_create(struct wlr_xdg_toplevel* xdg_toplevel)
 {
   struct catnip_window* window = calloc(1, sizeof(struct catnip_window));
+  struct wlr_xdg_surface* xdg_surface = xdg_toplevel->base;
 
   window->id = generate_catnip_id();
-  window->xdg_surface = xdg_surface;
-  window->xdg_toplevel = xdg_surface->toplevel;
-  window->scene_tree = wlr_scene_xdg_surface_create(
-    &catnip_scene->tree,
-    window->xdg_toplevel->base
-  );
+  window->xdg_toplevel = xdg_toplevel;
+  window->scene_tree =
+    wlr_scene_xdg_surface_create(&catnip_scene->tree, xdg_surface);
 
   // wlroots provides a helper for adding xdg popups to the scene graph, but
   // it requires the popup parent's scene node. For convenience, we always
@@ -93,27 +104,32 @@ catnip_window_create(struct wlr_xdg_surface* xdg_surface)
 
   wl_setup_listener(
     &window->map_listener,
-    &window->xdg_surface->surface->events.map,
+    &xdg_surface->surface->events.map,
     on_window_map
   );
   wl_setup_listener(
+    &window->commit_listener,
+    &xdg_surface->surface->events.commit,
+    on_window_commit
+  );
+  wl_setup_listener(
     &window->unmap_listener,
-    &window->xdg_surface->surface->events.unmap,
+    &xdg_surface->surface->events.unmap,
     on_window_unmap
   );
   wl_setup_listener(
     &window->request_maximize_listener,
-    &window->xdg_toplevel->events.request_maximize,
+    &xdg_toplevel->events.request_maximize,
     on_window_request_maximize
   );
   wl_setup_listener(
     &window->request_fullscreen_listener,
-    &window->xdg_toplevel->events.request_fullscreen,
+    &xdg_toplevel->events.request_fullscreen,
     on_window_request_fullscreen
   );
   wl_setup_listener(
     &window->destroy_listener,
-    &window->xdg_surface->events.destroy,
+    &xdg_toplevel->events.destroy,
     on_window_destroy
   );
 

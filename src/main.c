@@ -32,14 +32,14 @@ main(int argc, char* argv[])
   catnip_display_init();
   catnip_scene_init();
   catnip_event_loop_init(); // must init after display
-  catnip_backend_init(); // must init after display
   catnip_xdg_shell_init(); // must init after display
+  catnip_backend_init(); // must init after event loop
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
   catnip_keyboard_init(); // must init after backend
   catnip_allocator_init(); // must init after renderer
   catnip_window_init(); // must init after xdg_shell
-  catnip_output_init(); // must init after backend + scene
+  catnip_output_init(); // must init after display + backend + scene
   catnip_cursor_init(); // must init after output
   catnip_config_init(); // must init last
 
