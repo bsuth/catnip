@@ -64,7 +64,10 @@ main(int argc, char* argv[])
   while (catnip_display_run) {
     wl_display_flush_clients(catnip_display);
 
-    if (wl_event_loop_dispatch(catnip_event_loop, 0) < 0) {
+    // Use a 1ms timeout to prevent the main loop from hogging the CPU. This is
+    // the smallest timeout available and more than sufficient for freeing up
+    // the CPU for other processes.
+    if (wl_event_loop_dispatch(catnip_event_loop, 1) < 0) {
       break;
     }
 
