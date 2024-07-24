@@ -214,6 +214,8 @@ Published when a keyboard has been destroyed (disconnected).
 ---@field code number
 ---(readonly) An [xkbcommon key name](https://xkbcommon.org/doc/current/xkbcommon-keysyms_8h.html) with the `XKB_KEY_` prefix stripped.
 ---@field name string
+---(readonly) A [UTF-8](https://en.wikipedia.org/wiki/UTF-8) string representation of the key.
+---@field utf8 string
 ---(readonly) Whether the shift modifier is active.
 ---@field shift boolean
 ---(readonly) Whether the control modifier is active.
@@ -244,6 +246,8 @@ Published whenever a key on the keyboard is pressed.
 ---@field code number
 ---(readonly) An [xkbcommon key name](https://xkbcommon.org/doc/current/xkbcommon-keysyms_8h.html) with the `XKB_KEY_` prefix stripped.
 ---@field name string
+---(readonly) A [UTF-8](https://en.wikipedia.org/wiki/UTF-8) string representation of the key.
+---@field utf8 string
 ---(readonly) Whether the shift modifier is active.
 ---@field shift boolean
 ---(readonly) Whether the control modifier is active.

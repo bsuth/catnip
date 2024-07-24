@@ -33,44 +33,35 @@ on_keyboard_key(struct wl_listener* listener, void* data)
 
   struct wlr_keyboard_key_event* wlr_event = data;
 
-  uint32_t modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard);
+  struct catnip_key_event event = {
+    .modifiers = wlr_keyboard_get_modifiers(keyboard->wlr_keyboard),
+    .xkb_keysym = xkb_state_key_get_one_sym(
+      keyboard->wlr_keyboard->xkb_state,
+      wlr_event->keycode + 8 // libinput -> xkbcommon
+    ),
+    .xkb_name = {0},
+    .utf8 = {0},
+    .state = wlr_event->state,
+    .prevent_notify = false,
+  };
 
-  const xkb_keysym_t* xkb_keysyms = NULL;
-  int xkb_keysyms_len = xkb_state_key_get_syms(
-    keyboard->wlr_keyboard->xkb_state,
-    wlr_event->keycode + 8, // libinput -> xkbcommon
-    &xkb_keysyms
-  );
+  xkb_keysym_to_utf8(event.xkb_keysym, event.utf8, sizeof(event.utf8));
+  xkb_keysym_get_name(event.xkb_keysym, event.xkb_name, sizeof(event.xkb_name));
 
-  for (int i = 0; i < xkb_keysyms_len; ++i) {
-    xkb_keysym_t xkb_keysym = xkb_keysyms[i];
+  lua_catnip_publish_key_event(catnip_L, keyboard, &event);
 
-    char xkb_name[64];
-    xkb_keysym_get_name(xkb_keysym, xkb_name, 64);
+  if (!event.prevent_notify) {
+    // Wayland only allows a single keyboard per seat. Thus, we assign all
+    // keyboards to the same seat, swapping them out on key events.
+    wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
 
-    struct catnip_key_event event = {
-      .modifiers = modifiers,
-      .xkb_keysym = xkb_keysym,
-      .xkb_name = xkb_name,
-      .state = wlr_event->state,
-      .prevent_notify = false,
-    };
-
-    lua_catnip_publish_key_event(catnip_L, keyboard, &event);
-
-    if (!event.prevent_notify) {
-      // Wayland only allows a single keyboard per seat. Thus, we assign all
-      // keyboards to the same seat, swapping them out on key events.
-      wlr_seat_set_keyboard(catnip_seat, keyboard->wlr_keyboard);
-
-      // Forward the key event to clients
-      wlr_seat_keyboard_notify_key(
-        catnip_seat,
-        wlr_event->time_msec,
-        wlr_event->keycode,
-        wlr_event->state
-      );
-    }
+    // Forward the key event to clients
+    wlr_seat_keyboard_notify_key(
+      catnip_seat,
+      wlr_event->time_msec,
+      wlr_event->keycode,
+      wlr_event->state
+    );
   }
 }
 

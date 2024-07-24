@@ -17,6 +17,8 @@ lua_catnip_key_event__index(
     lua_pushnumber(L, key_event->xkb_keysym);
   } else if (streq(key, "name")) {
     lua_pushstring(L, key_event->xkb_name);
+  } else if (streq(key, "utf8")) {
+    lua_pushstring(L, key_event->utf8);
   } else if (streq(key, "shift")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_SHIFT);
   } else if (streq(key, "ctrl")) {

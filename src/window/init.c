@@ -11,7 +11,6 @@ static struct wl_listener keyboard_focus_change_listener;
 static void
 on_new_xdg_toplevel_listener(struct wl_listener* listener, void* data)
 {
-  printf("new toplevel\n");
   struct wlr_xdg_toplevel* xdg_toplevel = data;
   struct catnip_window* window = catnip_window_create(xdg_toplevel);
   wl_list_insert(&catnip_windows, &window->link);
