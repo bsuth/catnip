@@ -26,21 +26,10 @@ lua_catnip_events_subscribe(
     lua_setfield(L, -3, event);
   }
 
-  size_t num_subscriptions = lua_objlen(L, -1);
+  lua_pushvalue(L, -3);
+  lua_pushboolean(L, true);
+  lua_rawset(L, -3);
 
-  for (int i = 0; i < num_subscriptions; ++i) {
-    lua_rawgeti(L, -1, i + 1);
-
-    if (lua_equal(L, -4, -1)) {
-      lua_pop(L, 3);
-      return; // subscription already exists
-    }
-
-    lua_pop(L, 1);
-  }
-
-  lua_pushvalue(L, -4);
-  lua_rawseti(L, -2, num_subscriptions + 1);
   lua_pop(L, 2);
 }
 
@@ -54,25 +43,9 @@ lua_catnip_events_unsubscribe(
   lua_rawgeti(L, LUA_REGISTRYINDEX, subscriptions);
 
   if (lua_hasfield(L, -1, event)) {
-    size_t num_subscriptions = lua_objlen(L, -1);
-    bool found_lua_subscription = false;
-
-    for (int i = 0; i < num_subscriptions; ++i) {
-      if (found_lua_subscription) {
-        lua_rawgeti(L, -1, i + 1);
-        lua_rawseti(L, -2, i);
-      } else {
-        lua_rawgeti(L, -1, i + 1);
-        found_lua_subscription = lua_equal(L, -4, -1);
-        lua_pop(L, 1);
-      }
-    }
-
-    if (found_lua_subscription) {
-      lua_pushnil(L);
-      lua_rawseti(L, -2, num_subscriptions);
-    }
-
+    lua_pushvalue(L, -3);
+    lua_pushnil(L);
+    lua_rawset(L, -3);
     lua_pop(L, 1);
   }
 
@@ -93,28 +66,32 @@ lua_catnip_events_publish(
   lua_rawgeti(L, LUA_REGISTRYINDEX, subscriptions);
 
   if (lua_hasfield(L, -1, event)) {
-    size_t num_subscriptions = lua_objlen(L, -1);
-
     // NOTE: We clone the subscriptions table here in order to "freeze" the
     // callbacks. This keeps behavior consistent when a callback itself adds or
     // removes subscriptions (i.e. calls `subscribe` / `unsubscribe`).
     lua_newtable(L);
 
-    for (int i = 0; i < num_subscriptions; ++i) {
-      lua_rawgeti(L, -2, i + 1);
-      lua_rawseti(L, -2, i + 1);
+    lua_pushnil(L);
+    while (lua_next(L, -3) != 0) {
+      lua_pushvalue(L, -2);
+      lua_pushvalue(L, -2);
+      lua_rawset(L, -5);
+      lua_pop(L, 1);
     }
 
-    for (int i = 0; i < num_subscriptions; ++i) {
-      lua_rawgeti(L, -1, i + 1);
+    lua_pushnil(L);
+    while (lua_next(L, -2) != 0) {
+      lua_pushvalue(L, -2);
 
-      for (int j = arg_start; j < arg_end; ++j) {
-        lua_pushvalue(L, j);
+      for (int i = arg_start; i < arg_end; ++i) {
+        lua_pushvalue(L, i);
       }
 
       if (lua_pcall(L, nargs, 0, 0) != 0) {
         log_error("%s", lua_popstring(L));
       }
+
+      lua_pop(L, 1);
     }
 
     lua_pop(L, 2);
