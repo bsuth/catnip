@@ -66,6 +66,7 @@ on_input_destroy(struct wl_listener* listener, void* data)
 {
   struct wlr_input_device* device = data;
   unregister_capabilities(device);
+  wl_list_remove(&listener->link);
   free(listener);
 }
 
