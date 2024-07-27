@@ -31,4 +31,7 @@ struct catnip_key_event {
   bool prevent_notify;
 };
 
+bool
+catnip_key_event_check_keybindings(struct catnip_key_event* event);
+
 #endif

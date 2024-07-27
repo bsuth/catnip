@@ -43,6 +43,10 @@ on_keyboard_key(struct wl_listener* listener, void* data)
     .prevent_notify = false,
   };
 
+  if (catnip_key_event_check_keybindings(&event)) {
+    return;
+  }
+
   lua_catnip_publish_key_event(catnip_L, keyboard, &event);
 
   if (!event.prevent_notify) {
