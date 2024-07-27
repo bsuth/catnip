@@ -39,14 +39,9 @@ on_keyboard_key(struct wl_listener* listener, void* data)
       keyboard->wlr_keyboard->xkb_state,
       wlr_event->keycode + 8 // libinput -> xkbcommon
     ),
-    .xkb_name = {0},
-    .utf8 = {0},
     .state = wlr_event->state,
     .prevent_notify = false,
   };
-
-  xkb_keysym_to_utf8(event.xkb_keysym, event.utf8, sizeof(event.utf8));
-  xkb_keysym_get_name(event.xkb_keysym, event.xkb_name, sizeof(event.xkb_name));
 
   lua_catnip_publish_key_event(catnip_L, keyboard, &event);
 

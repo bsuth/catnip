@@ -16,9 +16,13 @@ lua_catnip_key_event__index(
   if (streq(key, "code")) {
     lua_pushnumber(L, key_event->xkb_keysym);
   } else if (streq(key, "name")) {
-    lua_pushstring(L, key_event->xkb_name);
+    char xkb_name[64];
+    xkb_keysym_get_name(key_event->xkb_keysym, xkb_name, sizeof(xkb_name));
+    lua_pushstring(L, xkb_name);
   } else if (streq(key, "utf8")) {
-    lua_pushstring(L, key_event->utf8);
+    char utf8[XKB_KEYSYM_UTF8_MAX_SIZE];
+    xkb_keysym_to_utf8(key_event->xkb_keysym, utf8, sizeof(utf8));
+    lua_pushstring(L, utf8);
   } else if (streq(key, "shift")) {
     lua_pushboolean(L, key_event->modifiers & WLR_MODIFIER_SHIFT);
   } else if (streq(key, "ctrl")) {
