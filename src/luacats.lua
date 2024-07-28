@@ -181,11 +181,11 @@
 ---Renders a rectangle onto the canvas.
 ---@field rectangle fun(self: CatnipCanvas, path: CatnipCanvasRectangle)
 ---Renders text onto the canvas.
----@field text fun(self: CatnipCanvas, text: string, options: CatnipCanvasTextOptions?)
+---@field text fun(self: CatnipCanvas, text: string, options: CatnipCanvasTextOptions): number, number
 ---Renders a PNG image onto the canvas.
----@field png fun(self: CatnipCanvas, path: string, options: CatnipCanvasPngOptions?)
+---@field png fun(self: CatnipCanvas, path: string, options: CatnipCanvasPngOptions)
 ---Renders an SVG onto the canvas.
----@field svg fun(self: CatnipCanvas, document: string, options: CatnipCanvasSvgOptions?)
+---@field svg fun(self: CatnipCanvas, document: string, options: CatnipCanvasSvgOptions)
 ---Clears the canvas, removing anything previously drawn.
 ---@field clear fun(self: CatnipCanvas)
 ---Destroys the canvas immediately. After this is called, the canvas will no longer be visible nor useable.
@@ -268,9 +268,9 @@
 
 ---@class CatnipCanvasTextOptions
 ---The x-coordinate of the text (in pixels) relative to the top left corner of the canvas.
----@field x number?
+---@field x number
 ---The y-coordinate of the text (in pixels) relative to the top left corner of the canvas.
----@field y number?
+---@field y number
 ---The width of the bounding box (in pixels).
 ---@field width number?
 ---The height of the bounding box (in pixels).
@@ -300,12 +300,15 @@
 ---@field color number?
 ---The opacity of the text as a number between 0-1 (inclusive).
 ---@field opacity number?
+---Whether to render the text. Defaults to `true`.
+---Especially useful when trying to get text width / height without wanting to draw anything.
+---@field render boolean
 
 ---@class CatnipCanvasPngOptions
 ---The x-coordinate of the PNG (in pixels) relative to the top left corner of the canvas.
----@field x number?
+---@field x number
 ---The y-coordinate of the PNG (in pixels) relative to the top left corner of the canvas.
----@field y number?
+---@field y number
 ---The width to render the PNG (in pixels).
 ---If left undefined, this is automatically scaled to preserve the aspect ratio.
 ---@field width number?
@@ -317,9 +320,9 @@
 
 ---@class CatnipCanvasSvgOptions
 ---The x-coordinate of the SVG (in pixels) relative to the top left corner of the canvas.
----@field x number?
+---@field x number
 ---The y-coordinate of the SVG (in pixels) relative to the top left corner of the canvas.
----@field y number?
+---@field y number
 ---The width to render the SVG (in pixels).
 ---If left undefined, this is automatically scaled to preserve the aspect ratio.
 ---@field width number?
