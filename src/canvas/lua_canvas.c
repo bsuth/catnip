@@ -6,7 +6,7 @@
 #include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
 #include "extensions/string.h"
-#include "extensions/wayland.h"
+#include "extensions/wlroots.h"
 #include "lua_resource.h"
 #include <lauxlib.h>
 

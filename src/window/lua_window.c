@@ -1,6 +1,6 @@
 #include "lua_window.h"
 #include "extensions/string.h"
-#include "extensions/wayland.h"
+#include "extensions/wlroots.h"
 #include "window/lua_window_list.h"
 #include <lauxlib.h>
 #include <wlr/types/wlr_scene.h>
