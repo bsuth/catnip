@@ -49,15 +49,15 @@ catnip_window_init()
 
   // TODO: handle popups
 
-  wl_setup_listener(
-    &new_xdg_toplevel_listener,
+  wl_signal_subscribe(
     &catnip_xdg_shell->events.new_toplevel,
+    &new_xdg_toplevel_listener,
     on_new_xdg_toplevel_listener
   );
 
-  wl_setup_listener(
-    &keyboard_focus_change_listener,
+  wl_signal_subscribe(
     &catnip_seat->keyboard_state.events.focus_change,
+    &keyboard_focus_change_listener,
     on_keyboard_focus_change
   );
 }

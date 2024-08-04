@@ -98,19 +98,19 @@ catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard)
   keyboard->reload_keymap_event_source = NULL;
   catnip_keyboard_reload_keymap(keyboard);
 
-  wl_setup_listener(
-    &keyboard->modifiers_listener,
+  wl_signal_subscribe(
     &wlr_keyboard->events.modifiers,
+    &keyboard->modifiers_listener,
     on_keyboard_modifiers
   );
-  wl_setup_listener(
-    &keyboard->key_listener,
+  wl_signal_subscribe(
     &wlr_keyboard->events.key,
+    &keyboard->key_listener,
     on_keyboard_key
   );
-  wl_setup_listener(
-    &keyboard->destroy_listener,
+  wl_signal_subscribe(
     &wlr_keyboard->base.events.destroy,
+    &keyboard->destroy_listener,
     on_keyboard_destroy
   );
 

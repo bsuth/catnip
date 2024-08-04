@@ -22,9 +22,9 @@ catnip_output_init()
 
   catnip_outputs_init();
 
-  wl_setup_listener(
-    &new_output_listener,
+  wl_signal_subscribe(
     &catnip_backend->events.new_output,
+    &new_output_listener,
     on_new_output
   );
 }

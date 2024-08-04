@@ -79,9 +79,9 @@ on_new_input(struct wl_listener* listener, void* data)
 
   struct wl_listener* destroy_listener = calloc(1, sizeof(struct wl_listener));
 
-  wl_setup_listener(
-    destroy_listener,
+  wl_signal_subscribe(
     &device->events.destroy,
+    destroy_listener,
     on_input_destroy
   );
 }
@@ -98,14 +98,14 @@ catnip_seat_init()
 {
   catnip_seat = wlr_seat_create(catnip_display, "seat0");
 
-  wl_setup_listener(
-    &new_input_listener,
+  wl_signal_subscribe(
     &catnip_backend->events.new_input,
+    &new_input_listener,
     on_new_input
   );
-  wl_setup_listener(
-    &request_set_selection_listener,
+  wl_signal_subscribe(
     &catnip_seat->events.request_set_selection,
+    &request_set_selection_listener,
     on_request_set_selection
   );
 }

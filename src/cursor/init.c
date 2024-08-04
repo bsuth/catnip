@@ -128,39 +128,39 @@ catnip_cursor_init()
     catnip_cursor_name
   );
 
-  wl_setup_listener(
-    &cursor_motion_listener,
+  wl_signal_subscribe(
     &catnip_cursor->events.motion,
+    &cursor_motion_listener,
     on_cursor_motion
   );
-  wl_setup_listener(
-    &cursor_motion_absolute_listener,
+  wl_signal_subscribe(
     &catnip_cursor->events.motion_absolute,
+    &cursor_motion_absolute_listener,
     on_cursor_motion_absolute
   );
-  wl_setup_listener(
-    &cursor_button_listener,
+  wl_signal_subscribe(
     &catnip_cursor->events.button,
+    &cursor_button_listener,
     on_cursor_button
   );
-  wl_setup_listener(
-    &cursor_axis_listener,
+  wl_signal_subscribe(
     &catnip_cursor->events.axis,
+    &cursor_axis_listener,
     on_cursor_axis
   );
-  wl_setup_listener(
-    &cursor_frame_listener,
+  wl_signal_subscribe(
     &catnip_cursor->events.frame,
+    &cursor_frame_listener,
     on_cursor_frame
   );
-  wl_setup_listener(
-    &new_input_listener,
+  wl_signal_subscribe(
     &catnip_backend->events.new_input,
+    &new_input_listener,
     on_new_input
   );
-  wl_setup_listener(
-    &request_set_cursor_listener,
+  wl_signal_subscribe(
     &catnip_seat->events.request_set_cursor,
+    &request_set_cursor_listener,
     on_request_set_cursor
   );
 }

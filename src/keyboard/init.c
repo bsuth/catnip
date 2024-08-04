@@ -25,9 +25,9 @@ catnip_keyboard_init()
 {
   wl_list_init(&catnip_keyboards);
 
-  wl_setup_listener(
-    &new_input_listener,
+  wl_signal_subscribe(
     &catnip_backend->events.new_input,
+    &new_input_listener,
     on_new_input
   );
 }

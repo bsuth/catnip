@@ -84,19 +84,19 @@ catnip_output_create(struct wlr_output* wlr_output)
     output->scene_output
   );
 
-  wl_setup_listener(
-    &output->frame_listener,
+  wl_signal_subscribe(
     &wlr_output->events.frame,
+    &output->frame_listener,
     on_output_frame
   );
-  wl_setup_listener(
-    &output->request_state_listener,
+  wl_signal_subscribe(
     &wlr_output->events.request_state,
+    &output->request_state_listener,
     on_output_request_state
   );
-  wl_setup_listener(
-    &output->destroy_listener,
+  wl_signal_subscribe(
     &wlr_output->events.destroy,
+    &output->destroy_listener,
     on_output_destroy
   );
 

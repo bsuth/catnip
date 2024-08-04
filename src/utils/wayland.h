@@ -5,9 +5,9 @@
 #include <wlr/types/wlr_scene.h>
 
 void
-wl_setup_listener(
-  struct wl_listener* listener,
+wl_signal_subscribe(
   struct wl_signal* signal,
+  struct wl_listener* listener,
   wl_notify_func_t callback
 );
 

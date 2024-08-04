@@ -102,34 +102,34 @@ catnip_window_create(struct wlr_xdg_toplevel* xdg_toplevel)
   // store the scene node in `xdg_surface->data`.
   xdg_surface->data = window->scene_tree;
 
-  wl_setup_listener(
-    &window->map_listener,
+  wl_signal_subscribe(
     &xdg_surface->surface->events.map,
+    &window->map_listener,
     on_window_map
   );
-  wl_setup_listener(
-    &window->commit_listener,
+  wl_signal_subscribe(
     &xdg_surface->surface->events.commit,
+    &window->commit_listener,
     on_window_commit
   );
-  wl_setup_listener(
-    &window->unmap_listener,
+  wl_signal_subscribe(
     &xdg_surface->surface->events.unmap,
+    &window->unmap_listener,
     on_window_unmap
   );
-  wl_setup_listener(
-    &window->request_maximize_listener,
+  wl_signal_subscribe(
     &xdg_toplevel->events.request_maximize,
+    &window->request_maximize_listener,
     on_window_request_maximize
   );
-  wl_setup_listener(
-    &window->request_fullscreen_listener,
+  wl_signal_subscribe(
     &xdg_toplevel->events.request_fullscreen,
+    &window->request_fullscreen_listener,
     on_window_request_fullscreen
   );
-  wl_setup_listener(
-    &window->destroy_listener,
+  wl_signal_subscribe(
     &xdg_toplevel->events.destroy,
+    &window->destroy_listener,
     on_window_destroy
   );
 
