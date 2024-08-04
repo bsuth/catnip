@@ -1,8 +1,8 @@
 #include "lua_output.h"
+#include "extensions/string.h"
 #include "output/lua_output_list.h"
 #include "output/lua_output_mode.h"
 #include "output/output_layout.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 
 static void

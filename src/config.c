@@ -1,9 +1,9 @@
 #include "config.h"
 #include "default_config.h"
+#include "extensions/string.h"
 #include "lua_events.h"
 #include "lua_state.h"
 #include "utils/log.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <libgen.h>
 #include <linux/limits.h>

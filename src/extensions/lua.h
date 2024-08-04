@@ -1,5 +1,5 @@
-#ifndef CATNIP_UTILS_LUA_H
-#define CATNIP_UTILS_LUA_H
+#ifndef CATNIP_EXTENSIONS_LUA_H
+#define CATNIP_EXTENSIONS_LUA_H
 
 #include "utils/log.h"
 #include <lua.h>

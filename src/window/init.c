@@ -1,6 +1,6 @@
 #include "init.h"
+#include "extensions/wayland.h"
 #include "seat.h"
-#include "utils/wayland.h"
 #include "window/window.h"
 #include "window/windows.h"
 #include "xdg_shell.h"

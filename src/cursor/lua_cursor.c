@@ -1,7 +1,7 @@
 #include "lua_cursor.h"
 #include "cursor/cursor.h"
+#include "extensions/string.h"
 #include "lua_events.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>

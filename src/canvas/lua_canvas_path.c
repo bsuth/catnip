@@ -1,9 +1,9 @@
 #include "lua_canvas_path.h"
 #include "canvas/canvas.h"
+#include "extensions/cairo.h"
+#include "extensions/lua.h"
+#include "extensions/string.h"
 #include "lua_resource.h"
-#include "utils/cairo.h"
-#include "utils/lua.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <math.h>
 

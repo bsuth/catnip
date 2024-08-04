@@ -1,6 +1,6 @@
 #include "lua_resource.h"
+#include "extensions/string.h"
 #include "lua_events.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 

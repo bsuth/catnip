@@ -1,7 +1,7 @@
 #include "seat.h"
 #include "backend.h"
 #include "display.h"
-#include "utils/wayland.h"
+#include "extensions/wayland.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 

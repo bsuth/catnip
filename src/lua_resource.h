@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_RESOURCE_H
 #define CATNIP_LUA_RESOURCE_H
 
-#include "utils/lua.h"
+#include "extensions/lua.h"
 #include <wayland-util.h>
 
 struct catnip_lua_resource;

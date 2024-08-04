@@ -1,10 +1,10 @@
 #include "cli.h"
 #include "config.h"
 #include "default_config.h"
+#include "extensions/string.h"
 #include "luacats.h"
 #include "utils/log.h"
 #include "utils/path.h"
-#include "utils/string.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>

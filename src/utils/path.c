@@ -1,5 +1,5 @@
 #include "path.h"
-#include "utils/string.h"
+#include "extensions/string.h"
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>

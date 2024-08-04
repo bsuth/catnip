@@ -1,8 +1,8 @@
 #include "init.h"
 #include "backend.h"
+#include "extensions/wayland.h"
 #include "keyboard/keyboard.h"
 #include "keyboard/keyboards.h"
-#include "utils/wayland.h"
 
 static struct wl_listener new_input_listener;
 

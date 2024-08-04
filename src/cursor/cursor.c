@@ -1,9 +1,9 @@
 #include "cursor.h"
+#include "extensions/time.h"
 #include "output/output.h"
 #include "output/outputs.h"
 #include "scene.h"
 #include "seat.h"
-#include "utils/time.h"
 
 struct wlr_cursor* catnip_cursor = NULL;
 struct wlr_xcursor_manager* catnip_xcursor_manager = NULL;

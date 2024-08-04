@@ -1,9 +1,9 @@
 #include "window.h"
 #include "config.h"
+#include "extensions/wayland.h"
 #include "id.h"
 #include "scene.h"
 #include "seat.h"
-#include "utils/wayland.h"
 #include "window/lua_window.h"
 #include <stdlib.h>
 

@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_EVENT_H
 #define CATNIP_LUA_EVENT_H
 
-#include "utils/lua.h"
+#include "extensions/lua.h"
 #include <wayland-util.h>
 
 struct catnip_lua_event;

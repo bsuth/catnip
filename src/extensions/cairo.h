@@ -1,5 +1,5 @@
-#ifndef CATNIP_UTILS_CAIRO_H
-#define CATNIP_UTILS_CAIRO_H
+#ifndef CATNIP_EXTENSIONS_CAIRO_H
+#define CATNIP_EXTENSIONS_CAIRO_H
 
 #include <cairo.h>
 

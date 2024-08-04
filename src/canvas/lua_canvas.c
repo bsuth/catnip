@@ -5,9 +5,9 @@
 #include "canvas/lua_canvas_rectangle.h"
 #include "canvas/lua_canvas_svg.h"
 #include "canvas/lua_canvas_text.h"
+#include "extensions/string.h"
+#include "extensions/wayland.h"
 #include "lua_resource.h"
-#include "utils/string.h"
-#include "utils/wayland.h"
 #include <lauxlib.h>
 
 static int

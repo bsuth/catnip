@@ -1,5 +1,5 @@
-#ifndef CATNIP_UTILS_WAYLAND_H
-#define CATNIP_UTILS_WAYLAND_H
+#ifndef CATNIP_EXTENSIONS_WAYLAND_H
+#define CATNIP_EXTENSIONS_WAYLAND_H
 
 #include <wayland-server-core.h>
 #include <wlr/types/wlr_scene.h>

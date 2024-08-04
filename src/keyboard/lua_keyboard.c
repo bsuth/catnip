@@ -1,6 +1,6 @@
 #include "lua_keyboard.h"
+#include "extensions/string.h"
 #include "keyboard/lua_keyboard_list.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>

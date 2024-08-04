@@ -1,9 +1,9 @@
 #include "init.h"
 #include "backend.h"
+#include "extensions/wayland.h"
 #include "output/output.h"
 #include "output/output_layout.h"
 #include "output/outputs.h"
-#include "utils/wayland.h"
 
 static struct wl_listener new_output_listener;
 

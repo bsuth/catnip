@@ -1,5 +1,5 @@
 #include "lua_output_mode.h"
-#include "utils/string.h"
+#include "extensions/string.h"
 #include <lauxlib.h>
 
 static bool

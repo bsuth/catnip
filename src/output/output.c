@@ -2,12 +2,12 @@
 #include "allocator.h"
 #include "config.h"
 #include "cursor/cursor.h"
+#include "extensions/wayland.h"
 #include "id.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
 #include "renderer.h"
 #include "scene.h"
-#include "utils/wayland.h"
 #include <stdlib.h>
 
 static void

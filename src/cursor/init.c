@@ -3,9 +3,9 @@
 #include "config.h"
 #include "cursor/cursor.h"
 #include "cursor/lua_cursor.h"
+#include "extensions/wayland.h"
 #include "output/output_layout.h"
 #include "seat.h"
-#include "utils/wayland.h"
 #include <string.h>
 
 static struct wl_listener cursor_motion_listener;

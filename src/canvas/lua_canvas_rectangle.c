@@ -1,7 +1,7 @@
 #include "lua_canvas_rectangle.h"
 #include "canvas/canvas.h"
+#include "extensions/cairo.h"
 #include "lua_resource.h"
-#include "utils/cairo.h"
 #include <lauxlib.h>
 
 int

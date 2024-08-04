@@ -1,7 +1,7 @@
 #include "lua_key_event.h"
+#include "extensions/string.h"
 #include "keyboard/keyboard.h"
 #include "lua_event.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 
 static bool

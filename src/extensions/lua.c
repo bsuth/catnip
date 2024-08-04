@@ -1,5 +1,5 @@
 #include "lua.h"
-#include "utils/string.h"
+#include "extensions/string.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 

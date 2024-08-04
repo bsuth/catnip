@@ -1,8 +1,8 @@
 #include "lua_canvas_text.h"
 #include "canvas/canvas.h"
+#include "extensions/lua.h"
+#include "extensions/string.h"
 #include "lua_resource.h"
-#include "utils/lua.h"
-#include "utils/string.h"
 #include <lauxlib.h>
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>

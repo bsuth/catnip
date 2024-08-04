@@ -1,5 +1,5 @@
-#ifndef CATNIP_UTILS_STRING_H
-#define CATNIP_UTILS_STRING_H
+#ifndef CATNIP_EXTENSIONS_STRING_H
+#define CATNIP_EXTENSIONS_STRING_H
 
 #include <stdarg.h>
 #include <stdbool.h>

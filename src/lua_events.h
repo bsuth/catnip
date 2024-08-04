@@ -1,7 +1,7 @@
 #ifndef CATNIP_LUA_EVENTS_H
 #define CATNIP_LUA_EVENTS_H
 
-#include "utils/lua.h"
+#include "extensions/lua.h"
 
 extern lua_Ref lua_catnip_subscriptions;
 
