@@ -301,9 +301,9 @@
 ---@field color number?
 ---The opacity of the text as a number between 0-1 (inclusive).
 ---@field opacity number?
----Whether to render the text. Defaults to `true`.
+---Whether the text is visible. Defaults to `true`.
 ---Especially useful when trying to get text width / height without wanting to draw anything.
----@field render boolean
+---@field visible boolean?
 
 ---@class CatnipCanvasPngOptions
 ---The x-coordinate of the PNG (in pixels) relative to the top left corner of the canvas.

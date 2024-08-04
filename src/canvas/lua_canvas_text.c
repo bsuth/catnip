@@ -156,7 +156,7 @@ lua_catnip_canvas_text(lua_State* L)
     }
   }
 
-  if (!lua_hasbooleanfield(L, 3, "render") || lua_popboolean(L)) {
+  if (!lua_hasbooleanfield(L, 3, "visible") || lua_popboolean(L)) {
     cairo_save(canvas->cr);
     cairo_move_to(canvas->cr, x, y);
     pango_cairo_show_layout(canvas->cr, layout);

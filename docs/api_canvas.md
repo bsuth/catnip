@@ -295,6 +295,9 @@ of the stroke will lie "inside" the rectangle and half will lie "outside".
 ---@field color number?
 ---The opacity of the text as a number between 0-1 (inclusive).
 ---@field opacity number?
+---Whether the text is visible. Defaults to `true`.
+---Especially useful when trying to get text width / height without wanting to draw anything.
+---@field visible boolean?
 ```
 
 Renders text onto the canvas.
