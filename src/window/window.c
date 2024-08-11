@@ -2,8 +2,8 @@
 #include "config.h"
 #include "extensions/wayland.h"
 #include "id.h"
-#include "scene.h"
-#include "seat.h"
+#include "state/scene.h"
+#include "state/seat.h"
 #include "window/lua_window.h"
 #include <stdlib.h>
 

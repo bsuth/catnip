@@ -1,6 +1,6 @@
 #include "renderer.h"
-#include "backend.h"
-#include "display.h"
+#include "state/backend.h"
+#include "state/display.h"
 #include "utils/log.h"
 #include <stdlib.h>
 

@@ -1,5 +1,5 @@
 #include "event_loop.h"
-#include "display.h"
+#include "state/display.h"
 
 struct wl_event_loop* catnip_event_loop = NULL;
 

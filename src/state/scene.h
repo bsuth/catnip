@@ -1,5 +1,5 @@
-#ifndef CATNIP_SCENE_H
-#define CATNIP_SCENE_H
+#ifndef CATNIP_STATE_SCENE_H
+#define CATNIP_STATE_SCENE_H
 
 #include <wlr/types/wlr_scene.h>
 

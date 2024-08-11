@@ -1,6 +1,6 @@
 #include "output_layout.h"
-#include "display.h"
-#include "scene.h"
+#include "state/display.h"
+#include "state/scene.h"
 
 struct wlr_output_layout* catnip_output_layout = NULL;
 struct wlr_scene_output_layout* catnip_scene_output_layout = NULL;

@@ -1,5 +1,5 @@
-#ifndef CATNIP_EVENT_LOOP_H
-#define CATNIP_EVENT_LOOP_H
+#ifndef CATNIP_STATE_EVENT_LOOP_H
+#define CATNIP_STATE_EVENT_LOOP_H
 
 #include <wayland-server-core.h>
 

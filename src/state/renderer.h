@@ -1,5 +1,5 @@
-#ifndef CATNIP_RENDERER_H
-#define CATNIP_RENDERER_H
+#ifndef CATNIP_STATE_RENDERER_H
+#define CATNIP_STATE_RENDERER_H
 
 #include <wlr/render/wlr_renderer.h>
 

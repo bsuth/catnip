@@ -1,5 +1,5 @@
 #include "xdg_shell.h"
-#include "display.h"
+#include "state/display.h"
 
 struct wlr_xdg_shell* catnip_xdg_shell = NULL;
 

@@ -1,13 +1,13 @@
 #include "output.h"
-#include "allocator.h"
 #include "config.h"
 #include "cursor/cursor.h"
 #include "extensions/wayland.h"
 #include "id.h"
 #include "output/lua_output.h"
 #include "output/output_layout.h"
-#include "renderer.h"
-#include "scene.h"
+#include "state/allocator.h"
+#include "state/renderer.h"
+#include "state/scene.h"
 #include <stdlib.h>
 
 static void

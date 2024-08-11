@@ -1,5 +1,5 @@
 #include "windows.h"
-#include "seat.h"
+#include "state/seat.h"
 #include "window/window.h"
 
 struct wl_list catnip_windows;

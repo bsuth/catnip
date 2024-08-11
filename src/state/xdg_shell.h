@@ -1,5 +1,5 @@
-#ifndef CATNIP_XDG_SHELL_H
-#define CATNIP_XDG_SHELL_H
+#ifndef CATNIP_STATE_XDG_SHELL_H
+#define CATNIP_STATE_XDG_SHELL_H
 
 #include <wlr/types/wlr_xdg_shell.h>
 

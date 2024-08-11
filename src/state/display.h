@@ -1,5 +1,5 @@
-#ifndef CATNIP_DISPLAY_H
-#define CATNIP_DISPLAY_H
+#ifndef CATNIP_STATE_DISPLAY_H
+#define CATNIP_STATE_DISPLAY_H
 
 #include <wayland-server-core.h>
 

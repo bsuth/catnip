@@ -1,5 +1,5 @@
-#ifndef CATNIP_ALLOCATOR_H
-#define CATNIP_ALLOCATOR_H
+#ifndef CATNIP_STATE_ALLOCATOR_H
+#define CATNIP_STATE_ALLOCATOR_H
 
 #include <wlr/render/allocator.h>
 

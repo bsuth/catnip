@@ -1,9 +1,9 @@
 #include "init.h"
 #include "extensions/wayland.h"
-#include "seat.h"
+#include "state/seat.h"
+#include "state/xdg_shell.h"
 #include "window/window.h"
 #include "window/windows.h"
-#include "xdg_shell.h"
 
 static struct wl_listener new_xdg_toplevel_listener;
 static struct wl_listener keyboard_focus_change_listener;

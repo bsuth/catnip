@@ -1,5 +1,5 @@
-#ifndef CATNIP_BACKEND_H
-#define CATNIP_BACKEND_H
+#ifndef CATNIP_STATE_BACKEND_H
+#define CATNIP_STATE_BACKEND_H
 
 #include <wlr/backend.h>
 #include <wlr/backend/session.h>

@@ -1,6 +1,6 @@
 #include "allocator.h"
-#include "backend.h"
-#include "renderer.h"
+#include "state/backend.h"
+#include "state/renderer.h"
 #include "utils/log.h"
 #include <stdlib.h>
 

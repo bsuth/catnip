@@ -1,12 +1,12 @@
 #include "keyboard.h"
 #include "config.h"
-#include "event_loop.h"
 #include "extensions/wayland.h"
 #include "id.h"
 #include "keyboard/key_event.h"
 #include "keyboard/lua_key_event.h"
 #include "keyboard/lua_keyboard.h"
-#include "seat.h"
+#include "state/event_loop.h"
+#include "state/seat.h"
 #include <stdlib.h>
 
 static void
