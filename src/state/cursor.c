@@ -10,7 +10,7 @@
 
 struct wlr_cursor* catnip_cursor;
 struct wlr_xcursor_manager* catnip_xcursor_manager;
-char* catnip_cursor_name;
+char* catnip_xcursor_name;
 
 static struct {
   struct wl_listener cursor_motion;
@@ -127,11 +127,11 @@ catnip_cursor_init()
   catnip_xcursor_manager = wlr_xcursor_manager_create(NULL, 24);
   wlr_xcursor_manager_load(catnip_xcursor_manager, 1);
 
-  catnip_cursor_name = strdup("default");
+  catnip_xcursor_name = strdup("default");
   wlr_cursor_set_xcursor(
     catnip_cursor,
     catnip_xcursor_manager,
-    catnip_cursor_name
+    catnip_xcursor_name
   );
 
   wl_signal_subscribe(

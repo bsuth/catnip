@@ -6,7 +6,7 @@
 
 extern struct wlr_cursor* catnip_cursor;
 extern struct wlr_xcursor_manager* catnip_xcursor_manager;
-extern char* catnip_cursor_name;
+extern char* catnip_xcursor_name;
 
 void
 catnip_cursor_init();

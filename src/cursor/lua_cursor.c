@@ -21,7 +21,7 @@ lua_catnip_cursor__index(
   } else if (streq(key, "y")) {
     lua_pushnumber(L, catnip_cursor->y);
   } else if (streq(key, "name")) {
-    lua_pushstring(L, catnip_cursor_name);
+    lua_pushstring(L, catnip_xcursor_name);
   } else if (streq(key, "size")) {
     lua_pushnumber(L, catnip_xcursor_manager->size);
   } else if (streq(key, "theme")) {
@@ -47,15 +47,15 @@ lua_catnip_cursor__newindex(
   } else if (streq(key, "name")) {
     const char* new_name = luaL_checkstring(L, 3);
 
-    if (catnip_cursor_name != NULL) {
-      free(catnip_cursor_name);
-      catnip_cursor_name = NULL;
+    if (catnip_xcursor_name != NULL) {
+      free(catnip_xcursor_name);
+      catnip_xcursor_name = NULL;
     }
 
     if (new_name == NULL) {
       wlr_cursor_unset_image(catnip_cursor);
     } else {
-      catnip_cursor_name = strdup(new_name);
+      catnip_xcursor_name = strdup(new_name);
       wlr_cursor_set_xcursor(catnip_cursor, catnip_xcursor_manager, new_name);
     }
   } else if (streq(key, "size")) {
