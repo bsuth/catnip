@@ -4,7 +4,7 @@
 #include "cursor/lua_cursor.h"
 #include "extensions/wayland.h"
 #include "state/backend.h"
-#include "state/output_layout.h"
+#include "state/outputs.h"
 #include "state/seat.h"
 #include <string.h>
 

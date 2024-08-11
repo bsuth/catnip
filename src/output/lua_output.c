@@ -2,7 +2,7 @@
 #include "extensions/string.h"
 #include "output/lua_output_list.h"
 #include "output/lua_output_mode.h"
-#include "state/output_layout.h"
+#include "state/outputs.h"
 #include <lauxlib.h>
 
 static void

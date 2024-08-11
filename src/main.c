@@ -7,7 +7,6 @@
 #include "state/display.h"
 #include "state/event_loop.h"
 #include "state/keyboards.h"
-#include "state/output_layout.h"
 #include "state/outputs.h"
 #include "state/renderer.h"
 #include "state/scene.h"
@@ -38,10 +37,9 @@ main(int argc, char* argv[])
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
   catnip_keyboards_init(); // must init after backend
-  catnip_outputs_init(); // must init after backend
+  catnip_outputs_init(); // must init after display + scene + backend
   catnip_allocator_init(); // must init after renderer
   catnip_windows_init(); // must init after xdg_shell + seat
-  catnip_output_layout_init(); // must init after display + scene
   catnip_cursor_init(); // must init after output layout
   catnip_config_init(); // must init last
 

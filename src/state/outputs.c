@@ -2,8 +2,12 @@
 #include "extensions/wayland.h"
 #include "output/output.h"
 #include "state/backend.h"
+#include "state/display.h"
+#include "state/scene.h"
 
 struct wl_list catnip_outputs;
+struct wlr_output_layout* catnip_output_layout = NULL;
+struct wlr_scene_output_layout* catnip_scene_output_layout = NULL;
 
 static struct {
   struct wl_listener backend_new_output;
@@ -21,6 +25,10 @@ void
 catnip_outputs_init()
 {
   wl_list_init(&catnip_outputs);
+
+  catnip_output_layout = wlr_output_layout_create(catnip_display);
+  catnip_scene_output_layout =
+    wlr_scene_attach_output_layout(catnip_scene, catnip_output_layout);
 
   wl_signal_subscribe(
     &catnip_backend->events.new_output,

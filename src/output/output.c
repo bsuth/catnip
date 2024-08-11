@@ -5,7 +5,7 @@
 #include "output/lua_output.h"
 #include "state/allocator.h"
 #include "state/cursor.h"
-#include "state/output_layout.h"
+#include "state/outputs.h"
 #include "state/renderer.h"
 #include "state/scene.h"
 #include <stdlib.h>
