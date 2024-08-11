@@ -1,15 +1,18 @@
-#include "init.h"
+#include "windows.h"
 #include "extensions/wayland.h"
 #include "state/seat.h"
 #include "state/xdg_shell.h"
 #include "window/window.h"
-#include "window/windows.h"
 
-static struct wl_listener new_xdg_toplevel_listener;
-static struct wl_listener keyboard_focus_change_listener;
+struct wl_list catnip_windows;
+
+static struct {
+  struct wl_listener xdg_shell_new_toplevel;
+  struct wl_listener seat_keyboard_focus_change;
+} listeners;
 
 static void
-on_new_xdg_toplevel_listener(struct wl_listener* listener, void* data)
+on_xdg_shell_new_toplevel(struct wl_listener* listener, void* data)
 {
   struct wlr_xdg_toplevel* xdg_toplevel = data;
   struct catnip_window* window = catnip_window_create(xdg_toplevel);
@@ -17,7 +20,7 @@ on_new_xdg_toplevel_listener(struct wl_listener* listener, void* data)
 }
 
 static void
-on_keyboard_focus_change(struct wl_listener* listener, void* data)
+on_seat_keyboard_focus_change(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_keyboard_focus_change_event* event = data;
 
@@ -43,21 +46,19 @@ on_keyboard_focus_change(struct wl_listener* listener, void* data)
 }
 
 void
-catnip_window_init()
+catnip_windows_init()
 {
-  catnip_windows_init();
-
-  // TODO: handle popups
+  wl_list_init(&catnip_windows);
 
   wl_signal_subscribe(
     &catnip_xdg_shell->events.new_toplevel,
-    &new_xdg_toplevel_listener,
-    on_new_xdg_toplevel_listener
+    &listeners.xdg_shell_new_toplevel,
+    on_xdg_shell_new_toplevel
   );
 
   wl_signal_subscribe(
     &catnip_seat->keyboard_state.events.focus_change,
-    &keyboard_focus_change_listener,
-    on_keyboard_focus_change
+    &listeners.seat_keyboard_focus_change,
+    on_seat_keyboard_focus_change
   );
 }

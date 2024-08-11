@@ -1,19 +1,20 @@
 #include "cli.h"
 #include "config.h"
-#include "cursor/init.h"
-#include "keyboard/init.h"
 #include "lua_events.h"
-#include "output/init.h"
 #include "state/allocator.h"
 #include "state/backend.h"
+#include "state/cursor.h"
 #include "state/display.h"
 #include "state/event_loop.h"
+#include "state/keyboards.h"
+#include "state/output_layout.h"
+#include "state/outputs.h"
 #include "state/renderer.h"
 #include "state/scene.h"
 #include "state/seat.h"
+#include "state/windows.h"
 #include "state/xdg_shell.h"
 #include "utils/log.h"
-#include "window/init.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -36,11 +37,12 @@ main(int argc, char* argv[])
   catnip_backend_init(); // must init after event loop
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
-  catnip_keyboard_init(); // must init after backend
+  catnip_keyboards_init(); // must init after backend
+  catnip_outputs_init(); // must init after backend
   catnip_allocator_init(); // must init after renderer
-  catnip_window_init(); // must init after xdg_shell
-  catnip_output_init(); // must init after display + backend + scene
-  catnip_cursor_init(); // must init after output
+  catnip_windows_init(); // must init after xdg_shell + seat
+  catnip_output_layout_init(); // must init after display + scene
+  catnip_cursor_init(); // must init after output layout
   catnip_config_init(); // must init last
 
   wlr_compositor_create(

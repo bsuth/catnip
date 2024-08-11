@@ -2,6 +2,7 @@
 #include "cursor/cursor.h"
 #include "extensions/string.h"
 #include "lua_events.h"
+#include "state/cursor.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>

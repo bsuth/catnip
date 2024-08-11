@@ -1,14 +1,6 @@
 #include "windows.h"
 #include "state/seat.h"
-#include "window/window.h"
-
-struct wl_list catnip_windows;
-
-void
-catnip_windows_init()
-{
-  wl_list_init(&catnip_windows);
-}
+#include "state/windows.h"
 
 struct catnip_window*
 catnip_windows_get_focused()

@@ -1,13 +1,10 @@
 #include "cursor.h"
 #include "extensions/time.h"
 #include "output/output.h"
-#include "output/outputs.h"
+#include "state/cursor.h"
+#include "state/outputs.h"
 #include "state/scene.h"
 #include "state/seat.h"
-
-struct wlr_cursor* catnip_cursor = NULL;
-struct wlr_xcursor_manager* catnip_xcursor_manager = NULL;
-char* catnip_cursor_name = NULL;
 
 void
 catnip_cursor_notify(uint32_t time_msec)

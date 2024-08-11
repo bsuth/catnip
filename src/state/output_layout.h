@@ -1,5 +1,5 @@
-#ifndef CATNIP_OUTPUT_LAYOUT_H
-#define CATNIP_OUTPUT_LAYOUT_H
+#ifndef CATNIP_STATE_OUTPUT_LAYOUT_H
+#define CATNIP_STATE_OUTPUT_LAYOUT_H
 
 #include <wlr/types/wlr_output_layout.h>
 

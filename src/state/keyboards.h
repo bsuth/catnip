@@ -1,5 +1,5 @@
-#ifndef CATNIP_KEYBOARDS_H
-#define CATNIP_KEYBOARDS_H
+#ifndef CATNIP_STATE_KEYBOARDS_H
+#define CATNIP_STATE_KEYBOARDS_H
 
 #include <wayland-util.h>
 

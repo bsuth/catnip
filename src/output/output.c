@@ -1,11 +1,11 @@
 #include "output.h"
 #include "config.h"
-#include "cursor/cursor.h"
 #include "extensions/wayland.h"
 #include "id.h"
 #include "output/lua_output.h"
-#include "output/output_layout.h"
 #include "state/allocator.h"
+#include "state/cursor.h"
+#include "state/output_layout.h"
 #include "state/renderer.h"
 #include "state/scene.h"
 #include <stdlib.h>

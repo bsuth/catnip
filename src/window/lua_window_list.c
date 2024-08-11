@@ -1,6 +1,6 @@
 #include "lua_window_list.h"
+#include "state/windows.h"
 #include "window/lua_window.h"
-#include "window/windows.h"
 
 struct catnip_lua_resource_list* lua_catnip_window_list = NULL;
 

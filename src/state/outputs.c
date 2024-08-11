@@ -1,14 +1,16 @@
-#include "init.h"
+#include "outputs.h"
 #include "extensions/wayland.h"
 #include "output/output.h"
-#include "output/output_layout.h"
-#include "output/outputs.h"
 #include "state/backend.h"
 
-static struct wl_listener new_output_listener;
+struct wl_list catnip_outputs;
+
+static struct {
+  struct wl_listener backend_new_output;
+} listeners;
 
 static void
-on_new_output(struct wl_listener* listener, void* data)
+on_backend_new_output(struct wl_listener* listener, void* data)
 {
   struct wlr_output* wlr_output = data;
   struct catnip_output* output = catnip_output_create(wlr_output);
@@ -16,15 +18,13 @@ on_new_output(struct wl_listener* listener, void* data)
 }
 
 void
-catnip_output_init()
+catnip_outputs_init()
 {
-  catnip_output_layout_init();
-
-  catnip_outputs_init();
+  wl_list_init(&catnip_outputs);
 
   wl_signal_subscribe(
     &catnip_backend->events.new_output,
-    &new_output_listener,
-    on_new_output
+    &listeners.backend_new_output,
+    on_backend_new_output
   );
 }

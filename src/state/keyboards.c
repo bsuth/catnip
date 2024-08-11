@@ -1,13 +1,16 @@
-#include "init.h"
+#include "keyboards.h"
 #include "extensions/wayland.h"
 #include "keyboard/keyboard.h"
-#include "keyboard/keyboards.h"
 #include "state/backend.h"
 
-static struct wl_listener new_input_listener;
+struct wl_list catnip_keyboards;
+
+static struct {
+  struct wl_listener backend_new_input;
+} listeners;
 
 static void
-on_new_input(struct wl_listener* listener, void* data)
+on_backend_new_input(struct wl_listener* listener, void* data)
 {
   struct wlr_input_device* device = data;
 
@@ -21,13 +24,13 @@ on_new_input(struct wl_listener* listener, void* data)
 }
 
 void
-catnip_keyboard_init()
+catnip_keyboards_init()
 {
   wl_list_init(&catnip_keyboards);
 
   wl_signal_subscribe(
     &catnip_backend->events.new_input,
-    &new_input_listener,
-    on_new_input
+    &listeners.backend_new_input,
+    on_backend_new_input
   );
 }

@@ -1,20 +1,26 @@
-#include "init.h"
+#include "cursor.h"
 #include "config.h"
 #include "cursor/cursor.h"
 #include "cursor/lua_cursor.h"
 #include "extensions/wayland.h"
-#include "output/output_layout.h"
 #include "state/backend.h"
+#include "state/output_layout.h"
 #include "state/seat.h"
 #include <string.h>
 
-static struct wl_listener cursor_motion_listener;
-static struct wl_listener cursor_motion_absolute_listener;
-static struct wl_listener cursor_button_listener;
-static struct wl_listener cursor_axis_listener;
-static struct wl_listener cursor_frame_listener;
-static struct wl_listener new_input_listener;
-static struct wl_listener request_set_cursor_listener;
+struct wlr_cursor* catnip_cursor;
+struct wlr_xcursor_manager* catnip_xcursor_manager;
+char* catnip_cursor_name;
+
+static struct {
+  struct wl_listener cursor_motion;
+  struct wl_listener cursor_motion_absolute;
+  struct wl_listener cursor_button;
+  struct wl_listener cursor_axis;
+  struct wl_listener cursor_frame;
+  struct wl_listener backend_new_input;
+  struct wl_listener seat_request_set_cursor;
+} listeners;
 
 static void
 on_cursor_motion(struct wl_listener* listener, void* data)
@@ -84,7 +90,7 @@ on_cursor_frame(struct wl_listener* listener, void* data)
 }
 
 static void
-on_new_input(struct wl_listener* listener, void* data)
+on_backend_new_input(struct wl_listener* listener, void* data)
 {
   struct wlr_input_device* device = data;
 
@@ -96,7 +102,7 @@ on_new_input(struct wl_listener* listener, void* data)
 }
 
 static void
-on_request_set_cursor(struct wl_listener* listener, void* data)
+on_seat_request_set_cursor(struct wl_listener* listener, void* data)
 {
   struct wlr_seat_pointer_request_set_cursor_event* event = data;
 
@@ -130,37 +136,37 @@ catnip_cursor_init()
 
   wl_signal_subscribe(
     &catnip_cursor->events.motion,
-    &cursor_motion_listener,
+    &listeners.cursor_motion,
     on_cursor_motion
   );
   wl_signal_subscribe(
     &catnip_cursor->events.motion_absolute,
-    &cursor_motion_absolute_listener,
+    &listeners.cursor_motion_absolute,
     on_cursor_motion_absolute
   );
   wl_signal_subscribe(
     &catnip_cursor->events.button,
-    &cursor_button_listener,
+    &listeners.cursor_button,
     on_cursor_button
   );
   wl_signal_subscribe(
     &catnip_cursor->events.axis,
-    &cursor_axis_listener,
+    &listeners.cursor_axis,
     on_cursor_axis
   );
   wl_signal_subscribe(
     &catnip_cursor->events.frame,
-    &cursor_frame_listener,
+    &listeners.cursor_frame,
     on_cursor_frame
   );
   wl_signal_subscribe(
     &catnip_backend->events.new_input,
-    &new_input_listener,
-    on_new_input
+    &listeners.backend_new_input,
+    on_backend_new_input
   );
   wl_signal_subscribe(
     &catnip_seat->events.request_set_cursor,
-    &request_set_cursor_listener,
-    on_request_set_cursor
+    &listeners.seat_request_set_cursor,
+    on_seat_request_set_cursor
   );
 }
