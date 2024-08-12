@@ -1,13 +1,13 @@
 #include "lua_state.h"
-#include "cursor/lua_cursor.h"
-#include "keyboard/lua_keyboard_list.h"
+#include "desktop/lua_cursor.h"
+#include "desktop/lua_keyboard_list.h"
+#include "desktop/lua_output_list.h"
+#include "desktop/lua_window_list.h"
 #include "lua_catnip.h"
 #include "lua_event.h"
 #include "lua_events.h"
 #include "lua_resource.h"
 #include "lua_resource_list.h"
-#include "output/lua_output_list.h"
-#include "window/lua_window_list.h"
 #include <lauxlib.h>
 
 void

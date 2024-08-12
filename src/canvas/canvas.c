@@ -1,9 +1,9 @@
 #include "canvas.h"
 #include "canvas/canvas_buffer.h"
 #include "canvas/canvas_cache.h"
+#include "compositor/event_loop.h"
+#include "compositor/scene.h"
 #include "config.h"
-#include "state/event_loop.h"
-#include "state/scene.h"
 #include <stdlib.h>
 
 struct catnip_canvas*
