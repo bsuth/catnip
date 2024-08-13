@@ -1,4 +1,5 @@
 #include "lua_output.h"
+#include "desktop/cursor.h"
 #include "desktop/lua_output_list.h"
 #include "desktop/lua_output_mode.h"
 #include "desktop/outputs.h"
@@ -94,14 +95,20 @@ lua_catnip_output__newindex(
   } else if (streq(key, "mode")) {
     struct wlr_output_mode* mode = lua_catnip_resource_checkname(L, 3, "mode");
     struct wlr_output_state state = {0};
+
     wlr_output_state_set_mode(&state, mode);
     wlr_output_commit_state(output->wlr.output, &state);
     wlr_output_state_finish(&state);
   } else if (streq(key, "scale")) {
     struct wlr_output_state state = {0};
-    wlr_output_state_set_scale(&state, luaL_checknumber(L, 3));
+    int new_scale = luaL_checknumber(L, 3);
+
+    wlr_output_state_set_scale(&state, new_scale);
     wlr_output_commit_state(output->wlr.output, &state);
     wlr_output_state_finish(&state);
+
+    // Ensure we have loaded a scaled cursor theme for the new output's scale
+    wlr_xcursor_manager_load(catnip_xcursor_manager, new_scale);
   } else {
     return false;
   }

@@ -1,10 +1,10 @@
 #include "lua_state.h"
 #include "desktop/lua_cursor.h"
+#include "desktop/lua_key_event.h"
 #include "desktop/lua_keyboard_list.h"
 #include "desktop/lua_output_list.h"
 #include "desktop/lua_window_list.h"
 #include "lua_catnip.h"
-#include "lua_event.h"
 #include "lua_events.h"
 #include "lua_resource.h"
 #include "lua_resource_list.h"
@@ -15,7 +15,7 @@ lua_catnip_state_init(lua_State* L)
 {
   lua_catnip_init(L);
 
-  lua_catnip_event_init(L);
+  lua_catnip_key_event_init(L);
   lua_catnip_events_init(L);
 
   lua_catnip_resource_init(L);
