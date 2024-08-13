@@ -36,25 +36,25 @@ lua_catnip_output__index(
   if (streq(key, "id")) {
     lua_pushnumber(L, output->id);
   } else if (streq(key, "x")) {
-    int x = wlr_output_layout_get(catnip_output_layout, output->wlr_output)->x;
+    int x = wlr_output_layout_get(catnip_output_layout, output->wlr.output)->x;
     lua_pushnumber(L, x);
   } else if (streq(key, "y")) {
-    int y = wlr_output_layout_get(catnip_output_layout, output->wlr_output)->y;
+    int y = wlr_output_layout_get(catnip_output_layout, output->wlr.output)->y;
     lua_pushnumber(L, y);
   } else if (streq(key, "width")) {
-    lua_pushnumber(L, output->wlr_output->width);
+    lua_pushnumber(L, output->wlr.output->width);
   } else if (streq(key, "height")) {
-    lua_pushnumber(L, output->wlr_output->height);
+    lua_pushnumber(L, output->wlr.output->height);
   } else if (streq(key, "refresh")) {
-    lua_pushnumber(L, output->wlr_output->refresh);
+    lua_pushnumber(L, output->wlr.output->refresh);
   } else if (streq(key, "mode")) {
-    output->wlr_output->current_mode != NULL
-      ? lua_catnip_output_push_mode(L, output, output->wlr_output->current_mode)
+    output->wlr.output->current_mode != NULL
+      ? lua_catnip_output_push_mode(L, output, output->wlr.output->current_mode)
       : lua_pushnil(L);
   } else if (streq(key, "modes")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_mode_list->ref);
   } else if (streq(key, "scale")) {
-    lua_pushnumber(L, output->wlr_output->scale);
+    lua_pushnumber(L, output->wlr.output->scale);
   } else {
     return false;
   }
@@ -74,15 +74,15 @@ lua_catnip_output__newindex(
   if (streq(key, "x")) {
     wlr_output_layout_add(
       catnip_output_layout,
-      output->wlr_output,
+      output->wlr.output,
       luaL_checknumber(L, 3),
-      wlr_output_layout_get(catnip_output_layout, output->wlr_output)->y
+      wlr_output_layout_get(catnip_output_layout, output->wlr.output)->y
     );
   } else if (streq(key, "y")) {
     wlr_output_layout_add(
       catnip_output_layout,
-      output->wlr_output,
-      wlr_output_layout_get(catnip_output_layout, output->wlr_output)->x,
+      output->wlr.output,
+      wlr_output_layout_get(catnip_output_layout, output->wlr.output)->x,
       luaL_checknumber(L, 3)
     );
   } else if (streq(key, "width")) {
@@ -95,12 +95,12 @@ lua_catnip_output__newindex(
     struct wlr_output_mode* mode = lua_catnip_resource_checkname(L, 3, "mode");
     struct wlr_output_state state = {0};
     wlr_output_state_set_mode(&state, mode);
-    wlr_output_commit_state(output->wlr_output, &state);
+    wlr_output_commit_state(output->wlr.output, &state);
     wlr_output_state_finish(&state);
   } else if (streq(key, "scale")) {
     struct wlr_output_state state = {0};
     wlr_output_state_set_scale(&state, luaL_checknumber(L, 3));
-    wlr_output_commit_state(output->wlr_output, &state);
+    wlr_output_commit_state(output->wlr.output, &state);
     wlr_output_state_finish(&state);
   } else {
     return false;
@@ -117,7 +117,7 @@ lua_catnip_output_create(lua_State* L, struct catnip_output* output)
   output->lua_mode_list = lua_catnip_resource_list_create(L);
 
   struct wlr_output_mode* output_mode = NULL;
-  wl_list_for_each(output_mode, &output->wlr_output->modes, link)
+  wl_list_for_each(output_mode, &output->wlr.output->modes, link)
   {
     wl_list_insert(
       &output->lua_mode_list->head,

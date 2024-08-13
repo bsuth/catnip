@@ -17,22 +17,17 @@ lua_catnip_keyboard__index(
   if (streq(key, "id")) {
     lua_pushnumber(L, keyboard->id);
   } else if (streq(key, "name")) {
-    lua_pushstring(L, keyboard->wlr_keyboard->base.name);
+    lua_pushstring(L, keyboard->wlr.keyboard->base.name);
   } else if (streq(key, "xkb_rules")) {
-    keyboard->xkb_rules == NULL ? lua_pushnil(L)
-                                : lua_pushstring(L, keyboard->xkb_rules);
+    lua_pushstring(L, keyboard->xkb_rule_names.rules);
   } else if (streq(key, "xkb_model")) {
-    keyboard->xkb_model == NULL ? lua_pushnil(L)
-                                : lua_pushstring(L, keyboard->xkb_model);
+    lua_pushstring(L, keyboard->xkb_rule_names.model);
   } else if (streq(key, "xkb_layout")) {
-    keyboard->xkb_layout == NULL ? lua_pushnil(L)
-                                 : lua_pushstring(L, keyboard->xkb_layout);
+    lua_pushstring(L, keyboard->xkb_rule_names.layout);
   } else if (streq(key, "xkb_variant")) {
-    keyboard->xkb_variant == NULL ? lua_pushnil(L)
-                                  : lua_pushstring(L, keyboard->xkb_variant);
+    lua_pushstring(L, keyboard->xkb_rule_names.variant);
   } else if (streq(key, "xkb_options")) {
-    keyboard->xkb_options == NULL ? lua_pushnil(L)
-                                  : lua_pushstring(L, keyboard->xkb_options);
+    lua_pushstring(L, keyboard->xkb_rule_names.options);
   } else {
     return false;
   }
@@ -49,33 +44,38 @@ lua_catnip_keyboard__newindex(
 {
   struct catnip_keyboard* keyboard = lua_resource->data;
 
-  char** xkb_pointer = NULL;
-
   if (streq(key, "xkb_rules")) {
-    xkb_pointer = &keyboard->xkb_rules;
+    catnip_keyboard_update_xkb_rule_name(
+      keyboard,
+      &keyboard->xkb_rule_names.rules,
+      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3))
+    );
   } else if (streq(key, "xkb_model")) {
-    xkb_pointer = &keyboard->xkb_model;
+    catnip_keyboard_update_xkb_rule_name(
+      keyboard,
+      &keyboard->xkb_rule_names.model,
+      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3))
+    );
   } else if (streq(key, "xkb_layout")) {
-    xkb_pointer = &keyboard->xkb_layout;
+    catnip_keyboard_update_xkb_rule_name(
+      keyboard,
+      &keyboard->xkb_rule_names.layout,
+      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3))
+    );
   } else if (streq(key, "xkb_variant")) {
-    xkb_pointer = &keyboard->xkb_variant;
+    catnip_keyboard_update_xkb_rule_name(
+      keyboard,
+      &keyboard->xkb_rule_names.variant,
+      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3))
+    );
   } else if (streq(key, "xkb_options")) {
-    xkb_pointer = &keyboard->xkb_options;
+    catnip_keyboard_update_xkb_rule_name(
+      keyboard,
+      &keyboard->xkb_rule_names.options,
+      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3))
+    );
   } else {
     return false;
-  }
-
-  if (xkb_pointer != NULL) {
-    char* prev = *xkb_pointer;
-
-    *xkb_pointer =
-      lua_type(L, 3) == LUA_TNIL ? NULL : strdup(luaL_checkstring(L, 3));
-
-    if (prev != NULL) {
-      free(prev);
-    }
-
-    catnip_keyboard_reload_keymap(keyboard);
   }
 
   return true;

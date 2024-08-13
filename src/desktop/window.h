@@ -6,19 +6,23 @@
 
 struct catnip_window {
   int id;
-
   struct wl_list link;
+
   struct catnip_lua_resource* lua_resource;
 
-  struct wlr_xdg_toplevel* xdg_toplevel;
-  struct wlr_scene_tree* scene_tree;
+  struct {
+    struct wlr_xdg_toplevel* xdg_toplevel;
+    struct wlr_scene_tree* scene_tree;
+  } wlr;
 
-  struct wl_listener map_listener;
-  struct wl_listener commit_listener;
-  struct wl_listener unmap_listener;
-  struct wl_listener request_maximize_listener;
-  struct wl_listener request_fullscreen_listener;
-  struct wl_listener destroy_listener;
+  struct {
+    struct wl_listener surface_map;
+    struct wl_listener surface_commit;
+    struct wl_listener surface_unmap;
+    struct wl_listener xdg_toplevel_request_maximize;
+    struct wl_listener xdg_toplevel_request_fullscreen;
+    struct wl_listener xdg_toplevel_destroy;
+  } listeners;
 };
 
 struct catnip_window*

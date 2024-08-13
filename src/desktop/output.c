@@ -18,10 +18,10 @@ static void
 on_output_frame(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
-    wl_container_of(listener, output, frame_listener);
+    wl_container_of(listener, output, listeners.output_frame);
 
   struct wlr_scene_output* scene_output =
-    wlr_scene_get_scene_output(catnip_scene, output->wlr_output);
+    wlr_scene_get_scene_output(catnip_scene, output->wlr.output);
 
   wlr_scene_output_commit(scene_output, NULL);
 
@@ -41,17 +41,17 @@ static void
 on_output_destroy(struct wl_listener* listener, void* data)
 {
   struct catnip_output* output =
-    wl_container_of(listener, output, destroy_listener);
+    wl_container_of(listener, output, listeners.output_destroy);
 
   lua_catnip_output_destroy(catnip_L, output->lua_resource);
 
   wl_list_remove(&output->link);
-  wl_list_remove(&output->frame_listener.link);
-  wl_list_remove(&output->request_state_listener.link);
-  wl_list_remove(&output->destroy_listener.link);
+  wl_list_remove(&output->listeners.output_frame.link);
+  wl_list_remove(&output->listeners.output_request_state.link);
+  wl_list_remove(&output->listeners.output_destroy.link);
 
-  wlr_output_layout_remove(catnip_output_layout, output->wlr_output);
-  wlr_scene_output_destroy(output->scene_output);
+  wlr_output_layout_remove(catnip_output_layout, output->wlr.output);
+  wlr_scene_output_destroy(output->wlr.scene_output);
 
   free(output);
 }
@@ -77,30 +77,30 @@ catnip_output_create(struct wlr_output* wlr_output)
   struct catnip_output* output = calloc(1, sizeof(struct catnip_output));
 
   output->id = generate_catnip_id();
-  output->wlr_output = wlr_output;
-  output->layout_output =
+  output->wlr.output = wlr_output;
+  output->wlr.output_layout_output =
     wlr_output_layout_add_auto(catnip_output_layout, wlr_output);
-  output->scene_output = wlr_scene_output_create(catnip_scene, wlr_output);
+  output->wlr.scene_output = wlr_scene_output_create(catnip_scene, wlr_output);
 
   wlr_scene_output_layout_add_output(
     catnip_scene_output_layout,
-    output->layout_output,
-    output->scene_output
+    output->wlr.output_layout_output,
+    output->wlr.scene_output
   );
 
   wl_signal_subscribe(
     &wlr_output->events.frame,
-    &output->frame_listener,
+    &output->listeners.output_frame,
     on_output_frame
   );
   wl_signal_subscribe(
     &wlr_output->events.request_state,
-    &output->request_state_listener,
+    &output->listeners.output_request_state,
     on_output_request_state
   );
   wl_signal_subscribe(
     &wlr_output->events.destroy,
-    &output->destroy_listener,
+    &output->listeners.output_destroy,
     on_output_destroy
   );
 
@@ -128,11 +128,11 @@ catnip_output_configure(
 
   wlr_output_state_set_custom_mode(
     &state,
-    width != -1 ? width : output->wlr_output->width,
-    height != -1 ? height : output->wlr_output->height,
-    refresh != -1 ? refresh : output->wlr_output->refresh
+    width != -1 ? width : output->wlr.output->width,
+    height != -1 ? height : output->wlr.output->height,
+    refresh != -1 ? refresh : output->wlr.output->refresh
   );
 
-  wlr_output_commit_state(output->wlr_output, &state);
+  wlr_output_commit_state(output->wlr.output, &state);
   wlr_output_state_finish(&state);
 }

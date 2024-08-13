@@ -19,7 +19,7 @@ lua_catnip_window_list_populate(lua_State* L)
     // Do not create the Lua window unless the surface has actually been mapped,
     // i.e. initialization has finished and the window is ready to be shown on
     // screen.
-    if (window->xdg_toplevel->base->surface->mapped) {
+    if (window->wlr.xdg_toplevel->base->surface->mapped) {
       lua_catnip_window_create(L, window);
     }
   }

@@ -25,7 +25,7 @@ lua_catnip_state_init(lua_State* L)
   lua_catnip_keyboard_list_init(L); // must init after resource
   lua_catnip_output_list_init(L); // must init after resource
   lua_catnip_window_list_init(L); // must init after resource
-                                  //
+
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
 

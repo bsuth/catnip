@@ -86,7 +86,7 @@ catnip_windows_get_focused()
     struct catnip_window* window = NULL;
     wl_list_for_each(window, &catnip_windows, link)
     {
-      if (window->xdg_toplevel == focused_toplevel) {
+      if (window->wlr.xdg_toplevel == focused_toplevel) {
         return window;
       }
     }

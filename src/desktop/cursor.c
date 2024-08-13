@@ -197,7 +197,7 @@ catnip_cursor_xcursor(const char* name, int size)
   {
     wlr_xcursor_manager_load(
       new_wlr_xcursor_manager,
-      output->wlr_output->scale
+      output->wlr.output->scale
     );
   }
 

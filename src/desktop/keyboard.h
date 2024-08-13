@@ -7,29 +7,41 @@
 
 struct catnip_keyboard {
   int id;
-
   struct wl_list link;
+
   struct catnip_lua_resource* lua_resource;
 
-  struct wlr_keyboard* wlr_keyboard;
+  struct {
+    struct wlr_keyboard* keyboard;
+  } wlr;
 
-  char* xkb_rules;
-  char* xkb_model;
-  char* xkb_layout;
-  char* xkb_variant;
-  char* xkb_options;
+  struct {
+    char* rules;
+    char* model;
+    char* layout;
+    char* variant;
+    char* options;
+  } xkb_rule_names;
 
-  struct wl_listener modifiers_listener;
-  struct wl_listener key_listener;
-  struct wl_listener destroy_listener;
+  struct {
+    struct wl_listener keyboard_modifiers;
+    struct wl_listener keyboard_key;
+    struct wl_listener keyboard_destroy;
+  } listeners;
 
-  struct wl_event_source* reload_keymap_event_source;
+  struct {
+    struct wl_event_source* reload_keymap;
+  } event_sources;
 };
 
 struct catnip_keyboard*
 catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard);
 
 void
-catnip_keyboard_reload_keymap(struct catnip_keyboard* keyboard);
+catnip_keyboard_update_xkb_rule_name(
+  struct catnip_keyboard* keyboard,
+  char** xkb_rule_name,
+  const char* value
+);
 
 #endif
