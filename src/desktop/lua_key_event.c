@@ -1,5 +1,6 @@
 #include "lua_key_event.h"
 #include "desktop/keyboard.h"
+#include "desktop/lua_keyboard.h"
 #include "extensions/string.h"
 #include <lauxlib.h>
 
@@ -17,7 +18,7 @@ catnip_lua_key_event__index(lua_State* L)
     lua_log_error(L, "attempt to index outdated key event");
     lua_pushnil(L);
   } else if (key == NULL) {
-    lua_pushnil(L); // cannot conver to string
+    lua_pushnil(L);
   } else if (streq(key, "code")) {
     lua_pushnumber(L, lua_key_event->key_event->xkb_keysym);
   } else if (streq(key, "char")) {
@@ -99,7 +100,7 @@ catnip_lua_key_event_init(lua_State* L)
 }
 
 void
-catnip_lua_publish_key_event(
+catnip_lua_key_event_publish(
   lua_State* L,
   struct catnip_keyboard* keyboard,
   struct catnip_key_event* key_event
@@ -112,8 +113,8 @@ catnip_lua_publish_key_event(
   lua_key_event->key_event = key_event;
 
   key_event->state == WL_KEYBOARD_KEY_STATE_PRESSED
-    ? catnip_lua_resource_publish(L, keyboard->lua_resource, "keypress", 1)
-    : catnip_lua_resource_publish(L, keyboard->lua_resource, "keyrelease", 1);
+    ? catnip_lua_keyboard_publish(L, keyboard->lua_resource, "keypress", 1)
+    : catnip_lua_keyboard_publish(L, keyboard->lua_resource, "keyrelease", 1);
 
   lua_key_event->key_event = NULL;
   lua_pop(L, 1);

@@ -13,4 +13,12 @@ catnip_lua_keyboard_destroy(
   struct catnip_lua_resource* lua_resource
 );
 
+void
+catnip_lua_keyboard_publish(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* event,
+  int nargs
+);
+
 #endif

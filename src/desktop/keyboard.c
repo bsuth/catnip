@@ -84,7 +84,7 @@ on_keyboard_key(struct wl_listener* listener, void* data)
     return;
   }
 
-  catnip_lua_publish_key_event(catnip_L, keyboard, &event);
+  catnip_lua_key_event_publish(catnip_L, keyboard, &event);
 
   if (!event.prevent_notify) {
     // Wayland only allows a single keyboard per seat. Thus, we assign all

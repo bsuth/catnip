@@ -14,4 +14,12 @@ catnip_lua_window_destroy(
   struct catnip_lua_resource* lua_resource
 );
 
+void
+catnip_lua_window_publish(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* event,
+  int nargs
+);
+
 #endif

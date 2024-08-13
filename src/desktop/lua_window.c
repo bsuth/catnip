@@ -1,9 +1,14 @@
 #include "lua_window.h"
-#include "desktop/lua_window_list.h"
+#include "desktop/lua_windows.h"
 #include "extensions/string.h"
 #include "extensions/wlroots.h"
+#include "lua_events.h"
 #include <lauxlib.h>
 #include <wlr/types/wlr_scene.h>
+
+// -----------------------------------------------------------------------------
+// __index
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_window_close(lua_State* L)
@@ -46,6 +51,10 @@ catnip_lua_window__index(
 
   return true;
 }
+
+// -----------------------------------------------------------------------------
+// __newindex
+// -----------------------------------------------------------------------------
 
 static bool
 catnip_lua_window__newindex(
@@ -97,6 +106,10 @@ catnip_lua_window__newindex(
   return true;
 }
 
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
+
 struct catnip_lua_resource*
 catnip_lua_window_create(lua_State* L, struct catnip_window* window)
 {
@@ -108,9 +121,9 @@ catnip_lua_window_create(lua_State* L, struct catnip_window* window)
   lua_resource->__index = catnip_lua_window__index;
   lua_resource->__newindex = catnip_lua_window__newindex;
 
-  wl_list_insert(&catnip_lua_window_list->head, &lua_resource->link);
+  wl_list_insert(&catnip_lua_windows->windows, &lua_resource->link);
 
-  catnip_lua_resource_publish(L, lua_resource, "create", 0);
+  catnip_lua_window_publish(L, lua_resource, "create", 0);
 
   return lua_resource;
 }
@@ -121,6 +134,29 @@ catnip_lua_window_destroy(
   struct catnip_lua_resource* lua_resource
 )
 {
-  catnip_lua_resource_publish(L, lua_resource, "destroy", 0);
+  catnip_lua_window_publish(L, lua_resource, "destroy", 0);
   catnip_lua_resource_destroy(L, lua_resource);
+}
+
+void
+catnip_lua_window_publish(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* event,
+  int nargs
+)
+{
+  catnip_lua_resource_publish(L, lua_resource, event, nargs);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  lua_insert(L, -1 - nargs);
+
+  catnip_lua_events_publish(
+    L,
+    catnip_lua_windows->subscriptions,
+    event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
 }

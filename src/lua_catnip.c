@@ -4,9 +4,9 @@
 #include "compositor/seat.h"
 #include "config.h"
 #include "desktop/lua_cursor.h"
-#include "desktop/lua_keyboard_list.h"
-#include "desktop/lua_output_list.h"
-#include "desktop/lua_window_list.h"
+#include "desktop/lua_keyboards.h"
+#include "desktop/lua_outputs.h"
+#include "desktop/lua_windows.h"
 #include "desktop/window.h"
 #include "desktop/windows.h"
 #include "extensions/string.h"
@@ -80,11 +80,11 @@ catnip_lua_catnip__index(lua_State* L)
   if (streq(key, "cursor")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_cursor->ref);
   } else if (streq(key, "keyboards")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_keyboard_list->ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_keyboards->ref);
   } else if (streq(key, "outputs")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_output_list->ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_outputs->ref);
   } else if (streq(key, "windows")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_window_list->ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_windows->ref);
   } else if (streq(key, "focused")) {
     struct catnip_window* focused_window = catnip_windows_get_focused();
     if (focused_window == NULL) {

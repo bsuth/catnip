@@ -1,10 +1,15 @@
 #include "lua_output.h"
 #include "desktop/cursor.h"
-#include "desktop/lua_output_list.h"
 #include "desktop/lua_output_mode.h"
+#include "desktop/lua_outputs.h"
 #include "desktop/outputs.h"
 #include "extensions/string.h"
+#include "lua_events.h"
 #include <lauxlib.h>
+
+// -----------------------------------------------------------------------------
+// __index
+// -----------------------------------------------------------------------------
 
 static void
 catnip_lua_output_push_mode(
@@ -63,6 +68,10 @@ catnip_lua_output__index(
   return true;
 }
 
+// -----------------------------------------------------------------------------
+// __newindex
+// -----------------------------------------------------------------------------
+
 static bool
 catnip_lua_output__newindex(
   lua_State* L,
@@ -116,6 +125,10 @@ catnip_lua_output__newindex(
   return true;
 }
 
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
+
 struct catnip_lua_resource*
 catnip_lua_output_create(lua_State* L, struct catnip_output* output)
 {
@@ -137,9 +150,9 @@ catnip_lua_output_create(lua_State* L, struct catnip_output* output)
   lua_resource->__index = catnip_lua_output__index;
   lua_resource->__newindex = catnip_lua_output__newindex;
 
-  wl_list_insert(&catnip_lua_output_list->head, &lua_resource->link);
+  wl_list_insert(&catnip_lua_outputs->outputs, &lua_resource->link);
 
-  catnip_lua_resource_publish(L, lua_resource, "create", 0);
+  catnip_lua_output_publish(L, lua_resource, "create", 0);
 
   return lua_resource;
 }
@@ -152,7 +165,7 @@ catnip_lua_output_destroy(
 {
   struct catnip_output* output = lua_resource->data;
 
-  catnip_lua_resource_publish(L, lua_resource, "destroy", 0);
+  catnip_lua_output_publish(L, lua_resource, "destroy", 0);
 
   struct catnip_lua_resource* lua_output_mode = NULL;
   wl_list_for_each(lua_output_mode, &output->lua_mode_list->head, link)
@@ -162,4 +175,27 @@ catnip_lua_output_destroy(
 
   catnip_lua_resource_list_destroy(L, output->lua_mode_list);
   catnip_lua_resource_destroy(L, lua_resource);
+}
+
+void
+catnip_lua_output_publish(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* event,
+  int nargs
+)
+{
+  catnip_lua_resource_publish(L, lua_resource, event, nargs);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  lua_insert(L, -1 - nargs);
+
+  catnip_lua_events_publish(
+    L,
+    catnip_lua_outputs->subscriptions,
+    event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
 }

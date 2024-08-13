@@ -1,6 +1,7 @@
 #include "lua_keyboard.h"
-#include "desktop/lua_keyboard_list.h"
+#include "desktop/lua_keyboards.h"
 #include "extensions/string.h"
+#include "lua_events.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -81,6 +82,10 @@ catnip_lua_keyboard__newindex(
   return true;
 }
 
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
+
 struct catnip_lua_resource*
 catnip_lua_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
 {
@@ -92,9 +97,9 @@ catnip_lua_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
   lua_resource->__index = catnip_lua_keyboard__index;
   lua_resource->__newindex = catnip_lua_keyboard__newindex;
 
-  wl_list_insert(&catnip_lua_keyboard_list->head, &lua_resource->link);
+  wl_list_insert(&catnip_lua_keyboards->keyboards, &lua_resource->link);
 
-  catnip_lua_resource_publish(L, lua_resource, "create", 0);
+  catnip_lua_keyboard_publish(L, lua_resource, "create", 0);
 
   return lua_resource;
 }
@@ -105,6 +110,29 @@ catnip_lua_keyboard_destroy(
   struct catnip_lua_resource* lua_resource
 )
 {
-  catnip_lua_resource_publish(L, lua_resource, "destroy", 0);
+  catnip_lua_keyboard_publish(L, lua_resource, "destroy", 0);
   catnip_lua_resource_destroy(L, lua_resource);
+}
+
+void
+catnip_lua_keyboard_publish(
+  lua_State* L,
+  struct catnip_lua_resource* lua_resource,
+  const char* event,
+  int nargs
+)
+{
+  catnip_lua_resource_publish(L, lua_resource, event, nargs);
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  lua_insert(L, -1 - nargs);
+
+  catnip_lua_events_publish(
+    L,
+    catnip_lua_keyboards->subscriptions,
+    event,
+    nargs + 1
+  );
+
+  lua_remove(L, -1 - nargs);
 }
