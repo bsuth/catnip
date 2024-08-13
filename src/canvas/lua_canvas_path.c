@@ -8,7 +8,7 @@
 #include <math.h>
 
 static void
-lua_catnip_canvas_path_line(lua_State* L, struct catnip_canvas* canvas)
+catnip_lua_canvas_path_line(lua_State* L, struct catnip_canvas* canvas)
 {
   lua_rawgeti(L, -1, 2);
   double x = lua_popnumber(L);
@@ -20,7 +20,7 @@ lua_catnip_canvas_path_line(lua_State* L, struct catnip_canvas* canvas)
 }
 
 static void
-lua_catnip_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
+catnip_lua_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
 {
   double x, y;
   cairo_get_current_point(canvas->cr, &x, &y);
@@ -43,7 +43,7 @@ lua_catnip_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
 }
 
 static void
-lua_catnip_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
+catnip_lua_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
 {
   lua_rawgeti(L, -1, 2);
   double control1_x = lua_popnumber(L);
@@ -75,9 +75,9 @@ lua_catnip_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
 }
 
 int
-lua_catnip_canvas_path(lua_State* L)
+catnip_lua_canvas_path(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
 
   luaL_checktype(L, 2, LUA_TTABLE);
   cairo_save(canvas->cr);
@@ -95,11 +95,11 @@ lua_catnip_canvas_path(lua_State* L)
       const char* command = lua_popstring(L);
 
       if (streq(command, "line")) {
-        lua_catnip_canvas_path_line(L, canvas);
+        catnip_lua_canvas_path_line(L, canvas);
       } else if (streq(command, "arc")) {
-        lua_catnip_canvas_path_arc(L, canvas);
+        catnip_lua_canvas_path_arc(L, canvas);
       } else if (streq(command, "bezier")) {
-        lua_catnip_canvas_path_bezier(L, canvas);
+        catnip_lua_canvas_path_bezier(L, canvas);
       }
     }
 

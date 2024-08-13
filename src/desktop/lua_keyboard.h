@@ -5,10 +5,10 @@
 #include "lua_resource.h"
 
 struct catnip_lua_resource*
-lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard);
+catnip_lua_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard);
 
 void
-lua_catnip_keyboard_destroy(
+catnip_lua_keyboard_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 );

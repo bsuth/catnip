@@ -6,15 +6,15 @@
 #include <wlr/types/wlr_scene.h>
 
 static int
-lua_catnip_window_close(lua_State* L)
+catnip_lua_window_close(lua_State* L)
 {
-  struct catnip_window* window = lua_catnip_resource_checkname(L, 1, "window");
+  struct catnip_window* window = catnip_lua_resource_checkname(L, 1, "window");
   wlr_xdg_toplevel_send_close(window->wlr.xdg_toplevel);
   return 0;
 }
 
 static bool
-lua_catnip_window__index(
+catnip_lua_window__index(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -39,7 +39,7 @@ lua_catnip_window__index(
   } else if (streq(key, "title")) {
     lua_pushstring(L, window->wlr.xdg_toplevel->title);
   } else if (streq(key, "destroy")) {
-    lua_pushcfunction(L, lua_catnip_window_close);
+    lua_pushcfunction(L, catnip_lua_window_close);
   } else {
     return false;
   }
@@ -48,7 +48,7 @@ lua_catnip_window__index(
 }
 
 static bool
-lua_catnip_window__newindex(
+catnip_lua_window__newindex(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -98,29 +98,29 @@ lua_catnip_window__newindex(
 }
 
 struct catnip_lua_resource*
-lua_catnip_window_create(lua_State* L, struct catnip_window* window)
+catnip_lua_window_create(lua_State* L, struct catnip_window* window)
 {
-  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  struct catnip_lua_resource* lua_resource = catnip_lua_resource_create(L);
   window->lua_resource = lua_resource;
 
   lua_resource->data = window;
   lua_resource->name = "window";
-  lua_resource->__index = lua_catnip_window__index;
-  lua_resource->__newindex = lua_catnip_window__newindex;
+  lua_resource->__index = catnip_lua_window__index;
+  lua_resource->__newindex = catnip_lua_window__newindex;
 
-  wl_list_insert(&lua_catnip_window_list->head, &lua_resource->link);
+  wl_list_insert(&catnip_lua_window_list->head, &lua_resource->link);
 
-  lua_catnip_resource_publish(L, lua_resource, "create", 0);
+  catnip_lua_resource_publish(L, lua_resource, "create", 0);
 
   return lua_resource;
 }
 
 void
-lua_catnip_window_destroy(
+catnip_lua_window_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 )
 {
-  lua_catnip_resource_publish(L, lua_resource, "destroy", 0);
-  lua_catnip_resource_destroy(L, lua_resource);
+  catnip_lua_resource_publish(L, lua_resource, "destroy", 0);
+  catnip_lua_resource_destroy(L, lua_resource);
 }

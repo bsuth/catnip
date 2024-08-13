@@ -3,7 +3,7 @@
 #include <lauxlib.h>
 
 static bool
-lua_catnip_output_mode__index(
+catnip_lua_output_mode__index(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -25,22 +25,22 @@ lua_catnip_output_mode__index(
 }
 
 struct catnip_lua_resource*
-lua_catnip_output_mode_create(lua_State* L, struct wlr_output_mode* output_mode)
+catnip_lua_output_mode_create(lua_State* L, struct wlr_output_mode* output_mode)
 {
-  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  struct catnip_lua_resource* lua_resource = catnip_lua_resource_create(L);
 
   lua_resource->data = output_mode;
   lua_resource->name = "mode";
-  lua_resource->__index = lua_catnip_output_mode__index;
+  lua_resource->__index = catnip_lua_output_mode__index;
 
   return lua_resource;
 }
 
 void
-lua_catnip_output_mode_destroy(
+catnip_lua_output_mode_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 )
 {
-  lua_catnip_resource_destroy(L, lua_resource);
+  catnip_lua_resource_destroy(L, lua_resource);
 }

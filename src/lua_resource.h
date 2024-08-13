@@ -6,19 +6,19 @@
 
 struct catnip_lua_resource;
 
-typedef bool (*catnip_lua_resource__index)(
+typedef bool (*catnip_lua_resource_index)(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
 );
 
-typedef bool (*catnip_lua_resource__newindex)(
+typedef bool (*catnip_lua_resource_newindex)(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
 );
 
-typedef void (*catnip_lua_resource__gc)(
+typedef void (*catnip_lua_resource_gc)(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 );
@@ -33,28 +33,28 @@ struct catnip_lua_resource {
   void* data;
   const char* name;
 
-  catnip_lua_resource__index __index;
-  catnip_lua_resource__newindex __newindex;
-  catnip_lua_resource__gc __gc;
+  catnip_lua_resource_index __index;
+  catnip_lua_resource_newindex __newindex;
+  catnip_lua_resource_gc __gc;
 };
 
 void
-lua_catnip_resource_init(lua_State* L);
+catnip_lua_resource_init(lua_State* L);
 
 struct catnip_lua_resource*
-lua_catnip_resource_create(lua_State* L);
+catnip_lua_resource_create(lua_State* L);
 
 void
-lua_catnip_resource_destroy(
+catnip_lua_resource_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 );
 
 void*
-lua_catnip_resource_checkname(lua_State* L, int index, const char* name);
+catnip_lua_resource_checkname(lua_State* L, int index, const char* name);
 
 void
-lua_catnip_resource_publish(
+catnip_lua_resource_publish(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* event,

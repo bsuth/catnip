@@ -11,23 +11,23 @@
 #include <lauxlib.h>
 
 static int
-lua_catnip_canvas_clear(lua_State* L)
+catnip_lua_canvas_clear(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
   catnip_canvas_clear(canvas);
   return 0;
 }
 
 static int
-lua_catnip_canvas_destroy(lua_State* L)
+catnip_lua_canvas_destroy(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
   catnip_canvas_destroy(canvas);
   return 0;
 }
 
 static bool
-lua_catnip_canvas__index(
+catnip_lua_canvas__index(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -48,19 +48,19 @@ lua_catnip_canvas__index(
   } else if (streq(key, "visible")) {
     lua_pushboolean(L, canvas->scene_buffer->node.enabled);
   } else if (streq(key, "path")) {
-    lua_pushcfunction(L, lua_catnip_canvas_path);
+    lua_pushcfunction(L, catnip_lua_canvas_path);
   } else if (streq(key, "rectangle")) {
-    lua_pushcfunction(L, lua_catnip_canvas_rectangle);
+    lua_pushcfunction(L, catnip_lua_canvas_rectangle);
   } else if (streq(key, "text")) {
-    lua_pushcfunction(L, lua_catnip_canvas_text);
+    lua_pushcfunction(L, catnip_lua_canvas_text);
   } else if (streq(key, "svg")) {
-    lua_pushcfunction(L, lua_catnip_canvas_svg);
+    lua_pushcfunction(L, catnip_lua_canvas_svg);
   } else if (streq(key, "png")) {
-    lua_pushcfunction(L, lua_catnip_canvas_png);
+    lua_pushcfunction(L, catnip_lua_canvas_png);
   } else if (streq(key, "clear")) {
-    lua_pushcfunction(L, lua_catnip_canvas_clear);
+    lua_pushcfunction(L, catnip_lua_canvas_clear);
   } else if (streq(key, "destroy")) {
-    lua_pushcfunction(L, lua_catnip_canvas_destroy);
+    lua_pushcfunction(L, catnip_lua_canvas_destroy);
   } else {
     return false;
   }
@@ -69,7 +69,7 @@ lua_catnip_canvas__index(
 }
 
 static bool
-lua_catnip_canvas__newindex(
+catnip_lua_canvas__newindex(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -111,7 +111,7 @@ lua_catnip_canvas__newindex(
 }
 
 static void
-lua_catnip_canvas__gc(lua_State* L, struct catnip_lua_resource* lua_resource)
+catnip_lua_canvas__gc(lua_State* L, struct catnip_lua_resource* lua_resource)
 {
   if (lua_resource->data != NULL) {
     catnip_canvas_destroy(lua_resource->data);
@@ -119,7 +119,7 @@ lua_catnip_canvas__gc(lua_State* L, struct catnip_lua_resource* lua_resource)
 }
 
 int
-lua_catnip_canvas(lua_State* L)
+catnip_lua_canvas(lua_State* L)
 {
   int width = 0;
   int height = 0;
@@ -151,12 +151,12 @@ lua_catnip_canvas(lua_State* L)
     }
   }
 
-  canvas->lua_resource = lua_catnip_resource_create(L);
+  canvas->lua_resource = catnip_lua_resource_create(L);
   canvas->lua_resource->data = canvas;
   canvas->lua_resource->name = "canvas";
-  canvas->lua_resource->__index = lua_catnip_canvas__index;
-  canvas->lua_resource->__newindex = lua_catnip_canvas__newindex;
-  canvas->lua_resource->__gc = lua_catnip_canvas__gc;
+  canvas->lua_resource->__index = catnip_lua_canvas__index;
+  canvas->lua_resource->__newindex = catnip_lua_canvas__newindex;
+  canvas->lua_resource->__gc = catnip_lua_canvas__gc;
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, canvas->lua_resource->ref);
 

@@ -6,7 +6,7 @@
 #include <string.h>
 
 static bool
-lua_catnip_keyboard__index(
+catnip_lua_keyboard__index(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -36,7 +36,7 @@ lua_catnip_keyboard__index(
 }
 
 static bool
-lua_catnip_keyboard__newindex(
+catnip_lua_keyboard__newindex(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -82,29 +82,29 @@ lua_catnip_keyboard__newindex(
 }
 
 struct catnip_lua_resource*
-lua_catnip_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
+catnip_lua_keyboard_create(lua_State* L, struct catnip_keyboard* keyboard)
 {
-  struct catnip_lua_resource* lua_resource = lua_catnip_resource_create(L);
+  struct catnip_lua_resource* lua_resource = catnip_lua_resource_create(L);
   keyboard->lua_resource = lua_resource;
 
   lua_resource->data = keyboard;
   lua_resource->name = "keyboard";
-  lua_resource->__index = lua_catnip_keyboard__index;
-  lua_resource->__newindex = lua_catnip_keyboard__newindex;
+  lua_resource->__index = catnip_lua_keyboard__index;
+  lua_resource->__newindex = catnip_lua_keyboard__newindex;
 
-  wl_list_insert(&lua_catnip_keyboard_list->head, &lua_resource->link);
+  wl_list_insert(&catnip_lua_keyboard_list->head, &lua_resource->link);
 
-  lua_catnip_resource_publish(L, lua_resource, "create", 0);
+  catnip_lua_resource_publish(L, lua_resource, "create", 0);
 
   return lua_resource;
 }
 
 void
-lua_catnip_keyboard_destroy(
+catnip_lua_keyboard_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 )
 {
-  lua_catnip_resource_publish(L, lua_resource, "destroy", 0);
-  lua_catnip_resource_destroy(L, lua_resource);
+  catnip_lua_resource_publish(L, lua_resource, "destroy", 0);
+  catnip_lua_resource_destroy(L, lua_resource);
 }

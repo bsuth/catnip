@@ -5,9 +5,9 @@
 #include <lauxlib.h>
 
 int
-lua_catnip_canvas_rectangle(lua_State* L)
+catnip_lua_canvas_rectangle(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
   luaL_checktype(L, 2, LUA_TTABLE);
 
   cairo_save(canvas->cr);

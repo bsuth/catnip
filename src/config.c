@@ -31,7 +31,7 @@ catnip_config_load(
 
   catnip_L = luaL_newstate();
   luaL_openlibs(catnip_L);
-  lua_catnip_state_init(catnip_L);
+  catnip_lua_state_init(catnip_L);
 
   catnip_config_loading = true;
   bool loaded = !load(catnip_L, data) && !lua_pcall(catnip_L, 0, 0, 0);
@@ -43,7 +43,7 @@ catnip_config_load(
     catnip_L = NULL;
   }
 
-  lua_catnip_state_populate(catnip_L);
+  catnip_lua_state_populate(catnip_L);
 }
 
 static void
@@ -89,7 +89,7 @@ void
 catnip_config_reload()
 {
   if (catnip_L != NULL) {
-    lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "reload", 0);
+    catnip_lua_events_publish(catnip_L, catnip_lua_subscriptions, "reload", 0);
 
     // Set this _after_ publishing the event, just in case somebody calls
     // `catnip.reload()` during the `reload` event...

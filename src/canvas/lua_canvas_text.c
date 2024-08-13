@@ -8,9 +8,9 @@
 #include <pango/pangocairo.h>
 
 int
-lua_catnip_canvas_text(lua_State* L)
+catnip_lua_canvas_text(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
 
   PangoLayout* layout = pango_cairo_create_layout(canvas->cr);
   pango_layout_set_text(layout, luaL_checkstring(L, 2), -1);

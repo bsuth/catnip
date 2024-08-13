@@ -3,7 +3,7 @@
 #include <lauxlib.h>
 
 static int
-lua_catnip_resource_list__call(lua_State* L)
+catnip_lua_resource_list__call(lua_State* L)
 {
   struct catnip_lua_resource_list* lua_resource_list = lua_touserdata(L, 1);
 
@@ -22,21 +22,21 @@ lua_catnip_resource_list__call(lua_State* L)
   return 1;
 }
 
-static const struct luaL_Reg lua_catnip_resource_list_mt[] = {
-  {"__call", lua_catnip_resource_list__call},
+static const struct luaL_Reg catnip_lua_resource_list_mt[] = {
+  {"__call", catnip_lua_resource_list__call},
   {NULL, NULL}
 };
 
 void
-lua_catnip_resource_list_init(lua_State* L)
+catnip_lua_resource_list_init(lua_State* L)
 {
   luaL_newmetatable(L, "catnip.resource.list");
-  luaL_setfuncs(L, lua_catnip_resource_list_mt, 0);
+  luaL_setfuncs(L, catnip_lua_resource_list_mt, 0);
   lua_pop(L, 1);
 }
 
 struct catnip_lua_resource_list*
-lua_catnip_resource_list_create(lua_State* L)
+catnip_lua_resource_list_create(lua_State* L)
 {
   struct catnip_lua_resource_list* lua_resource_list =
     lua_newuserdata(L, sizeof(struct catnip_lua_resource_list));
@@ -49,7 +49,7 @@ lua_catnip_resource_list_create(lua_State* L)
 }
 
 void
-lua_catnip_resource_list_destroy(
+catnip_lua_resource_list_destroy(
   lua_State* L,
   struct catnip_lua_resource_list* lua_resource_list
 )

@@ -5,13 +5,13 @@
 #include <lua.h>
 #include <wlr/types/wlr_pointer.h>
 
-extern struct catnip_lua_resource* lua_catnip_cursor;
+extern struct catnip_lua_resource* catnip_lua_cursor;
 
 void
-lua_catnip_cursor_init(lua_State* L);
+catnip_lua_cursor_init(lua_State* L);
 
 void
-lua_catnip_cursor_publish_button_event(
+catnip_lua_cursor_publish_button_event(
   lua_State* L,
   struct wlr_pointer_button_event* event
 );

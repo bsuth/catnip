@@ -84,7 +84,7 @@ on_keyboard_key(struct wl_listener* listener, void* data)
     return;
   }
 
-  lua_catnip_publish_key_event(catnip_L, keyboard, &event);
+  catnip_lua_publish_key_event(catnip_L, keyboard, &event);
 
   if (!event.prevent_notify) {
     // Wayland only allows a single keyboard per seat. Thus, we assign all
@@ -107,7 +107,7 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.keyboard_destroy);
 
-  lua_catnip_keyboard_destroy(catnip_L, keyboard->lua_resource);
+  catnip_lua_keyboard_destroy(catnip_L, keyboard->lua_resource);
 
   wl_list_remove(&keyboard->link);
   wl_list_remove(&keyboard->listeners.keyboard_modifiers.link);
@@ -155,7 +155,7 @@ catnip_keyboard_create(struct wlr_keyboard* wlr_keyboard)
     on_keyboard_destroy
   );
 
-  lua_catnip_keyboard_create(catnip_L, keyboard);
+  catnip_lua_keyboard_create(catnip_L, keyboard);
 
   return keyboard;
 }

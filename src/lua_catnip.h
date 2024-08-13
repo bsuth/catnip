@@ -4,6 +4,6 @@
 #include <lua.h>
 
 void
-lua_catnip_init(lua_State* L);
+catnip_lua_catnip_init(lua_State* L);
 
 #endif

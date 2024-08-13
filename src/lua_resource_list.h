@@ -10,13 +10,13 @@ struct catnip_lua_resource_list {
 };
 
 void
-lua_catnip_resource_list_init(lua_State* L);
+catnip_lua_resource_list_init(lua_State* L);
 
 struct catnip_lua_resource_list*
-lua_catnip_resource_list_create(lua_State* L);
+catnip_lua_resource_list_create(lua_State* L);
 
 void
-lua_catnip_resource_list_destroy(
+catnip_lua_resource_list_destroy(
   lua_State* L,
   struct catnip_lua_resource_list* lua_resource_list
 );

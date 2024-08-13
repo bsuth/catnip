@@ -71,14 +71,14 @@ main(int argc, char* argv[])
       break;
     }
 
-    lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "tick", 0);
+    catnip_lua_events_publish(catnip_L, catnip_lua_subscriptions, "tick", 0);
 
     if (catnip_config_request_reload) {
       catnip_config_reload();
     }
   }
 
-  lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "quit", 0);
+  catnip_lua_events_publish(catnip_L, catnip_lua_subscriptions, "quit", 0);
   lua_close(catnip_L);
 
   wl_display_terminate(catnip_display);

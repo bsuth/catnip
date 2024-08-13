@@ -4,6 +4,6 @@
 #include <lua.h>
 
 int
-lua_catnip_canvas(lua_State* L);
+catnip_lua_canvas(lua_State* L);
 
 #endif

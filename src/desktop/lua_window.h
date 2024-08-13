@@ -6,10 +6,10 @@
 #include <lua.h>
 
 struct catnip_lua_resource*
-lua_catnip_window_create(lua_State* L, struct catnip_window* window);
+catnip_lua_window_create(lua_State* L, struct catnip_window* window);
 
 void
-lua_catnip_window_destroy(
+catnip_lua_window_destroy(
   lua_State* L,
   struct catnip_lua_resource* lua_resource
 );

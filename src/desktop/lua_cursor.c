@@ -6,10 +6,10 @@
 #include <stdlib.h>
 #include <string.h>
 
-struct catnip_lua_resource* lua_catnip_cursor = NULL;
+struct catnip_lua_resource* catnip_lua_cursor = NULL;
 
 static bool
-lua_catnip_cursor__index(
+catnip_lua_cursor__index(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -33,7 +33,7 @@ lua_catnip_cursor__index(
 }
 
 static bool
-lua_catnip_cursor__newindex(
+catnip_lua_cursor__newindex(
   lua_State* L,
   struct catnip_lua_resource* lua_resource,
   const char* key
@@ -69,26 +69,26 @@ lua_catnip_cursor__newindex(
 }
 
 void
-lua_catnip_cursor_init(lua_State* L)
+catnip_lua_cursor_init(lua_State* L)
 {
-  lua_catnip_cursor = lua_catnip_resource_create(L);
-  lua_catnip_cursor->data = catnip_cursor;
-  lua_catnip_cursor->name = "cursor";
-  lua_catnip_cursor->__index = lua_catnip_cursor__index;
-  lua_catnip_cursor->__newindex = lua_catnip_cursor__newindex;
+  catnip_lua_cursor = catnip_lua_resource_create(L);
+  catnip_lua_cursor->data = catnip_cursor;
+  catnip_lua_cursor->name = "cursor";
+  catnip_lua_cursor->__index = catnip_lua_cursor__index;
+  catnip_lua_cursor->__newindex = catnip_lua_cursor__newindex;
 }
 
 void
-lua_catnip_cursor_publish_button_event(
+catnip_lua_cursor_publish_button_event(
   lua_State* L,
   struct wlr_pointer_button_event* event
 )
 {
   lua_pushnumber(L, event->button);
 
-  lua_catnip_events_publish(
+  catnip_lua_events_publish(
     L,
-    lua_catnip_cursor->subscriptions,
+    catnip_lua_cursor->subscriptions,
     event->state == WLR_BUTTON_PRESSED ? "button::press" : "button:release",
     1
   );

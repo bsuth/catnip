@@ -8,9 +8,9 @@
 // -----------------------------------------------------------------------------
 
 static int
-lua_catnip_key_event__index(lua_State* L)
+catnip_lua_key_event__index(lua_State* L)
 {
-  struct lua_catnip_key_event* lua_key_event = lua_touserdata(L, 1);
+  struct catnip_lua_key_event* lua_key_event = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
   if (lua_key_event == NULL) {
@@ -68,9 +68,9 @@ lua_catnip_key_event__index(lua_State* L)
 // -----------------------------------------------------------------------------
 
 static int
-lua_catnip_key_event__newindex(lua_State* L)
+catnip_lua_key_event__newindex(lua_State* L)
 {
-  struct lua_catnip_key_event* lua_key_event = lua_touserdata(L, 1);
+  struct catnip_lua_key_event* lua_key_event = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
   if (streq(key, "prevent_notify")) {
@@ -84,36 +84,36 @@ lua_catnip_key_event__newindex(lua_State* L)
 // Core
 // -----------------------------------------------------------------------------
 
-static const struct luaL_Reg lua_catnip_key_event_mt[] = {
-  {"__index", lua_catnip_key_event__index},
-  {"__newindex", lua_catnip_key_event__newindex},
+static const struct luaL_Reg catnip_lua_key_event_mt[] = {
+  {"__index", catnip_lua_key_event__index},
+  {"__newindex", catnip_lua_key_event__newindex},
   {NULL, NULL}
 };
 
 void
-lua_catnip_key_event_init(lua_State* L)
+catnip_lua_key_event_init(lua_State* L)
 {
   luaL_newmetatable(L, "catnip.key.event");
-  luaL_setfuncs(L, lua_catnip_key_event_mt, 0);
+  luaL_setfuncs(L, catnip_lua_key_event_mt, 0);
   lua_pop(L, 1);
 }
 
 void
-lua_catnip_publish_key_event(
+catnip_lua_publish_key_event(
   lua_State* L,
   struct catnip_keyboard* keyboard,
   struct catnip_key_event* key_event
 )
 {
-  struct lua_catnip_key_event* lua_key_event =
-    lua_newuserdata(L, sizeof(struct lua_catnip_key_event));
+  struct catnip_lua_key_event* lua_key_event =
+    lua_newuserdata(L, sizeof(struct catnip_lua_key_event));
   luaL_setmetatable(L, "catnip.key.event");
 
   lua_key_event->key_event = key_event;
 
   key_event->state == WL_KEYBOARD_KEY_STATE_PRESSED
-    ? lua_catnip_resource_publish(L, keyboard->lua_resource, "keypress", 1)
-    : lua_catnip_resource_publish(L, keyboard->lua_resource, "keyrelease", 1);
+    ? catnip_lua_resource_publish(L, keyboard->lua_resource, "keypress", 1)
+    : catnip_lua_resource_publish(L, keyboard->lua_resource, "keyrelease", 1);
 
   lua_key_event->key_event = NULL;
   lua_pop(L, 1);

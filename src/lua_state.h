@@ -4,9 +4,9 @@
 #include <lua.h>
 
 void
-lua_catnip_state_init(lua_State* L);
+catnip_lua_state_init(lua_State* L);
 
 void
-lua_catnip_state_populate(lua_State* L);
+catnip_lua_state_populate(lua_State* L);
 
 #endif

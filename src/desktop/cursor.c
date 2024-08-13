@@ -71,7 +71,7 @@ on_cursor_button(struct wl_listener* listener, void* data)
     event->state
   );
 
-  lua_catnip_cursor_publish_button_event(catnip_L, event);
+  catnip_lua_cursor_publish_button_event(catnip_L, event);
 }
 
 static void

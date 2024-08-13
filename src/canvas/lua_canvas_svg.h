@@ -4,6 +4,6 @@
 #include <lua.h>
 
 int
-lua_catnip_canvas_svg(lua_State* L);
+catnip_lua_canvas_svg(lua_State* L);
 
 #endif

@@ -2,16 +2,16 @@
 #include "desktop/lua_window.h"
 #include "desktop/windows.h"
 
-struct catnip_lua_resource_list* lua_catnip_window_list = NULL;
+struct catnip_lua_resource_list* catnip_lua_window_list = NULL;
 
 void
-lua_catnip_window_list_init(lua_State* L)
+catnip_lua_window_list_init(lua_State* L)
 {
-  lua_catnip_window_list = lua_catnip_resource_list_create(L);
+  catnip_lua_window_list = catnip_lua_resource_list_create(L);
 }
 
 void
-lua_catnip_window_list_populate(lua_State* L)
+catnip_lua_window_list_populate(lua_State* L)
 {
   struct catnip_window* window = NULL;
   wl_list_for_each(window, &catnip_windows, link)
@@ -20,7 +20,7 @@ lua_catnip_window_list_populate(lua_State* L)
     // i.e. initialization has finished and the window is ready to be shown on
     // screen.
     if (window->wlr.xdg_toplevel->base->surface->mapped) {
-      lua_catnip_window_create(L, window);
+      catnip_lua_window_create(L, window);
     }
   }
 }
