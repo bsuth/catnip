@@ -2,6 +2,8 @@
 #include "desktop/lua_cursor.h"
 #include "desktop/lua_key_event.h"
 #include "desktop/lua_keyboards.h"
+#include "desktop/lua_output_mode.h"
+#include "desktop/lua_output_modes.h"
 #include "desktop/lua_outputs.h"
 #include "desktop/lua_windows.h"
 #include "lua_catnip.h"
@@ -17,6 +19,8 @@ catnip_lua_state_init(lua_State* L)
 
   catnip_lua_key_event_init(L);
   catnip_lua_keyboards_init(L);
+  catnip_lua_output_mode_init(L);
+  catnip_lua_output_modes_init(L);
   catnip_lua_outputs_init(L);
   catnip_lua_windows_init(L);
 

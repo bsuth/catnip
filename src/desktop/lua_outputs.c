@@ -97,8 +97,7 @@ catnip_lua_outputs__call(lua_State* L)
 {
   struct wl_list* link = lua_type(L, 3) == LUA_TNIL
     ? catnip_lua_outputs->outputs.next
-    : ((struct catnip_lua_resource*) luaL_checkudata(L, 3, "catnip.resource"))
-        ->link.next;
+    : ((struct catnip_lua_resource*) lua_touserdata(L, 3))->link.next;
 
   if (link == &catnip_lua_outputs->outputs) {
     lua_pushnil(L);

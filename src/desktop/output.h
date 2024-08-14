@@ -2,7 +2,6 @@
 #define CATNIP_DESKTOP_OUTPUT_H
 
 #include "lua_resource.h"
-#include "lua_resource_list.h"
 #include <wlr/types/wlr_output.h>
 
 struct catnip_output {
@@ -10,7 +9,7 @@ struct catnip_output {
   struct wl_list link;
 
   struct catnip_lua_resource* lua_resource;
-  struct catnip_lua_resource_list* lua_mode_list;
+  struct catnip_lua_output_modes* lua_output_modes;
 
   struct {
     struct wlr_output* output;

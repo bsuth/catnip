@@ -1,6 +1,7 @@
 #include "lua_output.h"
 #include "desktop/cursor.h"
 #include "desktop/lua_output_mode.h"
+#include "desktop/lua_output_modes.h"
 #include "desktop/lua_outputs.h"
 #include "desktop/outputs.h"
 #include "extensions/string.h"
@@ -15,14 +16,14 @@ static void
 catnip_lua_output_push_mode(
   lua_State* L,
   struct catnip_output* output,
-  struct wlr_output_mode* mode
+  struct wlr_output_mode* wlr_output_mode
 )
 {
-  struct catnip_lua_resource* lua_resource = NULL;
-  wl_list_for_each(lua_resource, &output->lua_mode_list->head, link)
+  struct catnip_lua_output_mode* lua_output_mode = NULL;
+  wl_list_for_each(lua_output_mode, &output->lua_output_modes->modes, link)
   {
-    if (lua_resource->data == mode) {
-      lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+    if (lua_output_mode->wlr_output_mode == wlr_output_mode) {
+      lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output_mode->ref);
       return;
     }
   }
@@ -58,7 +59,7 @@ catnip_lua_output__index(
       ? catnip_lua_output_push_mode(L, output, output->wlr.output->current_mode)
       : lua_pushnil(L);
   } else if (streq(key, "modes")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_mode_list->ref);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, output->lua_output_modes->ref);
   } else if (streq(key, "scale")) {
     lua_pushnumber(L, output->wlr.output->scale);
   } else {
@@ -133,17 +134,9 @@ struct catnip_lua_resource*
 catnip_lua_output_create(lua_State* L, struct catnip_output* output)
 {
   struct catnip_lua_resource* lua_resource = catnip_lua_resource_create(L);
-  output->lua_resource = lua_resource;
-  output->lua_mode_list = catnip_lua_resource_list_create(L);
 
-  struct wlr_output_mode* output_mode = NULL;
-  wl_list_for_each(output_mode, &output->wlr.output->modes, link)
-  {
-    wl_list_insert(
-      &output->lua_mode_list->head,
-      &catnip_lua_output_mode_create(L, output_mode)->link
-    );
-  }
+  output->lua_resource = lua_resource;
+  output->lua_output_modes = catnip_lua_output_modes_create(L, output);
 
   lua_resource->data = output;
   lua_resource->name = "output";
@@ -164,16 +157,8 @@ catnip_lua_output_destroy(
 )
 {
   struct catnip_output* output = lua_resource->data;
-
   catnip_lua_output_publish(L, lua_resource, "destroy", 0);
-
-  struct catnip_lua_resource* lua_output_mode = NULL;
-  wl_list_for_each(lua_output_mode, &output->lua_mode_list->head, link)
-  {
-    catnip_lua_output_mode_destroy(L, lua_output_mode);
-  }
-
-  catnip_lua_resource_list_destroy(L, output->lua_mode_list);
+  catnip_lua_output_modes_destroy(L, output->lua_output_modes);
   catnip_lua_resource_destroy(L, lua_resource);
 }
 
