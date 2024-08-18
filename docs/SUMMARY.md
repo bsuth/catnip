@@ -5,7 +5,6 @@
 - [Installation](getting_started_installation.md)
 - [CLI](getting_started_cli.md)
 - [User Config](getting_started_user_config.md)
-- [LuaCATS](getting_started_luacats.md)
 
 # API
 

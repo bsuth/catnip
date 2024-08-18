@@ -3,16 +3,15 @@
 Catnip ships as a standalone executable and does not require any
 additional files to run other than the
 [dependency shared libraries](getting_started_installation.md#dependencies).
-The [LuaCATS annotations](getting_started_luacats.md) and
-[default user config](getting_started_user_config.md#default-user-config) are embedded directly into
-the executable itself.
+The [default user config](getting_started_user_config.md#default-user-config)
+is embedded directly into the executable itself.
 
 The available CLI options are documented below.
 
 - [`-h, --help`](#-h---help)
 - [`-v, --version`](#-v---version)
 - [`-c, --config`](#-c---config-file)
-- [`-l, --loglevel`](#-l---loglevel-level)
+- [`-l, --log`](#-l---log-level)
 - [`-t, --types`](#-t---types)
 - [`-d, --default`](#-d---default)
 
@@ -55,7 +54,7 @@ If unspecified, catnip will by default check the following paths (in the given o
 1. `$XDG_CONFIG_HOME/catnip/init.lua`
 1. `~/.config/catnip/init.lua`
 
-### `-l, --loglevel LEVEL`
+### `-l, --log LEVEL`
 
 Specifies the granularity for logging. The granularity from least to most
 verbose is given as follows:
@@ -71,16 +70,6 @@ verbose is given as follows:
 ```
 
 By default, catnip uses `--loglevel error`.
-
-### `-t, --types`
-
-Prints the [LuaCATS annotations](getting_started_luacats.md) and exits.
-
-```
-> catnip --types
-{{ #include ../src/luacats.lua:1 }}
-...
-```
 
 ### `-d, --default`
 
