@@ -1,19 +1,19 @@
-#include "allocator.h"
-#include "backend.h"
 #include "cli.h"
+#include "compositor/allocator.h"
+#include "compositor/backend.h"
+#include "compositor/display.h"
+#include "compositor/event_loop.h"
+#include "compositor/renderer.h"
+#include "compositor/scene.h"
+#include "compositor/seat.h"
+#include "compositor/xdg_shell.h"
 #include "config.h"
-#include "cursor/init.h"
-#include "display.h"
-#include "event_loop.h"
-#include "keyboard/init.h"
+#include "desktop/cursor.h"
+#include "desktop/keyboards.h"
+#include "desktop/outputs.h"
+#include "desktop/windows.h"
 #include "lua_events.h"
-#include "output/init.h"
-#include "renderer.h"
-#include "scene.h"
-#include "seat.h"
 #include "utils/log.h"
-#include "window/init.h"
-#include "xdg_shell.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -36,11 +36,11 @@ main(int argc, char* argv[])
   catnip_backend_init(); // must init after event loop
   catnip_seat_init(); // must init after backend
   catnip_renderer_init(); // must init after backend
-  catnip_keyboard_init(); // must init after backend
+  catnip_keyboards_init(); // must init after backend
+  catnip_outputs_init(); // must init after display + scene + backend
   catnip_allocator_init(); // must init after renderer
-  catnip_window_init(); // must init after xdg_shell
-  catnip_output_init(); // must init after display + backend + scene
-  catnip_cursor_init(); // must init after output
+  catnip_windows_init(); // must init after xdg_shell + seat
+  catnip_cursor_init(); // must init after output layout
   catnip_config_init(); // must init last
 
   wlr_compositor_create(
@@ -71,14 +71,14 @@ main(int argc, char* argv[])
       break;
     }
 
-    lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "tick", 0);
+    catnip_lua_events_publish(catnip_L, catnip_lua_subscriptions, "tick", 0);
 
     if (catnip_config_request_reload) {
       catnip_config_reload();
     }
   }
 
-  lua_catnip_events_publish(catnip_L, lua_catnip_subscriptions, "quit", 0);
+  catnip_lua_events_publish(catnip_L, catnip_lua_subscriptions, "quit", 0);
   lua_close(catnip_L);
 
   wl_display_terminate(catnip_display);

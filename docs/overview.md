@@ -1,5 +1,9 @@
 # Overview
 
+NOTE: CATNIP IS STILL VERY EARLY IN DEVELOPMENT AND IS NOT CONSIDERED TO
+HAVE EVEN REACHED 0.1.0 YET. THIS PROJECT IS VERY MUCH A WIP AND THE DOCS HERE
+ARE MOST LIKELY OUTDATED IN MULTIPLE PLACES.
+
 Catnip is a [wlroots](https://gitlab.freedesktop.org/wlroots/wlroots) based
 [Wayland](https://wayland.freedesktop.org/) compositor that allows users to
 customize their desktop via [Lua](https://www.lua.org/).

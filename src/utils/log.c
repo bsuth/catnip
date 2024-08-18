@@ -1,6 +1,5 @@
 #include "log.h"
-#include "utils/string.h"
-#include <stdbool.h>
+#include "extensions/string.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <time.h>

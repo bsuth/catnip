@@ -1,29 +1,29 @@
 #ifndef CATNIP_LUA_EVENTS_H
 #define CATNIP_LUA_EVENTS_H
 
-#include "utils/lua.h"
+#include "extensions/lua.h"
 
-extern lua_Ref lua_catnip_subscriptions;
-
-void
-lua_catnip_events_init(lua_State* L);
+extern lua_Ref catnip_lua_subscriptions;
 
 void
-lua_catnip_events_subscribe(
+catnip_lua_events_init(lua_State* L);
+
+void
+catnip_lua_events_subscribe(
   lua_State* L,
   lua_Ref subscriptions,
   const char* event
 );
 
 void
-lua_catnip_events_unsubscribe(
+catnip_lua_events_unsubscribe(
   lua_State* L,
   lua_Ref subscriptions,
   const char* event
 );
 
 void
-lua_catnip_events_publish(
+catnip_lua_events_publish(
   lua_State* L,
   lua_Ref subscriptions,
   const char* event,

@@ -16,11 +16,12 @@ catnip_canvas_buffer_begin_data_ptr_access(
   size_t* stride
 )
 {
-  struct catnip_canvas* canvas = wl_container_of(wlr_buffer, canvas, buffer);
+  struct catnip_canvas* canvas =
+    wl_container_of(wlr_buffer, canvas, wlr.buffer);
 
-  *data = (void*) cairo_image_surface_get_data(canvas->cairo_surface);
+  *data = (void*) cairo_image_surface_get_data(canvas->cairo.surface);
   *format = DRM_FORMAT_ARGB8888;
-  *stride = cairo_image_surface_get_stride(canvas->cairo_surface);
+  *stride = cairo_image_surface_get_stride(canvas->cairo.surface);
 
   return true;
 }

@@ -2,13 +2,13 @@
 #include "canvas/canvas.h"
 #include "canvas/canvas_cache.h"
 #include "canvas/canvas_svg.h"
-#include "lua_resource.h"
+#include "extensions/lua.h"
 #include <lauxlib.h>
 
 int
-lua_catnip_canvas_svg(lua_State* L)
+catnip_lua_canvas_svg(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = luaL_checkudata(L, 1, "catnip.canvas");
   const char* document = luaL_checkstring(L, 2);
   luaL_checktype(L, 3, LUA_TTABLE);
 
@@ -38,7 +38,7 @@ lua_catnip_canvas_svg(lua_State* L)
       viewport.width *= height / svg->height;
     }
 
-    rsvg_handle_render_document(svg->rsvg, canvas->cr, &viewport, NULL);
+    rsvg_handle_render_document(svg->rsvg, canvas->cairo.cr, &viewport, NULL);
     catnip_canvas_refresh(canvas);
   }
 

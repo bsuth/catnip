@@ -1,7 +1,7 @@
 #include "canvas_cache.h"
 #include "canvas/canvas_png.h"
 #include "canvas/canvas_svg.h"
-#include "utils/string.h"
+#include "extensions/string.h"
 #include <stdlib.h>
 
 enum catnip_canvas_cache_entry_type {

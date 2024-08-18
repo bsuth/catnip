@@ -12,7 +12,7 @@ extern bool catnip_config_request_reload;
 void
 catnip_config_init();
 
-bool
+void
 catnip_config_reload();
 
 #endif

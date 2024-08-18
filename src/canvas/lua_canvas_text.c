@@ -1,18 +1,17 @@
 #include "lua_canvas_text.h"
 #include "canvas/canvas.h"
-#include "lua_resource.h"
-#include "utils/lua.h"
-#include "utils/string.h"
+#include "extensions/lua.h"
+#include "extensions/string.h"
 #include <lauxlib.h>
 #include <pango/pango-layout.h>
 #include <pango/pangocairo.h>
 
 int
-lua_catnip_canvas_text(lua_State* L)
+catnip_lua_canvas_text(lua_State* L)
 {
-  struct catnip_canvas* canvas = lua_catnip_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = luaL_checkudata(L, 1, "catnip.canvas");
 
-  PangoLayout* layout = pango_cairo_create_layout(canvas->cr);
+  PangoLayout* layout = pango_cairo_create_layout(canvas->cairo.cr);
   pango_layout_set_text(layout, luaL_checkstring(L, 2), -1);
 
   luaL_checktype(L, 3, LUA_TTABLE);
@@ -156,11 +155,11 @@ lua_catnip_canvas_text(lua_State* L)
     }
   }
 
-  if (!lua_hasbooleanfield(L, 3, "render") || lua_popboolean(L)) {
-    cairo_save(canvas->cr);
-    cairo_move_to(canvas->cr, x, y);
-    pango_cairo_show_layout(canvas->cr, layout);
-    cairo_restore(canvas->cr);
+  if (!lua_hasbooleanfield(L, 3, "visible") || lua_popboolean(L)) {
+    cairo_save(canvas->cairo.cr);
+    cairo_move_to(canvas->cairo.cr, x, y);
+    pango_cairo_show_layout(canvas->cairo.cr, layout);
+    cairo_restore(canvas->cairo.cr);
     catnip_canvas_refresh(canvas);
   }
 
