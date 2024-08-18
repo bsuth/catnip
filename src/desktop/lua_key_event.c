@@ -14,7 +14,7 @@ catnip_lua_key_event__index(lua_State* L)
   struct catnip_lua_key_event* lua_key_event = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (lua_key_event == NULL) {
+  if (lua_key_event->key_event == NULL) {
     lua_log_error(L, "attempt to index outdated key event");
     lua_pushnil(L);
   } else if (key == NULL) {
@@ -74,7 +74,13 @@ catnip_lua_key_event__newindex(lua_State* L)
   struct catnip_lua_key_event* lua_key_event = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "prevent_notify")) {
+  if (key == NULL) {
+    return 0;
+  }
+
+  if (lua_key_event->key_event == NULL) {
+    lua_log_error(L, "attempt to index outdated key event");
+  } else if (streq(key, "prevent_notify")) {
     lua_key_event->key_event->prevent_notify = lua_toboolean(L, 3);
   }
 
@@ -113,9 +119,11 @@ catnip_lua_key_event_publish(
   lua_key_event->key_event = key_event;
 
   key_event->state == WL_KEYBOARD_KEY_STATE_PRESSED
-    ? catnip_lua_keyboard_publish(L, keyboard->lua_resource, "keypress", 1)
-    : catnip_lua_keyboard_publish(L, keyboard->lua_resource, "keyrelease", 1);
+    ? catnip_lua_keyboard_publish(L, keyboard->lua_keyboard, "keypress", 1)
+    : catnip_lua_keyboard_publish(L, keyboard->lua_keyboard, "keyrelease", 1);
 
+  // Explicitly set `NULL`, just in case the user is keeping a reference.
   lua_key_event->key_event = NULL;
+
   lua_pop(L, 1);
 }

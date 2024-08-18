@@ -3,45 +3,37 @@
 #include "canvas/canvas_cache.h"
 #include "compositor/event_loop.h"
 #include "compositor/scene.h"
-#include "config.h"
 #include <stdlib.h>
 
-struct catnip_canvas*
-catnip_canvas_create(int width, int height)
+void
+catnip_canvas_setup(struct catnip_canvas* canvas, int width, int height)
 {
-  struct catnip_canvas* canvas = calloc(1, sizeof(struct catnip_canvas));
-
-  canvas->cairo_surface =
+  canvas->cairo.surface =
     cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
-  canvas->cr = cairo_create(canvas->cairo_surface);
+  canvas->cairo.cr = cairo_create(canvas->cairo.surface);
 
-  wlr_buffer_init(&canvas->buffer, &catnip_canvas_buffer, width, height);
-  canvas->scene_buffer =
-    wlr_scene_buffer_create(&catnip_scene->tree, &canvas->buffer);
+  wlr_buffer_init(&canvas->wlr.buffer, &catnip_canvas_buffer, width, height);
+  canvas->wlr.scene_buffer =
+    wlr_scene_buffer_create(&catnip_scene->tree, &canvas->wlr.buffer);
 
   canvas->cache = catnip_canvas_cache_create();
-
-  return canvas;
+  canvas->event_sources.refresh = NULL;
 }
 
 void
 catnip_canvas_destroy(struct catnip_canvas* canvas)
 {
-  catnip_lua_resource_destroy(catnip_L, canvas->lua_resource);
+  cairo_surface_destroy(canvas->cairo.surface);
+  cairo_destroy(canvas->cairo.cr);
 
-  cairo_surface_destroy(canvas->cairo_surface);
-  cairo_destroy(canvas->cr);
-
-  wlr_buffer_drop(&canvas->buffer);
-  wlr_scene_node_destroy(&canvas->scene_buffer->node);
+  wlr_buffer_drop(&canvas->wlr.buffer);
+  wlr_scene_node_destroy(&canvas->wlr.scene_buffer->node);
 
   catnip_canvas_cache_destroy(canvas->cache);
 
-  if (canvas->refresh_event_source != NULL) {
-    wl_event_source_remove(canvas->refresh_event_source);
+  if (canvas->event_sources.refresh != NULL) {
+    wl_event_source_remove(canvas->event_sources.refresh);
   }
-
-  free(canvas);
 }
 
 static void
@@ -56,22 +48,22 @@ __catnip_canvas_refresh(void* data)
   }
 
   wlr_scene_buffer_set_buffer_with_damage(
-    canvas->scene_buffer,
-    &canvas->buffer,
+    canvas->wlr.scene_buffer,
+    &canvas->wlr.buffer,
     NULL
   );
 
-  canvas->refresh_event_source = NULL;
+  canvas->event_sources.refresh = NULL;
 }
 
 void
 catnip_canvas_refresh(struct catnip_canvas* canvas)
 {
-  if (canvas->refresh_event_source != NULL) {
+  if (canvas->event_sources.refresh != NULL) {
     return; // already queued
   }
 
-  canvas->refresh_event_source =
+  canvas->event_sources.refresh =
     wl_event_loop_add_idle(catnip_event_loop, __catnip_canvas_refresh, canvas);
 }
 
@@ -82,26 +74,26 @@ catnip_canvas_resize(
   int new_height
 )
 {
-  if (new_width == canvas->buffer.width
-      && new_height == canvas->buffer.height) {
+  if (new_width == canvas->wlr.buffer.width
+      && new_height == canvas->wlr.buffer.height) {
     return; // nothing to do
   }
 
-  cairo_surface_destroy(canvas->cairo_surface);
-  cairo_destroy(canvas->cr);
+  cairo_surface_destroy(canvas->cairo.surface);
+  cairo_destroy(canvas->cairo.cr);
 
   // Cairo does not allow an image surface to be resized after creation. Thus,
   // we have to destroy any previous surfaces / contexts and create new ones.
-  canvas->cairo_surface =
+  canvas->cairo.surface =
     cairo_image_surface_create(CAIRO_FORMAT_ARGB32, new_width, new_height);
-  canvas->cr = cairo_create(canvas->cairo_surface);
+  canvas->cairo.cr = cairo_create(canvas->cairo.surface);
 
-  canvas->buffer.width = new_width;
-  canvas->buffer.height = new_height;
+  canvas->wlr.buffer.width = new_width;
+  canvas->wlr.buffer.height = new_height;
 
   // Unset buffer to force full update on refresh. Required to make sure that
   // canvas->scene_buffer->node.visible is updated properly.
-  wlr_scene_buffer_set_buffer_with_damage(canvas->scene_buffer, NULL, NULL);
+  wlr_scene_buffer_set_buffer_with_damage(canvas->wlr.scene_buffer, NULL, NULL);
 
   catnip_canvas_refresh(canvas);
 }
@@ -110,10 +102,10 @@ void
 catnip_canvas_clear(struct catnip_canvas* canvas)
 {
   catnip_canvas_cache_clear(canvas->cache);
-  cairo_save(canvas->cr);
-  cairo_set_operator(canvas->cr, CAIRO_OPERATOR_CLEAR);
-  cairo_paint(canvas->cr);
-  cairo_restore(canvas->cr);
+  cairo_save(canvas->cairo.cr);
+  cairo_set_operator(canvas->cairo.cr, CAIRO_OPERATOR_CLEAR);
+  cairo_paint(canvas->cairo.cr);
+  cairo_restore(canvas->cairo.cr);
   catnip_canvas_refresh(canvas);
   catnip_canvas_cache_reset(canvas->cache);
 }

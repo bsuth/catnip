@@ -12,17 +12,22 @@ catnip_lua_output_mode__index(lua_State* L)
   struct catnip_lua_output_mode* lua_output_mode = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "width")) {
+  if (lua_output_mode->wlr_output_mode == NULL) {
+    lua_log_error(L, "attempt to index outdated output mode");
+    lua_pushnil(L);
+  } else if (key == NULL) {
+    lua_pushnil(L);
+  } else if (streq(key, "width")) {
     lua_pushnumber(L, lua_output_mode->wlr_output_mode->width);
   } else if (streq(key, "height")) {
     lua_pushnumber(L, lua_output_mode->wlr_output_mode->height);
   } else if (streq(key, "refresh")) {
     lua_pushnumber(L, lua_output_mode->wlr_output_mode->refresh);
   } else {
-    return false;
+    lua_pushnil(L);
   }
 
-  return true;
+  return 1;
 }
 
 // -----------------------------------------------------------------------------
@@ -64,5 +69,9 @@ catnip_lua_output_mode_destroy(
   struct catnip_lua_output_mode* lua_output_mode
 )
 {
+  // Explicitly set `NULL`, just in case the user is keeping a reference.
+  lua_output_mode->wlr_output_mode = NULL;
+
   luaL_unref(L, LUA_REGISTRYINDEX, lua_output_mode->ref);
+  wl_list_remove(&lua_output_mode->link);
 }

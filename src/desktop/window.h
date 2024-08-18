@@ -1,14 +1,12 @@
 #ifndef CATNIP_DESKTOP_WINDOW_H
 #define CATNIP_DESKTOP_WINDOW_H
 
-#include "lua_resource.h"
 #include <wlr/types/wlr_xdg_shell.h>
 
 struct catnip_window {
   int id;
   struct wl_list link;
-
-  struct catnip_lua_resource* lua_resource;
+  struct catnip_lua_window* lua_window;
 
   struct {
     struct wlr_xdg_toplevel* xdg_toplevel;

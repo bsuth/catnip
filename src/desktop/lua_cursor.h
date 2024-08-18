@@ -1,11 +1,15 @@
 #ifndef CATNIP_DESKTOP_LUA_CURSOR_H
 #define CATNIP_DESKTOP_LUA_CURSOR_H
 
-#include "lua_resource.h"
-#include <lua.h>
+#include "extensions/lua.h"
 #include <wlr/types/wlr_pointer.h>
 
-extern struct catnip_lua_resource* catnip_lua_cursor;
+struct catnip_lua_cursor {
+  lua_Ref ref;
+  lua_Ref subscriptions;
+};
+
+extern struct catnip_lua_cursor* catnip_lua_cursor;
 
 void
 catnip_lua_cursor_init(lua_State* L);

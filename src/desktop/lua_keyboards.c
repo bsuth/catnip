@@ -1,6 +1,6 @@
 #include "lua_keyboards.h"
 #include "desktop/keyboards.h"
-#include "desktop/lua_output.h"
+#include "desktop/lua_keyboard.h"
 #include "extensions/string.h"
 #include "lua_events.h"
 #include <lauxlib.h>
@@ -61,13 +61,12 @@ catnip_lua_keyboards__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (id != 0) {
-    struct catnip_lua_resource* lua_output = NULL;
+    struct catnip_lua_keyboard* lua_keyboard = NULL;
 
-    wl_list_for_each(lua_output, &catnip_lua_keyboards->keyboards, link)
+    wl_list_for_each(lua_keyboard, &catnip_lua_keyboards->keyboards, link)
     {
-      struct catnip_output* output = lua_output->data;
-      if (id == output->id) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->ref);
+      if (id == lua_keyboard->keyboard->id) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, lua_keyboard->ref);
         return 1;
       }
     }
@@ -97,15 +96,16 @@ catnip_lua_keyboards__call(lua_State* L)
 {
   struct wl_list* link = lua_type(L, 3) == LUA_TNIL
     ? catnip_lua_keyboards->keyboards.next
-    : ((struct catnip_lua_resource*) lua_touserdata(L, 3))->link.next;
+    : ((struct catnip_lua_keyboard*) lua_touserdata(L, 3))->link.next;
 
   if (link == &catnip_lua_keyboards->keyboards) {
     lua_pushnil(L);
     return 1;
   }
 
-  struct catnip_lua_resource* resource = wl_container_of(link, resource, link);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, resource->ref);
+  struct catnip_lua_keyboard* lua_keyboard =
+    wl_container_of(link, lua_keyboard, link);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_keyboard->ref);
   return 1;
 }
 
@@ -141,9 +141,9 @@ catnip_lua_keyboards_init(lua_State* L)
 void
 catnip_lua_keyboards_populate(lua_State* L)
 {
-  struct catnip_output* output = NULL;
-  wl_list_for_each(output, &catnip_keyboards, link)
+  struct catnip_keyboard* keyboard = NULL;
+  wl_list_for_each(keyboard, &catnip_keyboards, link)
   {
-    catnip_lua_output_create(L, output);
+    catnip_lua_keyboard_create(L, keyboard);
   }
 }

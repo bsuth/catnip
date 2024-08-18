@@ -45,7 +45,7 @@ on_window_unmap(struct wl_listener* listener, void* data)
   // Analogous to creating the Lua window once the window has been mapped, we
   // destroy the Lua window during unmap. After this, the window is no longer
   // visible on screen.
-  catnip_lua_window_destroy(catnip_L, window->lua_resource);
+  catnip_lua_window_destroy(catnip_L, window->lua_window);
 }
 
 static void
@@ -54,7 +54,7 @@ on_window_request_maximize(struct wl_listener* listener, void* data)
   struct catnip_window* window =
     wl_container_of(listener, window, listeners.xdg_toplevel_request_maximize);
 
-  catnip_lua_window_publish(catnip_L, window->lua_resource, "maximize", 0);
+  catnip_lua_window_publish(catnip_L, window->lua_window, "maximize", 0);
 
   // The xdg-shell protocol requires us to send a configure. We use
   // `wlr_xdg_surface_schedule_configure` to just send an empty reply.
@@ -70,7 +70,7 @@ on_window_request_fullscreen(struct wl_listener* listener, void* data)
     listeners.xdg_toplevel_request_fullscreen
   );
 
-  catnip_lua_window_publish(catnip_L, window->lua_resource, "fullscreen", 0);
+  catnip_lua_window_publish(catnip_L, window->lua_window, "fullscreen", 0);
 
   // The xdg-shell protocol requires us to send a configure. We use
   // `wlr_xdg_surface_schedule_configure` to just send an empty reply.

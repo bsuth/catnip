@@ -1,5 +1,5 @@
 #include "lua_windows.h"
-#include "desktop/lua_output.h"
+#include "desktop/lua_window.h"
 #include "desktop/windows.h"
 #include "extensions/string.h"
 #include "lua_events.h"
@@ -61,13 +61,12 @@ catnip_lua_windows__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (id != 0) {
-    struct catnip_lua_resource* lua_output = NULL;
+    struct catnip_lua_window* lua_window = NULL;
 
-    wl_list_for_each(lua_output, &catnip_lua_windows->windows, link)
+    wl_list_for_each(lua_window, &catnip_lua_windows->windows, link)
     {
-      struct catnip_output* output = lua_output->data;
-      if (id == output->id) {
-        lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->ref);
+      if (id == lua_window->window->id) {
+        lua_rawgeti(L, LUA_REGISTRYINDEX, lua_window->ref);
         return 1;
       }
     }
@@ -97,15 +96,16 @@ catnip_lua_windows__call(lua_State* L)
 {
   struct wl_list* link = lua_type(L, 3) == LUA_TNIL
     ? catnip_lua_windows->windows.next
-    : ((struct catnip_lua_resource*) lua_touserdata(L, 3))->link.next;
+    : ((struct catnip_lua_window*) lua_touserdata(L, 3))->link.next;
 
   if (link == &catnip_lua_windows->windows) {
     lua_pushnil(L);
     return 1;
   }
 
-  struct catnip_lua_resource* resource = wl_container_of(link, resource, link);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, resource->ref);
+  struct catnip_lua_window* lua_window =
+    wl_container_of(link, lua_window, link);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_window->ref);
   return 1;
 }
 
@@ -140,9 +140,9 @@ catnip_lua_windows_init(lua_State* L)
 void
 catnip_lua_windows_populate(lua_State* L)
 {
-  struct catnip_output* output = NULL;
-  wl_list_for_each(output, &catnip_windows, link)
+  struct catnip_window* window = NULL;
+  wl_list_for_each(window, &catnip_windows, link)
   {
-    catnip_lua_output_create(L, output);
+    catnip_lua_window_create(L, window);
   }
 }

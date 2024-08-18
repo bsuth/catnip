@@ -3,7 +3,6 @@
 #include "extensions/cairo.h"
 #include "extensions/lua.h"
 #include "extensions/string.h"
-#include "lua_resource.h"
 #include <lauxlib.h>
 #include <math.h>
 
@@ -16,14 +15,14 @@ catnip_lua_canvas_path_line(lua_State* L, struct catnip_canvas* canvas)
   lua_rawgeti(L, -1, 3);
   double y = lua_popnumber(L);
 
-  cairo_rel_line_to(canvas->cr, x, y);
+  cairo_rel_line_to(canvas->cairo.cr, x, y);
 }
 
 static void
 catnip_lua_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
 {
   double x, y;
-  cairo_get_current_point(canvas->cr, &x, &y);
+  cairo_get_current_point(canvas->cairo.cr, &x, &y);
 
   lua_rawgeti(L, -1, 2);
   double cx = x + lua_popnumber(L);
@@ -39,7 +38,7 @@ catnip_lua_canvas_path_arc(lua_State* L, struct catnip_canvas* canvas)
   double theta = asin((y - cy) / radius);
   theta = x < cx ? M_PI - theta : theta;
 
-  cairo_arc(canvas->cr, cx, cy, radius, theta, theta + radians);
+  cairo_arc(canvas->cairo.cr, cx, cy, radius, theta, theta + radians);
 }
 
 static void
@@ -64,7 +63,7 @@ catnip_lua_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
   double y = lua_popnumber(L);
 
   cairo_rel_curve_to(
-    canvas->cr,
+    canvas->cairo.cr,
     control1_x,
     control1_y,
     control2_x,
@@ -77,13 +76,13 @@ catnip_lua_canvas_path_bezier(lua_State* L, struct catnip_canvas* canvas)
 int
 catnip_lua_canvas_path(lua_State* L)
 {
-  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = luaL_checkudata(L, 1, "catnip.canvas");
 
   luaL_checktype(L, 2, LUA_TTABLE);
-  cairo_save(canvas->cr);
+  cairo_save(canvas->cairo.cr);
 
   cairo_move_to(
-    canvas->cr,
+    canvas->cairo.cr,
     lua_hasnumberfield(L, 2, "x") ? lua_popinteger(L) : 0,
     lua_hasnumberfield(L, 2, "y") ? lua_popinteger(L) : 0
   );
@@ -108,7 +107,7 @@ catnip_lua_canvas_path(lua_State* L)
 
   lua_getfield(L, 2, "close");
   if (lua_popboolean(L)) {
-    cairo_close_path(canvas->cr);
+    cairo_close_path(canvas->cairo.cr);
   }
 
   int fill_color =
@@ -117,8 +116,8 @@ catnip_lua_canvas_path(lua_State* L)
     lua_hasnumberfield(L, 2, "fill_opacity") ? lua_popnumber(L) : 1;
 
   if (fill_color != -1 && fill_opacity > 0) {
-    cairo_set_source_hexa(canvas->cr, fill_color, fill_opacity);
-    cairo_fill_preserve(canvas->cr);
+    cairo_set_source_hexa(canvas->cairo.cr, fill_color, fill_opacity);
+    cairo_fill_preserve(canvas->cairo.cr);
   }
 
   int stroke_color =
@@ -131,21 +130,21 @@ catnip_lua_canvas_path(lua_State* L)
     lua_hasnumberfield(L, 2, "stroke_cap") ? lua_popstring(L) : "butt";
 
   if (streq(stroke_cap, "butt")) {
-    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_BUTT);
+    cairo_set_line_cap(canvas->cairo.cr, CAIRO_LINE_CAP_BUTT);
   } else if (streq(stroke_cap, "round")) {
-    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_ROUND);
+    cairo_set_line_cap(canvas->cairo.cr, CAIRO_LINE_CAP_ROUND);
   } else if (streq(stroke_cap, "square")) {
-    cairo_set_line_cap(canvas->cr, CAIRO_LINE_CAP_SQUARE);
+    cairo_set_line_cap(canvas->cairo.cr, CAIRO_LINE_CAP_SQUARE);
   }
 
   if (stroke_color != -1 && stroke_opacity > 0 && stroke_size > 0) {
-    cairo_set_line_width(canvas->cr, stroke_size);
-    cairo_set_source_hexa(canvas->cr, stroke_color, stroke_opacity);
-    cairo_stroke_preserve(canvas->cr);
+    cairo_set_line_width(canvas->cairo.cr, stroke_size);
+    cairo_set_source_hexa(canvas->cairo.cr, stroke_color, stroke_opacity);
+    cairo_stroke_preserve(canvas->cairo.cr);
   }
 
-  cairo_new_path(canvas->cr);
-  cairo_restore(canvas->cr);
+  cairo_new_path(canvas->cairo.cr);
+  cairo_restore(canvas->cairo.cr);
   catnip_canvas_refresh(canvas);
 
   return 0;

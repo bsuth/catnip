@@ -11,23 +11,70 @@
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_window_close(lua_State* L)
+catnip_lua_window_subscribe(lua_State* L)
 {
-  struct catnip_window* window = catnip_lua_resource_checkname(L, 1, "window");
-  wlr_xdg_toplevel_send_close(window->wlr.xdg_toplevel);
+  struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
+  const char* event = luaL_checkstring(L, 2);
+  luaL_checktype(L, 3, LUA_TFUNCTION);
+
+  lua_pushvalue(L, 3); // push callback to top in case of trailing args
+  catnip_lua_events_subscribe(L, lua_window->subscriptions, event);
+
+  return 1; // return callback for unsubscribe handle
+}
+
+static int
+catnip_lua_window_unsubscribe(lua_State* L)
+{
+  struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
+  const char* event = luaL_checkstring(L, 2);
+  luaL_checktype(L, 3, LUA_TFUNCTION);
+
+  lua_pushvalue(L, 3); // push callback to top in case of trailing args
+  catnip_lua_events_unsubscribe(L, lua_window->subscriptions, event);
+  lua_pop(L, 1);
+
   return 0;
 }
 
-static bool
-catnip_lua_window__index(
-  lua_State* L,
-  struct catnip_lua_resource* lua_resource,
-  const char* key
-)
+static int
+__catnip_lua_window_publish(lua_State* L)
 {
-  struct catnip_window* window = lua_resource->data;
+  struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
+  const char* event = luaL_checkstring(L, 2);
 
-  if (streq(key, "id")) {
+  catnip_lua_events_publish(
+    L,
+    lua_window->subscriptions,
+    event,
+    lua_gettop(L) - 2
+  );
+
+  return 0;
+}
+
+static int
+catnip_lua_window_close(lua_State* L)
+{
+  struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
+  wlr_xdg_toplevel_send_close(lua_window->window->wlr.xdg_toplevel);
+  return 0;
+}
+
+static int
+catnip_lua_window__index(lua_State* L)
+{
+  struct catnip_lua_window* lua_window = lua_touserdata(L, 1);
+  const char* key = lua_tostring(L, 2);
+
+  struct catnip_window* window = lua_window->window;
+
+  if (window == NULL) {
+    lua_log_error(L, "attempt to index outdated window");
+    lua_pushnil(L);
+  } else if (key == NULL) {
+    lua_pushnil(L);
+  } else if (streq(key, "id")) {
     lua_pushnumber(L, window->id);
   } else if (streq(key, "x")) {
     lua_pushnumber(L, window->wlr.scene_tree->node.x);
@@ -46,26 +93,31 @@ catnip_lua_window__index(
   } else if (streq(key, "destroy")) {
     lua_pushcfunction(L, catnip_lua_window_close);
   } else {
-    return false;
+    lua_pushnil(L);
   }
 
-  return true;
+  return 1;
 }
 
 // -----------------------------------------------------------------------------
 // __newindex
 // -----------------------------------------------------------------------------
 
-static bool
-catnip_lua_window__newindex(
-  lua_State* L,
-  struct catnip_lua_resource* lua_resource,
-  const char* key
-)
+static int
+catnip_lua_window__newindex(lua_State* L)
 {
-  struct catnip_window* window = lua_resource->data;
+  struct catnip_lua_window* lua_window = lua_touserdata(L, 1);
+  const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "x")) {
+  struct catnip_window* window = lua_window->window;
+
+  if (key == NULL) {
+    return 0;
+  }
+
+  if (window == NULL) {
+    lua_log_error(L, "attempt to index outdated window");
+  } else if (streq(key, "x")) {
     wlr_scene_node_set_position(
       &window->wlr.scene_tree->node,
       luaL_checkinteger(L, 3),
@@ -99,56 +151,75 @@ catnip_lua_window__newindex(
       &window->wlr.scene_tree->node,
       lua_toboolean(L, 3)
     );
-  } else {
-    return false;
   }
 
-  return true;
+  return 0;
 }
 
 // -----------------------------------------------------------------------------
 // Core
 // -----------------------------------------------------------------------------
 
-struct catnip_lua_resource*
-catnip_lua_window_create(lua_State* L, struct catnip_window* window)
+static const struct luaL_Reg catnip_lua_window_mt[] = {
+  {"__index", catnip_lua_window__index},
+  {"__newindex", catnip_lua_window__newindex},
+  {NULL, NULL}
+};
+
+void
+catnip_lua_window_init(lua_State* L)
 {
-  struct catnip_lua_resource* lua_resource = catnip_lua_resource_create(L);
-  window->lua_resource = lua_resource;
-
-  lua_resource->data = window;
-  lua_resource->name = "window";
-  lua_resource->__index = catnip_lua_window__index;
-  lua_resource->__newindex = catnip_lua_window__newindex;
-
-  wl_list_insert(&catnip_lua_windows->windows, &lua_resource->link);
-
-  catnip_lua_window_publish(L, lua_resource, "create", 0);
-
-  return lua_resource;
+  luaL_newmetatable(L, "catnip.window");
+  luaL_setfuncs(L, catnip_lua_window_mt, 0);
+  lua_pop(L, 1);
 }
 
 void
-catnip_lua_window_destroy(
-  lua_State* L,
-  struct catnip_lua_resource* lua_resource
-)
+catnip_lua_window_create(lua_State* L, struct catnip_window* window)
 {
-  catnip_lua_window_publish(L, lua_resource, "destroy", 0);
-  catnip_lua_resource_destroy(L, lua_resource);
+  struct catnip_lua_window* lua_window =
+    lua_newuserdata(L, sizeof(struct catnip_lua_window));
+  luaL_setmetatable(L, "catnip.window");
+
+  lua_window->ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  lua_window->window = window;
+
+  lua_newtable(L);
+  lua_window->subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  wl_list_insert(&catnip_lua_windows->windows, &lua_window->link);
+
+  // Assign `window->lua_window` here, since the Lua window may be created much
+  // later than the actual window (ex. on config reload).
+  window->lua_window = lua_window;
+
+  catnip_lua_window_publish(L, lua_window, "create", 0);
+}
+
+void
+catnip_lua_window_destroy(lua_State* L, struct catnip_lua_window* lua_window)
+{
+  catnip_lua_window_publish(L, lua_window, "destroy", 0);
+
+  // Explicitly set `NULL`, just in case the user is keeping a reference.
+  lua_window->window = NULL;
+
+  luaL_unref(L, LUA_REGISTRYINDEX, lua_window->subscriptions);
+  luaL_unref(L, LUA_REGISTRYINDEX, lua_window->ref);
+  wl_list_remove(&lua_window->link);
 }
 
 void
 catnip_lua_window_publish(
   lua_State* L,
-  struct catnip_lua_resource* lua_resource,
+  struct catnip_lua_window* lua_window,
   const char* event,
   int nargs
 )
 {
-  catnip_lua_resource_publish(L, lua_resource, event, nargs);
+  catnip_lua_events_publish(L, lua_window->subscriptions, event, nargs);
 
-  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_resource->ref);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_window->ref);
   lua_insert(L, -1 - nargs);
 
   catnip_lua_events_publish(

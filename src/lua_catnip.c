@@ -6,6 +6,7 @@
 #include "desktop/lua_cursor.h"
 #include "desktop/lua_keyboards.h"
 #include "desktop/lua_outputs.h"
+#include "desktop/lua_window.h"
 #include "desktop/lua_windows.h"
 #include "desktop/window.h"
 #include "desktop/windows.h"
@@ -87,10 +88,11 @@ catnip_lua_catnip__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_windows->ref);
   } else if (streq(key, "focused")) {
     struct catnip_window* focused_window = catnip_windows_get_focused();
+
     if (focused_window == NULL) {
       lua_pushnil(L);
     } else {
-      lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_resource->ref);
+      lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_window->ref);
     }
   } else if (streq(key, "canvas")) {
     lua_pushcfunction(L, catnip_lua_canvas);
@@ -120,7 +122,9 @@ catnip_lua_catnip__newindex(lua_State* L)
     if (lua_type(L, 3) == LUA_TNIL) {
       wlr_seat_keyboard_notify_clear_focus(catnip_seat);
     } else {
-      catnip_window_focus(catnip_lua_resource_checkname(L, 3, "window"));
+      struct catnip_lua_window* lua_window =
+        luaL_checkudata(L, 3, "catnip.window");
+      catnip_window_focus(lua_window->window);
     }
   }
 

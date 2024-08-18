@@ -43,7 +43,7 @@ on_output_destroy(struct wl_listener* listener, void* data)
   struct catnip_output* output =
     wl_container_of(listener, output, listeners.output_destroy);
 
-  catnip_lua_output_destroy(catnip_L, output->lua_resource);
+  catnip_lua_output_destroy(catnip_L, output->lua_output);
 
   wl_list_remove(&output->link);
   wl_list_remove(&output->listeners.output_frame.link);

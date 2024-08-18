@@ -1,15 +1,13 @@
 #ifndef CATNIP_DESKTOP_KEYBOARD_H
 #define CATNIP_DESKTOP_KEYBOARD_H
 
-#include "lua_resource.h"
 #include <wlr/types/wlr_seat.h>
 #include <xkbcommon/xkbcommon.h>
 
 struct catnip_keyboard {
   int id;
   struct wl_list link;
-
-  struct catnip_lua_resource* lua_resource;
+  struct catnip_lua_keyboard* lua_keyboard;
 
   struct {
     struct wlr_keyboard* keyboard;

@@ -107,7 +107,7 @@ on_keyboard_destroy(struct wl_listener* listener, void* data)
   struct catnip_keyboard* keyboard =
     wl_container_of(listener, keyboard, listeners.keyboard_destroy);
 
-  catnip_lua_keyboard_destroy(catnip_L, keyboard->lua_resource);
+  catnip_lua_keyboard_destroy(catnip_L, keyboard->lua_keyboard);
 
   wl_list_remove(&keyboard->link);
   wl_list_remove(&keyboard->listeners.keyboard_modifiers.link);

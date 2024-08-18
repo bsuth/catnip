@@ -2,14 +2,14 @@
 #include "canvas/canvas.h"
 #include "canvas/canvas_cache.h"
 #include "canvas/canvas_png.h"
-#include "lua_resource.h"
+#include "extensions/lua.h"
 #include <cairo.h>
 #include <lauxlib.h>
 
 int
 catnip_lua_canvas_png(lua_State* L)
 {
-  struct catnip_canvas* canvas = catnip_lua_resource_checkname(L, 1, "canvas");
+  struct catnip_canvas* canvas = luaL_checkudata(L, 1, "catnip.canvas");
   const char* path = luaL_checkstring(L, 2);
   luaL_checktype(L, 3, LUA_TTABLE);
 
@@ -34,16 +34,16 @@ catnip_lua_canvas_png(lua_State* L)
       scale_x = scale_y;
     }
 
-    cairo_save(canvas->cr);
-    cairo_scale(canvas->cr, scale_x, scale_y);
+    cairo_save(canvas->cairo.cr);
+    cairo_scale(canvas->cairo.cr, scale_x, scale_y);
     cairo_set_source_surface(
-      canvas->cr,
+      canvas->cairo.cr,
       png->surface,
       x / scale_x,
       y / scale_y
     );
-    cairo_paint(canvas->cr);
-    cairo_restore(canvas->cr);
+    cairo_paint(canvas->cairo.cr);
+    cairo_restore(canvas->cairo.cr);
     catnip_canvas_refresh(canvas);
   }
 

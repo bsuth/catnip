@@ -61,12 +61,11 @@ catnip_lua_outputs__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (id != 0) {
-    struct catnip_lua_resource* lua_output = NULL;
+    struct catnip_lua_output* lua_output = NULL;
 
     wl_list_for_each(lua_output, &catnip_lua_outputs->outputs, link)
     {
-      struct catnip_output* output = lua_output->data;
-      if (id == output->id) {
+      if (id == lua_output->output->id) {
         lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->ref);
         return 1;
       }
@@ -97,15 +96,16 @@ catnip_lua_outputs__call(lua_State* L)
 {
   struct wl_list* link = lua_type(L, 3) == LUA_TNIL
     ? catnip_lua_outputs->outputs.next
-    : ((struct catnip_lua_resource*) lua_touserdata(L, 3))->link.next;
+    : ((struct catnip_lua_output*) lua_touserdata(L, 3))->link.next;
 
   if (link == &catnip_lua_outputs->outputs) {
     lua_pushnil(L);
     return 1;
   }
 
-  struct catnip_lua_resource* resource = wl_container_of(link, resource, link);
-  lua_rawgeti(L, LUA_REGISTRYINDEX, resource->ref);
+  struct catnip_lua_output* lua_output =
+    wl_container_of(link, lua_output, link);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->ref);
   return 1;
 }
 

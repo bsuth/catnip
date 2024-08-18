@@ -72,7 +72,14 @@ catnip_lua_output_modes_destroy(
 )
 {
   struct catnip_lua_output_mode* lua_output_mode = NULL;
-  wl_list_for_each(lua_output_mode, &lua_output_modes->modes, link)
+  struct catnip_lua_output_mode* lua_output_mode_tmp = NULL;
+
+  wl_list_for_each_safe(
+    lua_output_mode,
+    lua_output_mode_tmp,
+    &lua_output_modes->modes,
+    link
+  )
   {
     catnip_lua_output_mode_destroy(L, lua_output_mode);
   }

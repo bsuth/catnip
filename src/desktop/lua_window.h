@@ -2,22 +2,28 @@
 #define CATNIP_DESKTOP_LUA_WINDOW_H
 
 #include "desktop/window.h"
-#include "lua_resource.h"
-#include <lua.h>
+#include "extensions/lua.h"
 
-struct catnip_lua_resource*
+struct catnip_lua_window {
+  lua_Ref ref;
+  lua_Ref subscriptions;
+  struct wl_list link;
+  struct catnip_window* window;
+};
+
+void
+catnip_lua_window_init(lua_State* L);
+
+void
 catnip_lua_window_create(lua_State* L, struct catnip_window* window);
 
 void
-catnip_lua_window_destroy(
-  lua_State* L,
-  struct catnip_lua_resource* lua_resource
-);
+catnip_lua_window_destroy(lua_State* L, struct catnip_lua_window* lua_window);
 
 void
 catnip_lua_window_publish(
   lua_State* L,
-  struct catnip_lua_resource* lua_resource,
+  struct catnip_lua_window* lua_window,
   const char* event,
   int nargs
 );
