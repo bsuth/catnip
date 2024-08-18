@@ -1,5 +1,4 @@
 #include "lua_catnip.h"
-#include "canvas/lua_canvas.h"
 #include "compositor/display.h"
 #include "compositor/seat.h"
 #include "config.h"
@@ -94,8 +93,6 @@ catnip_lua_catnip__index(lua_State* L)
     } else {
       lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_window->ref);
     }
-  } else if (streq(key, "canvas")) {
-    lua_pushcfunction(L, catnip_lua_canvas);
   } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, catnip_lua_catnip_subscribe);
   } else if (streq(key, "unsubscribe")) {
