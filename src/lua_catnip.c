@@ -11,6 +11,7 @@
 #include "desktop/windows.h"
 #include "extensions/string.h"
 #include "lua_events.h"
+#include "lua_keybindings.h"
 #include <lauxlib.h>
 
 static int
@@ -93,6 +94,10 @@ catnip_lua_catnip__index(lua_State* L)
     } else {
       lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_window->ref);
     }
+  } else if (streq(key, "bind")) {
+    lua_pushcfunction(L, catnip_lua_keybindings_bind);
+  } else if (streq(key, "unbind")) {
+    lua_pushcfunction(L, catnip_lua_keybindings_unbind);
   } else if (streq(key, "subscribe")) {
     lua_pushcfunction(L, catnip_lua_catnip_subscribe);
   } else if (streq(key, "unsubscribe")) {

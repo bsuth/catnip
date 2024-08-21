@@ -7,6 +7,7 @@
 #include "desktop/lua_keyboard.h"
 #include "extensions/wayland.h"
 #include "id.h"
+#include "lua_keybindings.h"
 #include <stdlib.h>
 #include <string.h>
 
@@ -70,35 +71,41 @@ on_keyboard_key(struct wl_listener* listener, void* data)
 
   struct wlr_keyboard_key_event* wlr_event = data;
 
-  struct catnip_key_event event = {
+  struct catnip_key_event key_event = {
     .modifiers = wlr_keyboard_get_modifiers(keyboard->wlr.keyboard),
     .xkb_keysym = xkb_state_key_get_one_sym(
       keyboard->wlr.keyboard->xkb_state,
       wlr_event->keycode + 8 // libinput -> xkbcommon
     ),
     .state = wlr_event->state,
-    .prevent_notify = false,
+    .propagate = true,
   };
 
-  if (catnip_key_event_check_keybindings(&event)) {
+  if (catnip_key_event_check_keybindings(&key_event)) {
     return;
   }
 
-  catnip_lua_key_event_publish(catnip_L, keyboard, &event);
+  catnip_lua_key_event_publish(catnip_L, keyboard, &key_event);
 
-  if (!event.prevent_notify) {
-    // Wayland only allows a single keyboard per seat. Thus, we assign all
-    // keyboards to the same seat, swapping them out on key events.
-    wlr_seat_set_keyboard(catnip_seat, keyboard->wlr.keyboard);
-
-    // Forward the key event to clients
-    wlr_seat_keyboard_notify_key(
-      catnip_seat,
-      wlr_event->time_msec,
-      wlr_event->keycode,
-      wlr_event->state
-    );
+  if (!key_event.propagate) {
+    return;
   }
+
+  if (catnip_lua_keybindings_check(catnip_L, &key_event)) {
+    return;
+  }
+
+  // Wayland only allows a single keyboard per seat. Thus, we assign all
+  // keyboards to the same seat, swapping them out on key events.
+  wlr_seat_set_keyboard(catnip_seat, keyboard->wlr.keyboard);
+
+  // Forward the key event to clients
+  wlr_seat_keyboard_notify_key(
+    catnip_seat,
+    wlr_event->time_msec,
+    wlr_event->keycode,
+    wlr_event->state
+  );
 }
 
 static void

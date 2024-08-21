@@ -12,6 +12,7 @@
 #include "desktop/lua_windows.h"
 #include "lua_catnip.h"
 #include "lua_events.h"
+#include "lua_keybindings.h"
 #include <lauxlib.h>
 
 void
@@ -19,6 +20,7 @@ catnip_lua_state_init(lua_State* L)
 {
   catnip_lua_catnip_init(L);
   catnip_lua_events_init(L);
+  catnip_lua_keybindings_init(L);
 
   catnip_lua_cursor_init(L);
   catnip_lua_key_event_init(L);

@@ -57,6 +57,8 @@ catnip_lua_key_event__index(lua_State* L)
     lua_pushboolean(L, lua_key_event->key_event->modifiers & WLR_MODIFIER_LOGO);
   } else if (streq(key, "mod5")) {
     lua_pushboolean(L, lua_key_event->key_event->modifiers & WLR_MODIFIER_MOD5);
+  } else if (streq(key, "propagate")) {
+    lua_pushboolean(L, lua_key_event->key_event->propagate);
   } else {
     lua_pushnil(L);
   }
@@ -80,8 +82,8 @@ catnip_lua_key_event__newindex(lua_State* L)
 
   if (lua_key_event->key_event == NULL) {
     lua_log_error(L, "attempt to index outdated key event");
-  } else if (streq(key, "prevent_notify")) {
-    lua_key_event->key_event->prevent_notify = lua_toboolean(L, 3);
+  } else if (streq(key, "propagate")) {
+    lua_key_event->key_event->propagate = lua_toboolean(L, 3);
   }
 
   return 0;

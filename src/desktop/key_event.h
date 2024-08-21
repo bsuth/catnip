@@ -10,7 +10,7 @@ struct catnip_key_event {
   uint32_t modifiers;
   xkb_keysym_t xkb_keysym;
   enum wl_keyboard_key_state state;
-  bool prevent_notify;
+  bool propagate;
 };
 
 bool
