@@ -62,16 +62,20 @@ CFLAGS := \
 OBJECT_BUILD_DIR := $(BUILD_DIR)/objects
 $(shell mkdir -p $(OBJECT_BUILD_DIR))
 
+PROTOCOL_HEADERS = \
+	$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h \
+	$(PROTOCOLS_BUILD_DIR)/xdg-shell-protocol.h
+
 $(OBJECT_BUILD_DIR)/default_config.o: $(SOURCE_DIR)/default_config.lua
 	@cat $< | \
 	sed 's/"/\\"/g' | \
 	awk '{ printf "%s%s", separator, $$0; separator = "\\n" }' - | \
 	xargs -0  printf '#include "default_config.h"\nconst char* catnip_default_config = "%s";' | \
-	$(CC) $(CFLAGS) -c -o $@ -xc -
+	$(CC) -c $(CFLAGS) -o $@ -xc -
 
-$(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c
+$(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c $(PROTOCOL_HEADERS)
 	@-mkdir -p $(@D)
-	$(CC) $(CFLAGS) -c -o $@ $<
+	$(CC) -c $(CFLAGS) -o $@ $<
 
 # ------------------------------------------------------------------------------
 # Executable
@@ -83,12 +87,8 @@ LIBS := \
 
 OBJECTS := $(SOURCES:$(SOURCE_DIR)/%.c=$(OBJECT_BUILD_DIR)/%.o) $(OBJECT_BUILD_DIR)/default_config.o
 
-PROTOCOL_HEADERS = \
-	$(PROTOCOLS_BUILD_DIR)/wlr-layer-shell-unstable-v1-protocol.h \
-	$(PROTOCOLS_BUILD_DIR)/xdg-shell-protocol.h
-
-$(BUILD_DIR)/$(EXECUTABLE): $(PROTOCOL_HEADERS) $(OBJECTS)
-	$(CC) $(LIBS) $(OBJECTS) -o $@
+$(BUILD_DIR)/$(EXECUTABLE): $(OBJECTS)
+	$(CC) $(LIBS) -o $@ $^
 
 # ------------------------------------------------------------------------------
 # Clean
