@@ -12,7 +12,7 @@ struct catnip_lua_keyboards* catnip_lua_keyboards = NULL;
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_keyboards_subscribe(lua_State* L)
+catnip_lua_keyboards_on(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.keyboards");
   const char* event = luaL_checkstring(L, 2);
@@ -21,25 +21,11 @@ catnip_lua_keyboards_subscribe(lua_State* L)
   lua_pushvalue(L, 3); // push callback to top in case of trailing args
   catnip_lua_events_subscribe(L, catnip_lua_keyboards->subscriptions, event);
 
-  return 1; // return callback for unsubscribe handle
+  return 1;
 }
 
 static int
-catnip_lua_keyboards_unsubscribe(lua_State* L)
-{
-  luaL_checkudata(L, 1, "catnip.keyboards");
-  const char* event = luaL_checkstring(L, 2);
-  luaL_checktype(L, 3, LUA_TFUNCTION);
-
-  lua_pushvalue(L, 3); // push callback to top in case of trailing args
-  catnip_lua_events_unsubscribe(L, catnip_lua_keyboards->subscriptions, event);
-  lua_pop(L, 1);
-
-  return 0;
-}
-
-static int
-catnip_lua_keyboards_publish(lua_State* L)
+catnip_lua_keyboards_emit(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.keyboards");
   const char* event = luaL_checkstring(L, 2);
@@ -74,12 +60,10 @@ catnip_lua_keyboards__index(lua_State* L)
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
-  } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, catnip_lua_keyboards_subscribe);
-  } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, catnip_lua_keyboards_unsubscribe);
-  } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, catnip_lua_keyboards_publish);
+  } else if (streq(key, "on")) {
+    lua_pushcfunction(L, catnip_lua_keyboards_on);
+  } else if (streq(key, "emit")) {
+    lua_pushcfunction(L, catnip_lua_keyboards_emit);
   } else {
     lua_pushnil(L);
   }

@@ -12,7 +12,7 @@ struct catnip_lua_outputs* catnip_lua_outputs = NULL;
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_outputs_subscribe(lua_State* L)
+catnip_lua_outputs_on(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.outputs");
   const char* event = luaL_checkstring(L, 2);
@@ -21,25 +21,11 @@ catnip_lua_outputs_subscribe(lua_State* L)
   lua_pushvalue(L, 3); // push callback to top in case of trailing args
   catnip_lua_events_subscribe(L, catnip_lua_outputs->subscriptions, event);
 
-  return 1; // return callback for unsubscribe handle
+  return 1;
 }
 
 static int
-catnip_lua_outputs_unsubscribe(lua_State* L)
-{
-  luaL_checkudata(L, 1, "catnip.outputs");
-  const char* event = luaL_checkstring(L, 2);
-  luaL_checktype(L, 3, LUA_TFUNCTION);
-
-  lua_pushvalue(L, 3); // push callback to top in case of trailing args
-  catnip_lua_events_unsubscribe(L, catnip_lua_outputs->subscriptions, event);
-  lua_pop(L, 1);
-
-  return 0;
-}
-
-static int
-catnip_lua_outputs_publish(lua_State* L)
+catnip_lua_outputs_emit(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.outputs");
   const char* event = luaL_checkstring(L, 2);
@@ -74,12 +60,10 @@ catnip_lua_outputs__index(lua_State* L)
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
-  } else if (streq(key, "subscribe")) {
-    lua_pushcfunction(L, catnip_lua_outputs_subscribe);
-  } else if (streq(key, "unsubscribe")) {
-    lua_pushcfunction(L, catnip_lua_outputs_unsubscribe);
-  } else if (streq(key, "publish")) {
-    lua_pushcfunction(L, catnip_lua_outputs_publish);
+  } else if (streq(key, "on")) {
+    lua_pushcfunction(L, catnip_lua_outputs_on);
+  } else if (streq(key, "emit")) {
+    lua_pushcfunction(L, catnip_lua_outputs_emit);
   } else {
     lua_pushnil(L);
   }
