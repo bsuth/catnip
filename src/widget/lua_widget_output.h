@@ -1,0 +1,4 @@
+#ifndef CATNIP_LUA_WIDGET_OUTPUT_H
+#define CATNIP_LUA_WIDGET_OUTPUT_H
+
+#endif

@@ -13,6 +13,8 @@
 #include "lua_catnip.h"
 #include "lua_events.h"
 #include "lua_keybindings.h"
+#include "widget/lua_widget.h"
+#include "widget/lua_widget_base.h"
 #include <lauxlib.h>
 
 void
@@ -32,7 +34,10 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_outputs_init(L);
   catnip_lua_window_init(L);
   catnip_lua_windows_init(L);
-  catnip_lua_canvas_init(L);
+  catnip_lua_widget_init(L);
+  catnip_lua_widget_base_init(L);
+
+  catnip_lua_canvas_init(L); // TODO: remove
 
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");

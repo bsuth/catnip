@@ -164,6 +164,7 @@ catnip_lua_canvas_text(lua_State* L)
   }
 
   pango_attr_list_unref(attributes);
+  free(layout);
 
   lua_pushnumber(L, layout_width);
   lua_pushnumber(L, layout_height);
