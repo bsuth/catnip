@@ -1,7 +1,6 @@
 #include "widget_block.h"
 #include "extensions/cairo.h"
 #include <stdbool.h>
-#include <stdio.h>
 #include <stdlib.h>
 
 struct catnip_widget_block*

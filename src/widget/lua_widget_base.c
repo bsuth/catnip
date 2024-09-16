@@ -12,7 +12,7 @@ catnip_lua_widget_base__index(lua_State* L)
 {
   struct catnip_widget_base* base = lua_touserdata(L, 1);
 
-  if (base->mt->__index == NULL) {
+  if (base->mt->__index != NULL) {
     return base->mt->__index(L, base);
   }
 

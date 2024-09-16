@@ -25,6 +25,36 @@ catnip_lua_widget_block__index(lua_State* L, struct catnip_widget_base* base)
     lua_pushnumber(L, 0); // TODO
   } else if (streq(key, "height")) {
     lua_pushnumber(L, 0); // TODO
+  } else if (streq(key, "padding")) {
+    lua_pushnumber(L, block->styles.padding);
+  } else if (streq(key, "padding_top")) {
+    lua_pushnumber(L, block->styles.padding_top);
+  } else if (streq(key, "padding_left")) {
+    lua_pushnumber(L, block->styles.padding_left);
+  } else if (streq(key, "padding_bottom")) {
+    lua_pushnumber(L, block->styles.padding_bottom);
+  } else if (streq(key, "padding_right")) {
+    lua_pushnumber(L, block->styles.padding_right);
+  } else if (streq(key, "radius")) {
+    lua_pushnumber(L, block->styles.radius);
+  } else if (streq(key, "radius_top_left")) {
+    lua_pushnumber(L, block->styles.radius_top_left);
+  } else if (streq(key, "radius_top_right")) {
+    lua_pushnumber(L, block->styles.radius_top_right);
+  } else if (streq(key, "radius_bottom_left")) {
+    lua_pushnumber(L, block->styles.radius_bottom_left);
+  } else if (streq(key, "radius_bottom_right")) {
+    lua_pushnumber(L, block->styles.radius_bottom_right);
+  } else if (streq(key, "bg_color")) {
+    lua_pushnumber(L, block->styles.bg_color);
+  } else if (streq(key, "bg_opacity")) {
+    lua_pushnumber(L, block->styles.bg_opacity);
+  } else if (streq(key, "border_color")) {
+    lua_pushnumber(L, block->styles.border_color);
+  } else if (streq(key, "border_opacity")) {
+    lua_pushnumber(L, block->styles.border_opacity);
+  } else if (streq(key, "border_width")) {
+    lua_pushnumber(L, block->styles.border_width);
   } else {
     lua_pushnil(L);
   }
@@ -54,6 +84,51 @@ catnip_lua_widget_block__newindex(lua_State* L, struct catnip_widget_base* base)
     // TODO
   } else if (streq(key, "height")) {
     // TODO
+  } else if (streq(key, "padding")) {
+    block->styles.padding = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "padding_top")) {
+    block->styles.padding_top = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "padding_left")) {
+    block->styles.padding_left = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "padding_bottom")) {
+    block->styles.padding_bottom = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "padding_right")) {
+    block->styles.padding_right = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "radius")) {
+    block->styles.radius = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "radius_top_left")) {
+    block->styles.radius_top_left = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "radius_top_right")) {
+    block->styles.radius_top_right = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "radius_bottom_left")) {
+    block->styles.radius_bottom_left = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "radius_bottom_right")) {
+    block->styles.radius_bottom_right = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "bg_color")) {
+    block->styles.bg_color = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "bg_opacity")) {
+    block->styles.bg_opacity = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "border_color")) {
+    block->styles.border_color = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "border_opacity")) {
+    block->styles.border_opacity = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
+  } else if (streq(key, "border_width")) {
+    block->styles.border_width = luaL_checknumber(L, 3);
+    catnip_widget_base_request_render(base);
   }
 }
 

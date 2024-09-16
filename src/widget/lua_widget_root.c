@@ -81,11 +81,18 @@ catnip_lua_widget_root__newindex(lua_State* L, struct catnip_widget_base* base)
   } else if (streq(key, "widget")) {
     luaL_unref(L, LUA_REGISTRYINDEX, root->lua_widget);
 
+    if (root->widget != NULL) {
+      root->widget->root = NULL;
+      root->widget->parent = NULL;
+    }
+
     if (lua_type(L, 3) == LUA_TNIL) {
       root->widget = NULL;
       root->lua_widget = LUA_NOREF;
     } else {
       root->widget = luaL_checkudata(L, 3, "catnip.widget.base");
+      root->widget->root = root;
+      root->widget->parent = base;
       lua_pushvalue(L, 3);
       root->lua_widget = luaL_ref(L, LUA_REGISTRYINDEX);
     }
@@ -104,6 +111,7 @@ catnip_lua_widget_root__gc(lua_State* L, struct catnip_widget_base* base)
   struct catnip_widget_root* root = base->data;
 
   if (root->widget != NULL) {
+    root->widget->root = NULL;
     root->widget->parent = NULL;
   }
 
@@ -151,6 +159,7 @@ catnip_lua_widget_root(lua_State* L)
 
     if (lua_hasuserdatafield(L, 1, "widget")) {
       root->widget = luaL_checkudata(L, -1, "catnip.widget.base");
+      root->widget->root = root;
       root->widget->parent = base;
       root->lua_widget = luaL_ref(L, LUA_REGISTRYINDEX);
       catnip_widget_root_request_render(root);

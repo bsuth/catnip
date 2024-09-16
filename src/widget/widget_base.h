@@ -14,10 +14,14 @@ enum catnip_widget_base_type {
 };
 
 struct catnip_widget_base {
+  struct catnip_widget_root* root;
   struct catnip_widget_base* parent;
   void* data;
   enum catnip_widget_base_type type;
   struct catnip_lua_widget_base_mt* mt;
 };
+
+void
+catnip_widget_base_request_render(struct catnip_widget_base* base);
 
 #endif
