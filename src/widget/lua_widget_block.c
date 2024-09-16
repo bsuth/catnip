@@ -123,12 +123,12 @@ catnip_lua_widget_block(lua_State* L)
     block->styles.bg_color =
       lua_hasnumberfield(L, 1, "bg_color") ? lua_popnumber(L) : -1;
     block->styles.bg_opacity =
-      lua_hasnumberfield(L, 1, "bg_opacity") ? lua_popnumber(L) : -1;
+      lua_hasnumberfield(L, 1, "bg_opacity") ? lua_popnumber(L) : 1;
 
     block->styles.border_color =
       lua_hasnumberfield(L, 1, "border_color") ? lua_popnumber(L) : -1;
     block->styles.border_opacity =
-      lua_hasnumberfield(L, 1, "border_opacity") ? lua_popnumber(L) : -1;
+      lua_hasnumberfield(L, 1, "border_opacity") ? lua_popnumber(L) : 1;
     block->styles.border_width =
       lua_hasnumberfield(L, 1, "border_width") ? lua_popnumber(L) : -1;
   }

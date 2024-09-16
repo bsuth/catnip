@@ -153,6 +153,7 @@ catnip_lua_widget_root(lua_State* L)
       root->widget = luaL_checkudata(L, -1, "catnip.widget.base");
       root->widget->parent = base;
       root->lua_widget = luaL_ref(L, LUA_REGISTRYINDEX);
+      catnip_widget_root_request_render(root);
     }
   }
 

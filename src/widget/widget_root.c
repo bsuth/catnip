@@ -137,7 +137,28 @@ catnip_widget_root_render(struct catnip_widget_root* root)
   cairo_restore(root->cairo.cr);
 
   if (root->widget != NULL) {
-    // TODO: layout
+    switch (root->widget->type) {
+      case CATNIP_WIDGET_BLOCK:
+        catnip_widget_block_layout(root->widget->data);
+        break;
+      case CATNIP_WIDGET_IMG:
+        // TODO
+        break;
+      case CATNIP_WIDGET_OUTPUT:
+        // TODO
+        break;
+      case CATNIP_WIDGET_SVG:
+        // TODO
+        break;
+      case CATNIP_WIDGET_TEXT:
+        // TODO
+        break;
+      case CATNIP_WIDGET_WINDOW:
+        // TODO
+        break;
+      default:
+        break;
+    }
 
     switch (root->widget->type) {
       case CATNIP_WIDGET_BLOCK:
@@ -186,6 +207,8 @@ catnip_widget_root_refresh(void* data)
     catnip_widget_root_render(root);
     root->request.render = false;
   }
+
+  root->request.event_source = NULL;
 }
 
 static void

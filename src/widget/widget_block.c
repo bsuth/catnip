@@ -1,6 +1,7 @@
 #include "widget_block.h"
 #include "extensions/cairo.h"
 #include <stdbool.h>
+#include <stdio.h>
 #include <stdlib.h>
 
 struct catnip_widget_block*
@@ -10,10 +11,10 @@ catnip_widget_block_create()
     calloc(1, sizeof(struct catnip_widget_block));
 
   block->styles.bg_color = -1;
-  block->styles.bg_opacity = -1;
+  block->styles.bg_opacity = 1;
 
   block->styles.border_color = -1;
-  block->styles.border_opacity = -1;
+  block->styles.border_opacity = 1;
   block->styles.border_width = 1;
 
   block->styles.radius_top_left = -1;
@@ -121,6 +122,7 @@ catnip_widget_block_draw(struct catnip_widget_block* block, cairo_t* cr)
       block->styles.border_color,
       block->styles.border_opacity
     );
+
     cairo_stroke(cr);
   }
 
