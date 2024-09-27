@@ -10,9 +10,84 @@
 // -----------------------------------------------------------------------------
 
 static int
+catnip_lua_widget_block_insert(lua_State* L)
+{
+  struct catnip_widget_base* base = luaL_checkudata(L, 1, "catnip.widget.base");
+
+  if (base->type != CATNIP_WIDGET_BLOCK) {
+    return 0;
+  }
+
+  struct catnip_widget_block* block = base->data;
+
+  if (lua_type(L, 2) == LUA_TNUMBER) {
+    int index = lua_tointeger(L, 2);
+    luaL_checkudata(L, 3, "catnip.widget.base");
+
+    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+    int children_len = lua_objlen(L, -1);
+
+    for (int i = children_len + 1; i > index; --i) {
+      lua_rawgeti(L, -1, i - 1);
+      lua_rawseti(L, -2, i);
+    }
+
+    lua_pushvalue(L, 3);
+    lua_rawseti(L, -2, index);
+    lua_pop(L, 1);
+  } else {
+    luaL_checkudata(L, 2, "catnip.widget.base");
+    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+    lua_pushvalue(L, 2);
+    lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
+    lua_pop(L, 1);
+  }
+
+  return 0;
+}
+
+static int
+catnip_lua_widget_block_remove(lua_State* L)
+{
+  struct catnip_widget_base* base = luaL_checkudata(L, 1, "catnip.widget.base");
+
+  if (base->type != CATNIP_WIDGET_BLOCK) {
+    return 0;
+  }
+
+  struct catnip_widget_block* block = base->data;
+
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+  int children_len = lua_objlen(L, -1);
+
+  int index = lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : children_len;
+
+  lua_rawgeti(L, -1, index);
+  lua_insert(L, -2);
+
+  for (int i = index; i < children_len; ++i) {
+    lua_rawgeti(L, -1, i + 1);
+    lua_rawseti(L, -2, i);
+  }
+
+  lua_pushnil(L);
+  lua_rawseti(L, -2, children_len);
+  lua_pop(L, 1);
+
+  return 1;
+}
+
+static int
 catnip_lua_widget_block__index(lua_State* L, struct catnip_widget_base* base)
 {
   struct catnip_widget_block* block = base->data;
+
+  if (lua_type(L, 2) == LUA_TNUMBER) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+    lua_rawgeti(L, -1, lua_tonumber(L, 2));
+    return 1;
+  }
+
   const char* key = lua_tostring(L, 2);
 
   if (key == NULL) {
@@ -55,6 +130,10 @@ catnip_lua_widget_block__index(lua_State* L, struct catnip_widget_base* base)
     lua_pushnumber(L, block->styles.border_opacity);
   } else if (streq(key, "border_width")) {
     lua_pushnumber(L, block->styles.border_width);
+  } else if (streq(key, "insert")) {
+    lua_pushcfunction(L, catnip_lua_widget_block_insert);
+  } else if (streq(key, "remove")) {
+    lua_pushcfunction(L, catnip_lua_widget_block_remove);
   } else {
     lua_pushnil(L);
   }
@@ -70,6 +149,14 @@ static void
 catnip_lua_widget_block__newindex(lua_State* L, struct catnip_widget_base* base)
 {
   struct catnip_widget_block* block = base->data;
+
+  if (lua_type(L, 2) == LUA_TNUMBER) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+    lua_pushvalue(L, 3);
+    lua_rawseti(L, -2, lua_tonumber(L, 2));
+    return;
+  }
+
   const char* key = lua_tostring(L, 2);
 
   if (key == NULL) {

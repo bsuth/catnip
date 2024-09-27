@@ -1,6 +1,7 @@
 #ifndef CATNIP_WIDGET_BLOCK_H
 #define CATNIP_WIDGET_BLOCK_H
 
+#include "extensions/lua.h"
 #include <cairo.h>
 
 enum catnip_widget_block_unit {
@@ -10,7 +11,7 @@ enum catnip_widget_block_unit {
 };
 
 struct catnip_widget_block {
-  // TODO: children
+  lua_Ref children;
 
   struct {
     int x;

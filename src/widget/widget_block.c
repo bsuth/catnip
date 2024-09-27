@@ -1,13 +1,23 @@
 #include "widget_block.h"
+#include "config.h"
 #include "extensions/cairo.h"
+#include "widget/widget_base.h"
+#include <lauxlib.h>
 #include <stdbool.h>
 #include <stdlib.h>
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 struct catnip_widget_block*
 catnip_widget_block_create()
 {
   struct catnip_widget_block* block =
     calloc(1, sizeof(struct catnip_widget_block));
+
+  lua_newtable(catnip_L);
+  block->children = luaL_ref(catnip_L, LUA_REGISTRYINDEX);
 
   block->styles.bg_color = -1;
   block->styles.bg_opacity = 1;
@@ -27,18 +37,60 @@ catnip_widget_block_create()
 void
 catnip_widget_block_destroy(struct catnip_widget_block* block)
 {
+  // TODO
+  // lua_pushnil(catnip_L);
+  // while (lua_next(catnip_L, 2) != 0) {
+  //   struct catnip_widget_base* child = lua_touserdata(catnip_L, -1);
+  //   child->root = NULL;
+  //   child->parent = NULL;
+  //   lua_pop(catnip_L, 1);
+  // }
+  luaL_unref(catnip_L, LUA_REGISTRYINDEX, block->children);
+
   free(block);
+}
+
+void
+catnip_widget_block_insert(struct catnip_widget_block* block)
+{
+}
+
+void
+catnip_widget_block_remove(struct catnip_widget_block* block)
+{
+}
+
+// -----------------------------------------------------------------------------
+// Layout
+// -----------------------------------------------------------------------------
+
+static void
+catnip_widget_block_pre_layout(struct catnip_widget_block* block)
+{
+}
+
+static void
+catnip_widget_block_post_layout(struct catnip_widget_block* block)
+{
 }
 
 void
 catnip_widget_block_layout(struct catnip_widget_block* block)
 {
+  catnip_widget_block_pre_layout(block);
+
   // TODO
   block->computed.x = block->styles.x;
   block->computed.y = block->styles.y;
   block->computed.width = block->styles.width;
   block->computed.height = block->styles.height;
+
+  catnip_widget_block_post_layout(block);
 }
+
+// -----------------------------------------------------------------------------
+// Draw
+// -----------------------------------------------------------------------------
 
 void
 catnip_widget_block_draw(struct catnip_widget_block* block, cairo_t* cr)
