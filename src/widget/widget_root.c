@@ -79,7 +79,8 @@ catnip_widget_root_create(int initial_width, int initial_height)
   root->request.event_source = NULL;
   root->request.width = initial_width;
   root->request.height = initial_height;
-  root->request.render = false;
+  root->request.layout = false;
+  root->request.draw = false;
 
   return root;
 }
@@ -129,7 +130,38 @@ catnip_widget_root_resize(
 }
 
 static void
-catnip_widget_root_render(struct catnip_widget_root* root)
+catnip_widget_root_layout(struct catnip_widget_root* root)
+{
+  if (root->widget == NULL) {
+    return;
+  }
+
+  switch (root->widget->type) {
+    case CATNIP_WIDGET_BLOCK:
+      catnip_widget_block_layout(root->widget->data);
+      break;
+    case CATNIP_WIDGET_IMG:
+      // TODO
+      break;
+    case CATNIP_WIDGET_OUTPUT:
+      // TODO
+      break;
+    case CATNIP_WIDGET_SVG:
+      // TODO
+      break;
+    case CATNIP_WIDGET_TEXT:
+      // TODO
+      break;
+    case CATNIP_WIDGET_WINDOW:
+      // TODO
+      break;
+    default:
+      break;
+  }
+}
+
+static void
+catnip_widget_root_draw(struct catnip_widget_root* root)
 {
   cairo_save(root->cairo.cr);
   cairo_set_operator(root->cairo.cr, CAIRO_OPERATOR_CLEAR);
@@ -137,29 +169,6 @@ catnip_widget_root_render(struct catnip_widget_root* root)
   cairo_restore(root->cairo.cr);
 
   if (root->widget != NULL) {
-    switch (root->widget->type) {
-      case CATNIP_WIDGET_BLOCK:
-        catnip_widget_block_layout(root->widget->data);
-        break;
-      case CATNIP_WIDGET_IMG:
-        // TODO
-        break;
-      case CATNIP_WIDGET_OUTPUT:
-        // TODO
-        break;
-      case CATNIP_WIDGET_SVG:
-        // TODO
-        break;
-      case CATNIP_WIDGET_TEXT:
-        // TODO
-        break;
-      case CATNIP_WIDGET_WINDOW:
-        // TODO
-        break;
-      default:
-        break;
-    }
-
     switch (root->widget->type) {
       case CATNIP_WIDGET_BLOCK:
         catnip_widget_block_draw(root->widget->data, root->cairo.cr);
@@ -203,11 +212,16 @@ catnip_widget_root_refresh(void* data)
     catnip_widget_root_resize(root, root->request.width, root->request.height);
   }
 
-  if (needs_resize || root->request.render) {
-    catnip_widget_root_render(root);
-    root->request.render = false;
+  if (needs_resize || root->request.layout) {
+    catnip_widget_root_layout(root);
   }
 
+  if (needs_resize || root->request.layout || root->request.draw) {
+    catnip_widget_root_draw(root);
+  }
+
+  root->request.layout = false;
+  root->request.draw = false;
   root->request.event_source = NULL;
 }
 
@@ -239,8 +253,15 @@ catnip_widget_root_request_resize(
 }
 
 void
-catnip_widget_root_request_render(struct catnip_widget_root* root)
+catnip_widget_root_request_layout(struct catnip_widget_root* root)
 {
-  root->request.render = true;
+  root->request.layout = true;
+  catnip_widget_root_queue_refresh(root);
+}
+
+void
+catnip_widget_root_request_draw(struct catnip_widget_root* root)
+{
+  root->request.draw = true;
   catnip_widget_root_queue_refresh(root);
 }

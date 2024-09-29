@@ -37,14 +37,17 @@ catnip_widget_block_create()
 void
 catnip_widget_block_destroy(struct catnip_widget_block* block)
 {
-  // TODO
-  // lua_pushnil(catnip_L);
-  // while (lua_next(catnip_L, 2) != 0) {
-  //   struct catnip_widget_base* child = lua_touserdata(catnip_L, -1);
-  //   child->root = NULL;
-  //   child->parent = NULL;
-  //   lua_pop(catnip_L, 1);
-  // }
+  lua_rawgeti(catnip_L, LUA_REGISTRYINDEX, block->children);
+  lua_pushnil(catnip_L);
+
+  while (lua_next(catnip_L, -2) != 0) {
+    struct catnip_widget_base* child = lua_touserdata(catnip_L, -1);
+    child->root = NULL;
+    child->parent = NULL;
+    lua_pop(catnip_L, 1);
+  }
+
+  lua_pop(catnip_L, 1);
   luaL_unref(catnip_L, LUA_REGISTRYINDEX, block->children);
 
   free(block);
@@ -72,6 +75,22 @@ catnip_widget_block_pre_layout(struct catnip_widget_block* block)
 static void
 catnip_widget_block_post_layout(struct catnip_widget_block* block)
 {
+  lua_rawgeti(catnip_L, LUA_REGISTRYINDEX, block->children);
+  lua_pushnil(catnip_L);
+
+  while (lua_next(catnip_L, -2) != 0) {
+    struct catnip_widget_base* child = lua_touserdata(catnip_L, -1);
+    struct catnip_widget_block* child_block = child->data; // TODO: fixme
+
+    child_block->computed.x = block->styles.x + child_block->styles.x;
+    child_block->computed.y = block->styles.y + child_block->styles.y;
+    child_block->computed.width = child_block->styles.width;
+    child_block->computed.height = child_block->styles.height;
+
+    lua_pop(catnip_L, 1);
+  }
+
+  lua_pop(catnip_L, 1);
 }
 
 void
@@ -92,8 +111,8 @@ catnip_widget_block_layout(struct catnip_widget_block* block)
 // Draw
 // -----------------------------------------------------------------------------
 
-void
-catnip_widget_block_draw(struct catnip_widget_block* block, cairo_t* cr)
+static void
+catnip_widget_block_draw_self(struct catnip_widget_block* block, cairo_t* cr)
 {
   cairo_save(cr);
 
@@ -178,7 +197,55 @@ catnip_widget_block_draw(struct catnip_widget_block* block, cairo_t* cr)
   }
 
   cairo_restore(cr);
+}
+
+static void
+catnip_widget_block_draw_children(
+  struct catnip_widget_block* block,
+  cairo_t* cr
+)
+{
+  lua_rawgeti(catnip_L, LUA_REGISTRYINDEX, block->children);
+  lua_pushnil(catnip_L);
+
+  while (lua_next(catnip_L, -2) != 0) {
+    struct catnip_widget_base* child = lua_touserdata(catnip_L, -1);
+
+    switch (child->type) {
+      case CATNIP_WIDGET_BLOCK:
+        catnip_widget_block_draw(child->data, cr);
+        break;
+      case CATNIP_WIDGET_IMG:
+        // TODO
+        break;
+      case CATNIP_WIDGET_OUTPUT:
+        // TODO
+        break;
+      case CATNIP_WIDGET_SVG:
+        // TODO
+        break;
+      case CATNIP_WIDGET_TEXT:
+        // TODO
+        break;
+      case CATNIP_WIDGET_WINDOW:
+        // TODO
+        break;
+      default:
+        break;
+    }
+
+    lua_pop(catnip_L, 1);
+  }
+
+  lua_pop(catnip_L, 1);
+}
+
+void
+catnip_widget_block_draw(struct catnip_widget_block* block, cairo_t* cr)
+{
+  catnip_widget_block_draw_self(block, cr);
 
   // TODO: inheritable properties
-  // TODO: draw children
+
+  catnip_widget_block_draw_children(block, cr);
 }

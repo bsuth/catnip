@@ -25,7 +25,8 @@ struct catnip_widget_root {
     struct wl_event_source* event_source;
     int width;
     int height;
-    bool render;
+    bool layout;
+    bool draw;
   } request;
 };
 
@@ -43,6 +44,9 @@ catnip_widget_root_request_resize(
 );
 
 void
-catnip_widget_root_request_render(struct catnip_widget_root* root);
+catnip_widget_root_request_layout(struct catnip_widget_root* root);
+
+void
+catnip_widget_root_request_draw(struct catnip_widget_root* root);
 
 #endif

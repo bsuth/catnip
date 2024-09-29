@@ -79,6 +79,7 @@ catnip_lua_widget_base(lua_State* L)
     lua_newuserdata(L, sizeof(struct catnip_widget_base));
   luaL_setmetatable(L, "catnip.widget.base");
 
+  base->root = NULL;
   base->parent = NULL;
   base->data = NULL;
   base->type = -1;

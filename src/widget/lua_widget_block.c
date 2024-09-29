@@ -19,10 +19,11 @@ catnip_lua_widget_block_insert(lua_State* L)
   }
 
   struct catnip_widget_block* block = base->data;
+  struct catnip_widget_base* child = NULL;
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
     int index = lua_tointeger(L, 2);
-    luaL_checkudata(L, 3, "catnip.widget.base");
+    child = luaL_checkudata(L, 3, "catnip.widget.base");
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
     int children_len = lua_objlen(L, -1);
@@ -36,12 +37,19 @@ catnip_lua_widget_block_insert(lua_State* L)
     lua_rawseti(L, -2, index);
     lua_pop(L, 1);
   } else {
-    luaL_checkudata(L, 2, "catnip.widget.base");
+    child = luaL_checkudata(L, 2, "catnip.widget.base");
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
     lua_pushvalue(L, 2);
     lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
     lua_pop(L, 1);
   }
+
+  // TODO: remove child from previous parent
+  // TODO: propagate root setting
+  child->root = base->root;
+  child->parent = base;
+
+  catnip_widget_base_request_layout(base);
 
   return 0;
 }
@@ -73,6 +81,8 @@ catnip_lua_widget_block_remove(lua_State* L)
   lua_pushnil(L);
   lua_rawseti(L, -2, children_len);
   lua_pop(L, 1);
+
+  catnip_widget_base_request_layout(base);
 
   return 1;
 }
@@ -173,49 +183,49 @@ catnip_lua_widget_block__newindex(lua_State* L, struct catnip_widget_base* base)
     // TODO
   } else if (streq(key, "padding")) {
     block->styles.padding = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_layout(base);
   } else if (streq(key, "padding_top")) {
     block->styles.padding_top = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_layout(base);
   } else if (streq(key, "padding_left")) {
     block->styles.padding_left = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_layout(base);
   } else if (streq(key, "padding_bottom")) {
     block->styles.padding_bottom = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_layout(base);
   } else if (streq(key, "padding_right")) {
     block->styles.padding_right = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_layout(base);
   } else if (streq(key, "radius")) {
     block->styles.radius = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "radius_top_left")) {
     block->styles.radius_top_left = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "radius_top_right")) {
     block->styles.radius_top_right = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "radius_bottom_left")) {
     block->styles.radius_bottom_left = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "radius_bottom_right")) {
     block->styles.radius_bottom_right = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "bg_color")) {
     block->styles.bg_color = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "bg_opacity")) {
     block->styles.bg_opacity = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "border_color")) {
     block->styles.border_color = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "border_opacity")) {
     block->styles.border_opacity = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   } else if (streq(key, "border_width")) {
     block->styles.border_width = luaL_checknumber(L, 3);
-    catnip_widget_base_request_render(base);
+    catnip_widget_base_request_draw(base);
   }
 }
 
