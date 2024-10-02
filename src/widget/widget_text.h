@@ -1,4 +1,0 @@
-#ifndef CATNIP_WIDGET_TEXT_H
-#define CATNIP_WIDGET_TEXT_H
-
-#endif

@@ -1,4 +1,0 @@
-#ifndef CATNIP_WIDGET_WINDOW_H
-#define CATNIP_WIDGET_WINDOW_H
-
-#endif

@@ -1,4 +1,0 @@
-#ifndef CATNIP_WIDGET_OUTPUT_H
-#define CATNIP_WIDGET_OUTPUT_H
-
-#endif

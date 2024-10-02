@@ -1,19 +1,51 @@
 #ifndef CATNIP_LUA_WIDGET_BASE_H
 #define CATNIP_LUA_WIDGET_BASE_H
 
-#include "widget/widget_base.h"
 #include <lua.h>
 
-struct catnip_lua_widget_base_mt {
-  int (*__index)(lua_State* L, struct catnip_widget_base* base);
-  void (*__newindex)(lua_State* L, struct catnip_widget_base* base);
-  void (*__gc)(lua_State* L, struct catnip_widget_base* base);
+enum catnip_lua_widget_base_type {
+  CATNIP_LUA_WIDGET_BLOCK,
+  CATNIP_LUA_WIDGET_IMG,
+  CATNIP_LUA_WIDGET_OUTPUT,
+  CATNIP_LUA_WIDGET_SVG,
+  CATNIP_LUA_WIDGET_TEXT,
+  CATNIP_LUA_WIDGET_WINDOW,
+};
+
+enum catnip_lua_widget_unit {
+  CATNIP_LUA_WIDGET_UNIT_NONE,
+  CATNIP_LUA_WIDGET_UNIT_PX,
+  CATNIP_LUA_WIDGET_UNIT_PERCENT,
+};
+
+struct catnip_lua_widget_base {
+  enum catnip_lua_widget_base_type type;
+  struct catnip_lua_widget_base* parent;
+  struct catnip_lua_widget_root* root;
+
+  struct {
+    int x;
+    enum catnip_lua_widget_unit x_unit;
+    int y;
+    enum catnip_lua_widget_unit y_unit;
+    int width;
+    enum catnip_lua_widget_unit width_unit;
+    int height;
+    enum catnip_lua_widget_unit height_unit;
+  } styles;
+
+  struct {
+    int x;
+    int y;
+    int width;
+    int height;
+  } computed;
 };
 
 void
-catnip_lua_widget_base_init(lua_State* L);
+catnip_lua_widget_base_request_layout(struct catnip_lua_widget_base* base);
 
-struct catnip_widget_base*
-catnip_lua_widget_base(lua_State* L);
+void
+catnip_lua_widget_base_request_draw(struct catnip_lua_widget_base* base);
 
 #endif

@@ -7,7 +7,7 @@
 #include <wlr/types/wlr_scene.h>
 
 struct catnip_lua_widget_root {
-  struct catnip_widget_base* block_base;
+  struct catnip_lua_widget_block* block;
   lua_Ref block_ref;
 
   struct {

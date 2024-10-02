@@ -14,7 +14,8 @@
 #include "lua_events.h"
 #include "lua_keybindings.h"
 #include "widget/lua_widget.h"
-#include "widget/lua_widget_base.h"
+#include "widget/lua_widget_block.h"
+#include "widget/lua_widget_root.h"
 #include <lauxlib.h>
 
 void
@@ -35,7 +36,8 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_window_init(L);
   catnip_lua_windows_init(L);
   catnip_lua_widget_init(L);
-  catnip_lua_widget_base_init(L);
+  catnip_lua_widget_root_init(L);
+  catnip_lua_widget_block_init(L);
 
   catnip_lua_canvas_init(L); // TODO: remove
 

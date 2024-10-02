@@ -18,7 +18,7 @@ SOURCES := $(shell find $(SOURCE_DIR) -name '*.c')
 BUILD_DIR := build
 $(shell mkdir -p $(BUILD_DIR))
 
-.PHONY = default dev clean format install uninstall
+.PHONY: default dev clean format install uninstall
 
 # ------------------------------------------------------------------------------
 # Builds
@@ -82,6 +82,7 @@ $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c $(PROTOCOL_HEADERS)
 # ------------------------------------------------------------------------------
 
 LIBS := \
+	-lm \
 	-lrt \
 	$(shell pkg-config --libs $(DEPENDENCIES))
 

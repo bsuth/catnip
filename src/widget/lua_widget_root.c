@@ -1,10 +1,9 @@
 #include "lua_widget_root.h"
 #include "compositor/event_loop.h"
 #include "compositor/scene.h"
+#include "config.h"
 #include "extensions/string.h"
 #include "widget/lua_widget_block.h"
-#include "widget/widget_base.h"
-#include "widget/widget_block.h"
 #include <drm_fourcc.h>
 #include <lauxlib.h>
 #include <wlr/interfaces/wlr_buffer.h>
@@ -55,8 +54,7 @@ const struct wlr_buffer_impl catnip_lua_widget_root_buffer = {
 static int
 catnip_lua_widget_root__index(lua_State* L)
 {
-  struct catnip_lua_widget_root* root =
-    luaL_checkudata(L, 1, "catnip.widget.root");
+  struct catnip_lua_widget_root* root = lua_touserdata(L, 1);
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, root->block_ref);
@@ -91,8 +89,7 @@ catnip_lua_widget_root__index(lua_State* L)
 static int
 catnip_lua_widget_root__newindex(lua_State* L)
 {
-  struct catnip_lua_widget_root* root =
-    luaL_checkudata(L, 1, "catnip.widget.root");
+  struct catnip_lua_widget_root* root = lua_touserdata(L, 1);
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, root->block_ref);
@@ -105,7 +102,7 @@ catnip_lua_widget_root__newindex(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (key == NULL) {
-    return 0; // TODO: log?
+    return 0;
   }
 
   if (streq(key, "x")) {
@@ -150,10 +147,7 @@ catnip_lua_widget_root__newindex(lua_State* L)
 static int
 catnip_lua_widget_root__gc(lua_State* L)
 {
-  struct catnip_lua_widget_root* root =
-    luaL_checkudata(L, 1, "catnip.widget.root");
-
-  // TODO: unset children parent refs
+  struct catnip_lua_widget_root* root = lua_touserdata(L, 1);
 
   luaL_unref(L, LUA_REGISTRYINDEX, root->block_ref);
 
@@ -241,14 +235,14 @@ catnip_lua_widget_root(lua_State* L)
   }
 
   catnip_lua_widget_block(L);
-  root->block_base = lua_touserdata(L, -1);
+  root->block = lua_touserdata(L, -1);
   root->block_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  struct catnip_widget_block* block = root->block_base->data;
-  block->styles.x = 0;
-  block->styles.y = 0;
-  block->styles.width = initial_width;
-  block->styles.height = initial_height;
+  root->block->base.root = root;
+  root->block->base.styles.x = 0;
+  root->block->base.styles.y = 0;
+  root->block->base.styles.width = initial_width;
+  root->block->base.styles.height = initial_height;
 
   catnip_lua_widget_root_request_layout(root);
 
@@ -278,9 +272,8 @@ catnip_lua_widget_root_resize(
   root->wlr.buffer.width = new_width;
   root->wlr.buffer.height = new_height;
 
-  struct catnip_widget_block* block = root->block_base->data;
-  block->styles.width = new_width;
-  block->styles.height = new_height;
+  root->block->base.styles.width = new_width;
+  root->block->base.styles.height = new_height;
 
   // Unset buffer to force full update on refresh. Required to make sure that
   // widget->scene_buffer->node.visible is updated properly.
@@ -288,14 +281,14 @@ catnip_lua_widget_root_resize(
 }
 
 static void
-catnip_lua_widget_root_draw(struct catnip_lua_widget_root* root)
+catnip_lua_widget_root_draw(lua_State* L, struct catnip_lua_widget_root* root)
 {
   cairo_save(root->cairo.cr);
   cairo_set_operator(root->cairo.cr, CAIRO_OPERATOR_CLEAR);
   cairo_paint(root->cairo.cr);
   cairo_restore(root->cairo.cr);
 
-  catnip_widget_block_draw(root->block_base->data, root->cairo.cr);
+  catnip_lua_widget_block_draw(L, root->block, root->cairo.cr);
 
   wlr_scene_buffer_set_buffer_with_damage(
     root->wlr.scene_buffer,
@@ -321,11 +314,11 @@ catnip_lua_widget_root_refresh(void* data)
   }
 
   if (needs_resize || root->request.layout) {
-    catnip_widget_block_layout(root->block_base->data);
+    catnip_lua_widget_block_layout(catnip_L, root->block);
   }
 
   if (needs_resize || root->request.layout || root->request.draw) {
-    catnip_lua_widget_root_draw(root);
+    catnip_lua_widget_root_draw(catnip_L, root);
   }
 
   root->request.layout = false;
