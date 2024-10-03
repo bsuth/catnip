@@ -184,7 +184,7 @@ catnip_lua_widget_root_init(lua_State* L)
 }
 
 int
-catnip_lua_widget_root(lua_State* L)
+catnip_lua_widget_lua_root(lua_State* L)
 {
   struct catnip_lua_widget_root* root =
     lua_newuserdata(L, sizeof(struct catnip_lua_widget_root));
@@ -234,7 +234,7 @@ catnip_lua_widget_root(lua_State* L)
     );
   }
 
-  catnip_lua_widget_block(L);
+  catnip_lua_widget_lua_block(L);
   root->block = lua_touserdata(L, -1);
   root->block_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 

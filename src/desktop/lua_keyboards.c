@@ -8,11 +8,11 @@
 struct catnip_lua_keyboards* catnip_lua_keyboards = NULL;
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_keyboards_on(lua_State* L)
+catnip_lua_keyboards_lua_on(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.keyboards");
   const char* event = luaL_checkstring(L, 2);
@@ -25,7 +25,7 @@ catnip_lua_keyboards_on(lua_State* L)
 }
 
 static int
-catnip_lua_keyboards_emit(lua_State* L)
+catnip_lua_keyboards_lua_emit(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.keyboards");
   const char* event = luaL_checkstring(L, 2);
@@ -39,6 +39,10 @@ catnip_lua_keyboards_emit(lua_State* L)
 
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_keyboards__index(lua_State* L)
@@ -61,19 +65,15 @@ catnip_lua_keyboards__index(lua_State* L)
   } else if (key == NULL) {
     lua_pushnil(L);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_keyboards_on);
+    lua_pushcfunction(L, catnip_lua_keyboards_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_keyboards_emit);
+    lua_pushcfunction(L, catnip_lua_keyboards_lua_emit);
   } else {
     lua_pushnil(L);
   }
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __call
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_keyboards__call(lua_State* L)
@@ -93,15 +93,15 @@ catnip_lua_keyboards__call(lua_State* L)
   return 1;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_keyboards_mt[] = {
   {"__index", catnip_lua_keyboards__index},
   {"__call", catnip_lua_keyboards__call},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_keyboards_init(lua_State* L)

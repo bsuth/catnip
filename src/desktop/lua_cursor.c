@@ -9,11 +9,11 @@
 struct catnip_lua_cursor* catnip_lua_cursor = NULL;
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_cursor_on(lua_State* L)
+catnip_lua_cursor_lua_on(lua_State* L)
 {
   struct catnip_lua_cursor* lua_cursor = luaL_checkudata(L, 1, "catnip.cursor");
   const char* event = luaL_checkstring(L, 2);
@@ -26,7 +26,7 @@ catnip_lua_cursor_on(lua_State* L)
 }
 
 static int
-catnip_lua_cursor_emit(lua_State* L)
+catnip_lua_cursor_lua_emit(lua_State* L)
 {
   struct catnip_lua_cursor* lua_cursor = luaL_checkudata(L, 1, "catnip.cursor");
   const char* event = luaL_checkstring(L, 2);
@@ -41,6 +41,10 @@ catnip_lua_cursor_emit(lua_State* L)
   return 0;
 }
 
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
+
 static int
 catnip_lua_cursor__index(lua_State* L)
 {
@@ -49,9 +53,9 @@ catnip_lua_cursor__index(lua_State* L)
   if (key == NULL) {
     lua_pushnil(L);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_cursor_on);
+    lua_pushcfunction(L, catnip_lua_cursor_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_cursor_emit);
+    lua_pushcfunction(L, catnip_lua_cursor_lua_emit);
   } else if (streq(key, "x")) {
     lua_pushnumber(L, catnip_cursor->x);
   } else if (streq(key, "y")) {
@@ -68,10 +72,6 @@ catnip_lua_cursor__index(lua_State* L)
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __newindex
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_cursor__newindex(lua_State* L)
@@ -109,15 +109,15 @@ catnip_lua_cursor__newindex(lua_State* L)
   return 0;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_cursor_mt[] = {
   {"__index", catnip_lua_cursor__index},
   {"__newindex", catnip_lua_cursor__newindex},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_cursor_init(lua_State* L)

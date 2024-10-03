@@ -33,7 +33,7 @@ void
 catnip_lua_widget_root_init(lua_State* L);
 
 int
-catnip_lua_widget_root(lua_State* L);
+catnip_lua_widget_lua_root(lua_State* L);
 
 void
 catnip_lua_widget_root_request_resize(

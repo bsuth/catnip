@@ -14,9 +14,9 @@ catnip_lua_widget__index(lua_State* L)
   if (key == NULL) {
     lua_pushnil(L);
   } else if (streq(key, "root")) {
-    lua_pushcfunction(L, catnip_lua_widget_root);
+    lua_pushcfunction(L, catnip_lua_widget_lua_root);
   } else if (streq(key, "block")) {
-    lua_pushcfunction(L, catnip_lua_widget_block);
+    lua_pushcfunction(L, catnip_lua_widget_lua_block);
   } else if (streq(key, "img")) {
     lua_pushnil(L); // TODO
   } else if (streq(key, "output")) {

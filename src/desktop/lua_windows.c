@@ -8,11 +8,11 @@
 struct catnip_lua_windows* catnip_lua_windows = NULL;
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_windows_on(lua_State* L)
+catnip_lua_windows_lua_on(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.windows");
   const char* event = luaL_checkstring(L, 2);
@@ -25,7 +25,7 @@ catnip_lua_windows_on(lua_State* L)
 }
 
 static int
-catnip_lua_windows_emit(lua_State* L)
+catnip_lua_windows_lua_emit(lua_State* L)
 {
   luaL_checkudata(L, 1, "catnip.windows");
   const char* event = luaL_checkstring(L, 2);
@@ -39,6 +39,10 @@ catnip_lua_windows_emit(lua_State* L)
 
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_windows__index(lua_State* L)
@@ -61,19 +65,15 @@ catnip_lua_windows__index(lua_State* L)
   } else if (key == NULL) {
     lua_pushnil(L);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_windows_on);
+    lua_pushcfunction(L, catnip_lua_windows_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_windows_emit);
+    lua_pushcfunction(L, catnip_lua_windows_lua_emit);
   } else {
     lua_pushnil(L);
   }
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __call
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_windows__call(lua_State* L)
@@ -93,15 +93,15 @@ catnip_lua_windows__call(lua_State* L)
   return 1;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_windows_mt[] = {
   {"__index", catnip_lua_windows__index},
   {"__call", catnip_lua_windows__call},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_windows_init(lua_State* L)

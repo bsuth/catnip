@@ -50,7 +50,7 @@ void
 catnip_lua_widget_block_init(lua_State* L);
 
 int
-catnip_lua_widget_block(lua_State* L);
+catnip_lua_widget_lua_block(lua_State* L);
 
 void
 catnip_lua_widget_block_layout(

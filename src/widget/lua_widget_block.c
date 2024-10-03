@@ -5,6 +5,26 @@
 #include "widget/lua_widget_base.h"
 #include <lauxlib.h>
 
+static void
+catnip_lua_widget_block_link(
+  struct catnip_lua_widget_block* block,
+  struct catnip_lua_widget_base* child
+)
+{
+  child->root = block->base.root;
+  child->parent = &block->base;
+}
+
+static void
+catnip_lua_widget_block_unlink(
+  struct catnip_lua_widget_block* block,
+  struct catnip_lua_widget_base* child
+)
+{
+  child->root = NULL;
+  child->parent = NULL;
+}
+
 // -----------------------------------------------------------------------------
 // Lua Methods
 // -----------------------------------------------------------------------------
@@ -15,36 +35,33 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   struct catnip_lua_widget_block* block =
     luaL_checkudata(L, 1, "catnip.widget.block");
 
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+  int children_len = lua_objlen(L, -1);
+
+  int position = -1;
   struct catnip_lua_widget_base* child = NULL;
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
-    int index = lua_tointeger(L, 2);
+    position = lua_tointeger(L, 2);
     child = lua_touserdata(L, 3); // TODO: check type
-
-    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-    int children_len = lua_objlen(L, -1);
-
-    for (int i = children_len + 1; i > index; --i) {
-      lua_rawgeti(L, -1, i - 1);
-      lua_rawseti(L, -2, i);
-    }
-
     lua_pushvalue(L, 3);
-    lua_rawseti(L, -2, index);
-    lua_pop(L, 1);
   } else {
+    position = children_len + 1;
     child = lua_touserdata(L, 2); // TODO: check type
-    lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
     lua_pushvalue(L, 2);
-    lua_rawseti(L, -2, lua_objlen(L, -2) + 1);
-    lua_pop(L, 1);
   }
 
-  // TODO: remove child from previous parent
-  // TODO: propagate root setting
-  child->root = block->base.root;
-  child->parent = &block->base;
+  // TODO: position bounds
 
+  for (int i = children_len + 1; i > position; --i) {
+    lua_rawgeti(L, -2, i - 1);
+    lua_rawseti(L, -3, i);
+  }
+
+  lua_rawseti(L, -2, position);
+  lua_pop(L, 1);
+
+  catnip_lua_widget_block_link(block, child);
   catnip_lua_widget_base_request_layout(&block->base);
 
   return 0;
@@ -59,12 +76,18 @@ catnip_lua_widget_block_lua_remove(lua_State* L)
   lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
   int children_len = lua_objlen(L, -1);
 
-  int index = lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : children_len;
+  int position =
+    lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : children_len;
 
-  lua_rawgeti(L, -1, index);
-  lua_insert(L, -2);
+  // TODO: position bounds
 
-  for (int i = index; i < children_len; ++i) {
+  lua_rawgeti(L, -1, position);
+  lua_insert(L, -2); // keep for return
+  if (lua_type(L, -2) == LUA_TUSERDATA) {
+    catnip_lua_widget_block_unlink(block, lua_touserdata(L, -2));
+  }
+
+  for (int i = position; i < children_len; ++i) {
     lua_rawgeti(L, -1, i + 1);
     lua_rawseti(L, -2, i);
   }
@@ -264,7 +287,7 @@ catnip_lua_widget_block_init(lua_State* L)
 }
 
 int
-catnip_lua_widget_block(lua_State* L)
+catnip_lua_widget_lua_block(lua_State* L)
 {
   struct catnip_lua_widget_block* block =
     lua_newuserdata(L, sizeof(struct catnip_lua_widget_block));
@@ -342,8 +365,7 @@ catnip_lua_widget_block(lua_State* L)
       } else {
         struct catnip_lua_widget_base* child =
           lua_touserdata(L, -1); // TODO: typecheck value
-        child->root = block->base.root;
-        child->parent = &block->base;
+        catnip_lua_widget_block_link(block, child);
         lua_rawseti(L, -3, lua_tonumber(L, -2));
       }
     }
