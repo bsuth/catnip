@@ -3,10 +3,12 @@
 
 #include <lua.h>
 
-enum catnip_lua_widget_base_type {
+enum catnip_lua_widget_type {
   CATNIP_LUA_WIDGET_BLOCK,
-  CATNIP_LUA_WIDGET_IMG,
+  CATNIP_LUA_WIDGET_IMAGE,
+  CATNIP_LUA_WIDGET_OTHER,
   CATNIP_LUA_WIDGET_OUTPUT,
+  CATNIP_LUA_WIDGET_ROOT,
   CATNIP_LUA_WIDGET_SVG,
   CATNIP_LUA_WIDGET_TEXT,
   CATNIP_LUA_WIDGET_WINDOW,
@@ -19,9 +21,13 @@ enum catnip_lua_widget_unit {
 };
 
 struct catnip_lua_widget_base {
-  enum catnip_lua_widget_base_type type;
+  enum catnip_lua_widget_type type;
   struct catnip_lua_widget_base* parent;
-  struct catnip_lua_widget_root* root;
+
+  struct {
+    struct wl_event_source* request_layout;
+    struct wl_event_source* request_draw;
+  } event_sources;
 
   struct {
     int x;
@@ -43,9 +49,27 @@ struct catnip_lua_widget_base {
 };
 
 void
-catnip_lua_widget_base_request_layout(struct catnip_lua_widget_base* base);
+catnip_lua_widget_base_setup(lua_State* L, struct catnip_lua_widget_base* base);
 
 void
-catnip_lua_widget_base_request_draw(struct catnip_lua_widget_base* base);
+catnip_lua_widget_base_cleanup(
+  lua_State* L,
+  struct catnip_lua_widget_base* base
+);
+
+enum catnip_lua_widget_type
+catnip_lua_widget_base_type(lua_State* L, int idx);
+
+void
+catnip_lua_widget_base_request_layout(
+  lua_State* L,
+  struct catnip_lua_widget_base* base
+);
+
+void
+catnip_lua_widget_base_request_draw(
+  lua_State* L,
+  struct catnip_lua_widget_base* base
+);
 
 #endif

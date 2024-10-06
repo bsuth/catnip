@@ -1,29 +1,8 @@
 #include "lua_widget_block.h"
 #include "extensions/cairo.h"
-#include "extensions/lua.h"
 #include "extensions/string.h"
 #include "widget/lua_widget_base.h"
 #include <lauxlib.h>
-
-static void
-catnip_lua_widget_block_link(
-  struct catnip_lua_widget_block* block,
-  struct catnip_lua_widget_base* child
-)
-{
-  child->root = block->base.root;
-  child->parent = &block->base;
-}
-
-static void
-catnip_lua_widget_block_unlink(
-  struct catnip_lua_widget_block* block,
-  struct catnip_lua_widget_base* child
-)
-{
-  child->root = NULL;
-  child->parent = NULL;
-}
 
 // -----------------------------------------------------------------------------
 // Lua Methods
@@ -39,19 +18,39 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   int children_len = lua_objlen(L, -1);
 
   int position = -1;
-  struct catnip_lua_widget_base* child = NULL;
+  int child_index = -1;
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
     position = lua_tointeger(L, 2);
-    child = lua_touserdata(L, 3); // TODO: check type
-    lua_pushvalue(L, 3);
+    child_index = 3;
   } else {
     position = children_len + 1;
-    child = lua_touserdata(L, 2); // TODO: check type
-    lua_pushvalue(L, 2);
+    child_index = 2;
   }
 
-  // TODO: position bounds
+  if (position < 1 || children_len + 1 < position) {
+    lua_log_error(L, "out of bounds");
+    return 0;
+  }
+
+  enum catnip_lua_widget_type child_type =
+    catnip_lua_widget_base_type(L, child_index);
+  struct catnip_lua_widget_base* child = NULL;
+
+  if (child_type == CATNIP_LUA_WIDGET_ROOT) {
+    lua_log_error(L, "cannot use root widget as child");
+    return 0;
+  } else if (child_type == CATNIP_LUA_WIDGET_OTHER) {
+    // TODO: create "other" widget
+  } else {
+    child = lua_touserdata(L, child_index);
+    lua_pushvalue(L, child_index);
+  }
+
+  if (child->parent != NULL) {
+    lua_log_error(L, "widget already belongs to another parent");
+    return 0;
+  }
 
   for (int i = children_len + 1; i > position; --i) {
     lua_rawgeti(L, -2, i - 1);
@@ -61,8 +60,8 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   lua_rawseti(L, -2, position);
   lua_pop(L, 1);
 
-  catnip_lua_widget_block_link(block, child);
-  catnip_lua_widget_base_request_layout(&block->base);
+  child->parent = &block->base;
+  catnip_lua_widget_base_request_layout(L, &block->base);
 
   return 0;
 }
@@ -79,12 +78,17 @@ catnip_lua_widget_block_lua_remove(lua_State* L)
   int position =
     lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : children_len;
 
-  // TODO: position bounds
+  if (position < 1 || children_len < position) {
+    lua_log_error(L, "out of bounds");
+    return 0;
+  }
 
   lua_rawgeti(L, -1, position);
   lua_insert(L, -2); // keep for return
+                     //
   if (lua_type(L, -2) == LUA_TUSERDATA) {
-    catnip_lua_widget_block_unlink(block, lua_touserdata(L, -2));
+    struct catnip_lua_widget_base* child = lua_touserdata(L, -2);
+    child->parent = NULL;
   }
 
   for (int i = position; i < children_len; ++i) {
@@ -96,7 +100,7 @@ catnip_lua_widget_block_lua_remove(lua_State* L)
   lua_rawseti(L, -2, children_len);
   lua_pop(L, 1);
 
-  catnip_lua_widget_base_request_layout(&block->base);
+  catnip_lua_widget_base_request_layout(L, &block->base);
 
   return 1;
 }
@@ -175,10 +179,38 @@ catnip_lua_widget_block__newindex(lua_State* L)
   struct catnip_lua_widget_block* block = lua_touserdata(L, 1);
 
   if (lua_type(L, 2) == LUA_TNUMBER) {
-    // TODO: need to set pointer backs
+    int position = lua_tonumber(L, 2);
+    enum catnip_lua_widget_type new_child_type =
+      catnip_lua_widget_base_type(L, 3);
+
+    if (new_child_type == CATNIP_LUA_WIDGET_ROOT) {
+      lua_log_error(L, "cannot use root widget as child");
+      return 0;
+    }
+
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-    lua_pushvalue(L, 3);
-    lua_rawseti(L, -2, lua_tonumber(L, 2));
+    lua_rawgeti(L, -1, position);
+
+    if (catnip_lua_widget_base_type(L, -1) == CATNIP_LUA_WIDGET_OTHER) {
+      // TODO
+    } else {
+      struct catnip_lua_widget_base* old_child = lua_touserdata(L, -1);
+      old_child->parent = NULL;
+    }
+
+    if (new_child_type == CATNIP_LUA_WIDGET_OTHER) {
+      // TODO
+      // lua_pushvalue(L, 3);
+      // lua_rawseti(L, -2, position);
+    } else {
+      struct catnip_lua_widget_base* new_child = lua_touserdata(L, 3);
+      new_child->parent = &block->base;
+      lua_pushvalue(L, 3);
+      lua_rawseti(L, -2, position);
+    }
+
+    lua_pop(L, 1);
+
     return 0;
   }
 
@@ -198,49 +230,49 @@ catnip_lua_widget_block__newindex(lua_State* L)
     // TODO
   } else if (streq(key, "padding")) {
     block->styles.padding = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_layout(&block->base);
+    catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_top")) {
     block->styles.padding_top = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_layout(&block->base);
+    catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_left")) {
     block->styles.padding_left = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_layout(&block->base);
+    catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_bottom")) {
     block->styles.padding_bottom = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_layout(&block->base);
+    catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_right")) {
     block->styles.padding_right = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_layout(&block->base);
+    catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "radius")) {
     block->styles.radius = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "radius_top_left")) {
     block->styles.radius_top_left = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "radius_top_right")) {
     block->styles.radius_top_right = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "radius_bottom_left")) {
     block->styles.radius_bottom_left = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "radius_bottom_right")) {
     block->styles.radius_bottom_right = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "bg_color")) {
     block->styles.bg_color = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "bg_opacity")) {
     block->styles.bg_opacity = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "border_color")) {
     block->styles.border_color = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "border_opacity")) {
     block->styles.border_opacity = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   } else if (streq(key, "border_width")) {
     block->styles.border_width = luaL_checknumber(L, 3);
-    catnip_lua_widget_base_request_draw(&block->base);
+    catnip_lua_widget_base_request_draw(L, &block->base);
   }
 
   return 0;
@@ -256,13 +288,14 @@ catnip_lua_widget_block__gc(lua_State* L)
 
   while (lua_next(L, -2) != 0) {
     struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
-    child->root = NULL;
     child->parent = NULL;
     lua_pop(L, 1);
   }
 
   lua_pop(L, 1);
   luaL_unref(L, LUA_REGISTRYINDEX, block->children);
+
+  catnip_lua_widget_base_cleanup(L, &block->base);
 
   return 0;
 }
@@ -293,12 +326,11 @@ catnip_lua_widget_lua_block(lua_State* L)
     lua_newuserdata(L, sizeof(struct catnip_lua_widget_block));
   luaL_setmetatable(L, "catnip.widget.block");
 
+  catnip_lua_widget_base_setup(L, &block->base);
+  block->base.type = CATNIP_LUA_WIDGET_BLOCK;
+
   lua_newtable(L);
   block->children = luaL_ref(L, LUA_REGISTRYINDEX);
-
-  block->base.root = NULL;
-  block->base.parent = NULL;
-  block->base.type = CATNIP_LUA_WIDGET_BLOCK;
 
   block->styles.bg_color = -1;
   block->styles.bg_opacity = 1;
@@ -362,11 +394,22 @@ catnip_lua_widget_lua_block(lua_State* L)
     while (lua_next(L, 1) != 0) {
       if (lua_type(L, -2) != LUA_TNUMBER) {
         lua_pop(L, 1);
+        continue;
+      }
+
+      int position = lua_tonumber(L, -2);
+      enum catnip_lua_widget_type child_type =
+        catnip_lua_widget_base_type(L, -1);
+
+      if (child_type == CATNIP_LUA_WIDGET_ROOT) {
+        lua_log_error(L, "cannot use root widget as child");
+        lua_pop(L, 1);
+      } else if (child_type == CATNIP_LUA_WIDGET_OTHER) {
+        // TODO
       } else {
-        struct catnip_lua_widget_base* child =
-          lua_touserdata(L, -1); // TODO: typecheck value
-        catnip_lua_widget_block_link(block, child);
-        lua_rawseti(L, -3, lua_tonumber(L, -2));
+        struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
+        child->parent = &block->base;
+        lua_rawseti(L, -3, position);
       }
     }
 
@@ -386,6 +429,31 @@ catnip_lua_widget_block_pre_layout(
   struct catnip_lua_widget_block* block
 )
 {
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+  lua_pushnil(L);
+
+  while (lua_next(L, -2) != 0) {
+    struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
+
+    switch (child->type) {
+      case CATNIP_LUA_WIDGET_BLOCK:
+        catnip_lua_widget_block_layout(
+          L,
+          (struct catnip_lua_widget_block*) child
+        );
+        break;
+      default:
+        child->computed.x = block->base.styles.x + child->styles.x;
+        child->computed.y = block->base.styles.y + child->styles.y;
+        child->computed.width = child->styles.width;
+        child->computed.height = child->styles.height;
+        break;
+    }
+
+    lua_pop(L, 1);
+  }
+
+  lua_pop(L, 1);
 }
 
 static void
@@ -544,7 +612,7 @@ catnip_lua_widget_block_draw_children(
           cr
         );
         break;
-      case CATNIP_LUA_WIDGET_IMG:
+      case CATNIP_LUA_WIDGET_IMAGE:
         // TODO
         break;
       case CATNIP_LUA_WIDGET_OUTPUT:
@@ -557,6 +625,9 @@ catnip_lua_widget_block_draw_children(
         // TODO
         break;
       case CATNIP_LUA_WIDGET_WINDOW:
+        // TODO
+        break;
+      default:
         // TODO
         break;
     }

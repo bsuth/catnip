@@ -9,6 +9,28 @@
 #include <wlr/interfaces/wlr_buffer.h>
 
 // -----------------------------------------------------------------------------
+// Linking
+// -----------------------------------------------------------------------------
+
+void
+catnip_lua_widget_block_link(
+  lua_State* L,
+  struct catnip_lua_widget_block* block,
+  struct catnip_lua_widget_base* child
+)
+{
+}
+
+void
+catnip_lua_widget_block_unlink(
+  lua_State* L,
+  struct catnip_lua_widget_block* block,
+  struct catnip_lua_widget_base* child
+)
+{
+}
+
+// -----------------------------------------------------------------------------
 // Buffer
 // -----------------------------------------------------------------------------
 
@@ -161,6 +183,8 @@ catnip_lua_widget_root__gc(lua_State* L)
     wl_event_source_remove(root->request.event_source);
   }
 
+  catnip_lua_widget_base_cleanup(L, &root->base);
+
   return 0;
 }
 
@@ -189,6 +213,9 @@ catnip_lua_widget_lua_root(lua_State* L)
   struct catnip_lua_widget_root* root =
     lua_newuserdata(L, sizeof(struct catnip_lua_widget_root));
   luaL_setmetatable(L, "catnip.widget.root");
+
+  catnip_lua_widget_base_setup(L, &root->base);
+  root->base.type = CATNIP_LUA_WIDGET_ROOT;
 
   bool has_init_table = lua_type(L, 1) == LUA_TTABLE;
 
@@ -236,9 +263,9 @@ catnip_lua_widget_lua_root(lua_State* L)
 
   catnip_lua_widget_lua_block(L);
   root->block = lua_touserdata(L, -1);
+  root->block->base.parent = &root->base;
   root->block_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  root->block->base.root = root;
   root->block->base.styles.x = 0;
   root->block->base.styles.y = 0;
   root->block->base.styles.width = initial_width;
