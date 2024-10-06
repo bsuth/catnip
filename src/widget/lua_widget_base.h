@@ -2,15 +2,16 @@
 #define CATNIP_LUA_WIDGET_BASE_H
 
 #include <lua.h>
+#include <stdbool.h>
 
 enum catnip_lua_widget_type {
   CATNIP_LUA_WIDGET_BLOCK,
   CATNIP_LUA_WIDGET_IMAGE,
-  CATNIP_LUA_WIDGET_OTHER,
   CATNIP_LUA_WIDGET_OUTPUT,
   CATNIP_LUA_WIDGET_ROOT,
   CATNIP_LUA_WIDGET_SVG,
   CATNIP_LUA_WIDGET_TEXT,
+  CATNIP_LUA_WIDGET_TOSTRING,
   CATNIP_LUA_WIDGET_WINDOW,
 };
 
@@ -55,6 +56,20 @@ void
 catnip_lua_widget_base_cleanup(
   lua_State* L,
   struct catnip_lua_widget_base* base
+);
+
+bool
+catnip_lua_widget_base__index(
+  lua_State* L,
+  struct catnip_lua_widget_base* base,
+  const char* key
+);
+
+bool
+catnip_lua_widget_base__newindex(
+  lua_State* L,
+  struct catnip_lua_widget_base* base,
+  const char* key
 );
 
 enum catnip_lua_widget_type

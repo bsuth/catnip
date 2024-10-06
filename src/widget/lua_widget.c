@@ -1,7 +1,12 @@
 #include "lua_widget.h"
 #include "extensions/string.h"
 #include "widget/lua_widget_block.h"
+#include "widget/lua_widget_image.h"
+#include "widget/lua_widget_output.h"
 #include "widget/lua_widget_root.h"
+#include "widget/lua_widget_svg.h"
+#include "widget/lua_widget_text.h"
+#include "widget/lua_widget_window.h"
 #include <lauxlib.h>
 
 lua_Ref catnip_lua_widget;
@@ -17,16 +22,16 @@ catnip_lua_widget__index(lua_State* L)
     lua_pushcfunction(L, catnip_lua_widget_lua_root);
   } else if (streq(key, "block")) {
     lua_pushcfunction(L, catnip_lua_widget_lua_block);
-  } else if (streq(key, "img")) {
-    lua_pushnil(L); // TODO
+  } else if (streq(key, "image")) {
+    lua_pushcfunction(L, catnip_lua_widget_lua_image);
   } else if (streq(key, "output")) {
-    lua_pushnil(L); // TODO
+    lua_pushcfunction(L, catnip_lua_widget_lua_output);
   } else if (streq(key, "svg")) {
-    lua_pushnil(L); // TODO
+    lua_pushcfunction(L, catnip_lua_widget_lua_svg);
   } else if (streq(key, "text")) {
-    lua_pushnil(L); // TODO
+    lua_pushcfunction(L, catnip_lua_widget_lua_text);
   } else if (streq(key, "window")) {
-    lua_pushnil(L); // TODO
+    lua_pushcfunction(L, catnip_lua_widget_lua_window);
   } else {
     lua_pushnil(L);
   }

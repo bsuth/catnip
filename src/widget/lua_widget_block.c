@@ -40,7 +40,7 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   if (child_type == CATNIP_LUA_WIDGET_ROOT) {
     lua_log_error(L, "cannot use root widget as child");
     return 0;
-  } else if (child_type == CATNIP_LUA_WIDGET_OTHER) {
+  } else if (child_type == CATNIP_LUA_WIDGET_TOSTRING) {
     // TODO: create "other" widget
   } else {
     child = lua_touserdata(L, child_index);
@@ -124,14 +124,8 @@ catnip_lua_widget_block__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
-  } else if (streq(key, "x")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
-  } else if (streq(key, "y")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
-  } else if (streq(key, "width")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
-  } else if (streq(key, "height")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
+  } else if (catnip_lua_widget_base__index(L, &block->base, key)) {
+    return 1;
   } else if (streq(key, "padding")) {
     lua_pushnumber(L, block->styles.padding);
   } else if (streq(key, "padding_top")) {
@@ -191,14 +185,14 @@ catnip_lua_widget_block__newindex(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
     lua_rawgeti(L, -1, position);
 
-    if (catnip_lua_widget_base_type(L, -1) == CATNIP_LUA_WIDGET_OTHER) {
+    if (catnip_lua_widget_base_type(L, -1) == CATNIP_LUA_WIDGET_TOSTRING) {
       // TODO
     } else {
       struct catnip_lua_widget_base* old_child = lua_touserdata(L, -1);
       old_child->parent = NULL;
     }
 
-    if (new_child_type == CATNIP_LUA_WIDGET_OTHER) {
+    if (new_child_type == CATNIP_LUA_WIDGET_TOSTRING) {
       // TODO
       // lua_pushvalue(L, 3);
       // lua_rawseti(L, -2, position);
@@ -216,19 +210,11 @@ catnip_lua_widget_block__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (key == NULL) {
+  if (key == NULL || catnip_lua_widget_base__newindex(L, &block->base, key)) {
     return 0;
   }
 
-  if (streq(key, "x")) {
-    // TODO
-  } else if (streq(key, "y")) {
-    // TODO
-  } else if (streq(key, "width")) {
-    // TODO
-  } else if (streq(key, "height")) {
-    // TODO
-  } else if (streq(key, "padding")) {
+  if (streq(key, "padding")) {
     block->styles.padding = luaL_checknumber(L, 3);
     catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_top")) {
@@ -345,15 +331,6 @@ catnip_lua_widget_lua_block(lua_State* L)
   block->styles.radius_bottom_right = -1;
 
   if (lua_type(L, 1) == LUA_TTABLE) {
-    block->base.styles.x =
-      lua_hasnumberfield(L, 1, "x") ? lua_popnumber(L) : -1;
-    block->base.styles.y =
-      lua_hasnumberfield(L, 1, "y") ? lua_popnumber(L) : -1;
-    block->base.styles.width =
-      lua_hasnumberfield(L, 1, "width") ? lua_popnumber(L) : -1;
-    block->base.styles.height =
-      lua_hasnumberfield(L, 1, "height") ? lua_popnumber(L) : -1;
-
     block->styles.padding =
       lua_hasnumberfield(L, 1, "padding") ? lua_popnumber(L) : 0;
     block->styles.padding_top =
@@ -404,7 +381,7 @@ catnip_lua_widget_lua_block(lua_State* L)
       if (child_type == CATNIP_LUA_WIDGET_ROOT) {
         lua_log_error(L, "cannot use root widget as child");
         lua_pop(L, 1);
-      } else if (child_type == CATNIP_LUA_WIDGET_OTHER) {
+      } else if (child_type == CATNIP_LUA_WIDGET_TOSTRING) {
         // TODO
       } else {
         struct catnip_lua_widget_base* child = lua_touserdata(L, -1);

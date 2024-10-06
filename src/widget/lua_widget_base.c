@@ -1,5 +1,6 @@
 #include "lua_widget_base.h"
 #include "compositor/event_loop.h"
+#include "extensions/string.h"
 #include "widget/lua_widget_root.h"
 #include <lauxlib.h>
 
@@ -23,6 +24,15 @@ catnip_lua_widget_base_setup(lua_State* L, struct catnip_lua_widget_base* base)
   base->styles.width_unit = CATNIP_LUA_WIDGET_UNIT_PX;
   base->styles.height = 0;
   base->styles.height_unit = CATNIP_LUA_WIDGET_UNIT_PX;
+
+  if (lua_type(L, 1) == LUA_TTABLE) {
+    base->styles.x = lua_hasnumberfield(L, 1, "x") ? lua_popnumber(L) : -1;
+    base->styles.y = lua_hasnumberfield(L, 1, "y") ? lua_popnumber(L) : -1;
+    base->styles.width =
+      lua_hasnumberfield(L, 1, "width") ? lua_popnumber(L) : -1;
+    base->styles.height =
+      lua_hasnumberfield(L, 1, "height") ? lua_popnumber(L) : -1;
+  }
 }
 
 void
@@ -38,6 +48,50 @@ catnip_lua_widget_base_cleanup(
   if (base->event_sources.request_draw != NULL) {
     wl_event_source_remove(base->event_sources.request_draw);
   }
+}
+
+bool
+catnip_lua_widget_base__index(
+  lua_State* L,
+  struct catnip_lua_widget_base* base,
+  const char* key
+)
+{
+  if (streq(key, "x")) {
+    lua_pushnumber(L, 0); // TODO (need to handle units)
+  } else if (streq(key, "y")) {
+    lua_pushnumber(L, 0); // TODO (need to handle units)
+  } else if (streq(key, "width")) {
+    lua_pushnumber(L, 0); // TODO (need to handle units)
+  } else if (streq(key, "height")) {
+    lua_pushnumber(L, 0); // TODO (need to handle units)
+  } else {
+    return false;
+  }
+
+  return true;
+}
+
+bool
+catnip_lua_widget_base__newindex(
+  lua_State* L,
+  struct catnip_lua_widget_base* base,
+  const char* key
+)
+{
+  if (streq(key, "x")) {
+    // TODO
+  } else if (streq(key, "y")) {
+    // TODO
+  } else if (streq(key, "width")) {
+    // TODO
+  } else if (streq(key, "height")) {
+    // TODO
+  } else {
+    return false;
+  }
+
+  return true;
 }
 
 enum catnip_lua_widget_type
@@ -109,7 +163,7 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
   }
 
   lua_pop(L, 1);
-  return CATNIP_LUA_WIDGET_OTHER;
+  return CATNIP_LUA_WIDGET_TOSTRING;
 }
 
 // -----------------------------------------------------------------------------
