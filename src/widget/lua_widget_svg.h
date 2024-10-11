@@ -3,17 +3,21 @@
 
 #include "widget/lua_widget_base.h"
 #include <cairo.h>
+#include <librsvg/rsvg.h>
 #include <lua.h>
 
 struct catnip_lua_widget_svg {
   // IMPORTANT: Keep `base` at the start to allow pointer casting.
   struct catnip_lua_widget_base base;
 
-  struct {
-  } styles;
+  RsvgHandle* rsvg;
+  double intrinsic_width;
+  double intrinsic_height;
 
   struct {
-  } computed;
+    char* document;
+    char* stylesheet;
+  } styles;
 };
 
 void
