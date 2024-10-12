@@ -16,11 +16,9 @@
 #include "widget/lua_widget.h"
 #include "widget/lua_widget_block.h"
 #include "widget/lua_widget_image.h"
-#include "widget/lua_widget_output.h"
 #include "widget/lua_widget_root.h"
 #include "widget/lua_widget_svg.h"
 #include "widget/lua_widget_text.h"
-#include "widget/lua_widget_window.h"
 #include <lauxlib.h>
 
 void
@@ -43,11 +41,9 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_widget_init(L);
   catnip_lua_widget_block_init(L);
   catnip_lua_widget_image_init(L);
-  catnip_lua_widget_output_init(L);
   catnip_lua_widget_root_init(L);
   catnip_lua_widget_svg_init(L);
   catnip_lua_widget_text_init(L);
-  catnip_lua_widget_window_init(L);
 
   catnip_lua_canvas_init(L); // TODO: remove
 

@@ -117,15 +117,6 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
     lua_pop(L, 1);
   }
 
-  luaL_getmetatable(L, "catnip.widget.output");
-
-  if (lua_equal(L, -1, -2)) {
-    lua_pop(L, 2);
-    return CATNIP_LUA_WIDGET_OUTPUT;
-  } else {
-    lua_pop(L, 1);
-  }
-
   luaL_getmetatable(L, "catnip.widget.root");
 
   if (lua_equal(L, -1, -2)) {
@@ -149,15 +140,6 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
   if (lua_equal(L, -1, -2)) {
     lua_pop(L, 2);
     return CATNIP_LUA_WIDGET_TEXT;
-  } else {
-    lua_pop(L, 1);
-  }
-
-  luaL_getmetatable(L, "catnip.widget.window");
-
-  if (lua_equal(L, -1, -2)) {
-    lua_pop(L, 2);
-    return CATNIP_LUA_WIDGET_WINDOW;
   } else {
     lua_pop(L, 1);
   }

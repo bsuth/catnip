@@ -2,6 +2,7 @@
 #define CATNIP_DESKTOP_OUTPUT_H
 
 #include <wlr/types/wlr_output.h>
+#include <wlr/types/wlr_scene.h>
 
 struct catnip_output {
   int id;

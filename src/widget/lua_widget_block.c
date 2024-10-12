@@ -592,16 +592,10 @@ catnip_lua_widget_block_draw_children(
       case CATNIP_LUA_WIDGET_IMAGE:
         // TODO
         break;
-      case CATNIP_LUA_WIDGET_OUTPUT:
-        // TODO
-        break;
       case CATNIP_LUA_WIDGET_SVG:
         // TODO
         break;
       case CATNIP_LUA_WIDGET_TEXT:
-        // TODO
-        break;
-      case CATNIP_LUA_WIDGET_WINDOW:
         // TODO
         break;
       default:
