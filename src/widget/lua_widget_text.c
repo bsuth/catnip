@@ -8,7 +8,7 @@
 // -----------------------------------------------------------------------------
 
 static void
-catnip_lua_widget_set_font(
+catnip_lua_widget_text_set_font(
   lua_State* L,
   struct catnip_lua_widget_text* text,
   int idx
@@ -25,7 +25,7 @@ catnip_lua_widget_set_font(
 }
 
 static void
-catnip_lua_widget_set_halign(
+catnip_lua_widget_text_set_halign(
   lua_State* L,
   struct catnip_lua_widget_text* text,
   int idx
@@ -51,7 +51,7 @@ catnip_lua_widget_set_halign(
 }
 
 static void
-catnip_lua_widget_set_valign(
+catnip_lua_widget_text_set_valign(
   lua_State* L,
   struct catnip_lua_widget_text* text,
   int idx
@@ -77,7 +77,7 @@ catnip_lua_widget_set_valign(
 }
 
 static void
-catnip_lua_widget_set_ellipsis(
+catnip_lua_widget_text_set_ellipsis(
   lua_State* L,
   struct catnip_lua_widget_text* text,
   int idx
@@ -103,7 +103,7 @@ catnip_lua_widget_set_ellipsis(
 }
 
 static void
-catnip_lua_widget_set_wrap(
+catnip_lua_widget_text_set_wrap(
   lua_State* L,
   struct catnip_lua_widget_text* text,
   int idx
@@ -275,19 +275,19 @@ catnip_lua_widget_text__newindex(lua_State* L)
     text->styles.opacity = luaL_checknumber(L, 3);
     text->refresh_attributes = true;
   } else if (streq(key, "font")) {
-    catnip_lua_widget_set_font(L, text, 3);
+    catnip_lua_widget_text_set_font(L, text, 3);
     text->refresh_attributes = true;
   } else if (streq(key, "halign")) {
-    catnip_lua_widget_set_halign(L, text, 3);
+    catnip_lua_widget_text_set_halign(L, text, 3);
     text->refresh_attributes = true;
   } else if (streq(key, "valign")) {
-    catnip_lua_widget_set_valign(L, text, 3);
+    catnip_lua_widget_text_set_valign(L, text, 3);
     text->refresh_attributes = true;
   } else if (streq(key, "ellipsis")) {
-    catnip_lua_widget_set_ellipsis(L, text, 3);
+    catnip_lua_widget_text_set_ellipsis(L, text, 3);
     text->refresh_attributes = true;
   } else if (streq(key, "wrap")) {
-    catnip_lua_widget_set_wrap(L, text, 3);
+    catnip_lua_widget_text_set_wrap(L, text, 3);
     text->refresh_attributes = true;
   }
 
@@ -383,27 +383,27 @@ catnip_lua_widget_lua_text(lua_State* L)
     }
 
     if (lua_hasstringfield(L, 1, "font")) {
-      catnip_lua_widget_set_font(L, text, -1);
+      catnip_lua_widget_text_set_font(L, text, -1);
       lua_pop(L, 1);
     }
 
     if (lua_hasstringfield(L, 1, "halign")) {
-      catnip_lua_widget_set_halign(L, text, -1);
+      catnip_lua_widget_text_set_halign(L, text, -1);
       lua_pop(L, 1);
     }
 
     if (lua_hasstringfield(L, 1, "valign")) {
-      catnip_lua_widget_set_valign(L, text, -1);
+      catnip_lua_widget_text_set_valign(L, text, -1);
       lua_pop(L, 1);
     }
 
     if (lua_hasstringfield(L, 1, "ellipsis")) {
-      catnip_lua_widget_set_ellipsis(L, text, -1);
+      catnip_lua_widget_text_set_ellipsis(L, text, -1);
       lua_pop(L, 1);
     }
 
     if (lua_hasstringfield(L, 1, "wrap")) {
-      catnip_lua_widget_set_wrap(L, text, -1);
+      catnip_lua_widget_text_set_wrap(L, text, -1);
       lua_pop(L, 1);
     }
 

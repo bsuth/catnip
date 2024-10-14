@@ -1,7 +1,7 @@
 #include "lua_widget.h"
 #include "extensions/string.h"
 #include "widget/lua_widget_block.h"
-#include "widget/lua_widget_image.h"
+#include "widget/lua_widget_png.h"
 #include "widget/lua_widget_root.h"
 #include "widget/lua_widget_svg.h"
 #include "widget/lua_widget_text.h"
@@ -20,8 +20,8 @@ catnip_lua_widget__index(lua_State* L)
     lua_pushcfunction(L, catnip_lua_widget_lua_root);
   } else if (streq(key, "block")) {
     lua_pushcfunction(L, catnip_lua_widget_lua_block);
-  } else if (streq(key, "image")) {
-    lua_pushcfunction(L, catnip_lua_widget_lua_image);
+  } else if (streq(key, "png")) {
+    lua_pushcfunction(L, catnip_lua_widget_lua_png);
   } else if (streq(key, "svg")) {
     lua_pushcfunction(L, catnip_lua_widget_lua_svg);
   } else if (streq(key, "text")) {

@@ -108,11 +108,11 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
     lua_pop(L, 1);
   }
 
-  luaL_getmetatable(L, "catnip.widget.image");
+  luaL_getmetatable(L, "catnip.widget.png");
 
   if (lua_equal(L, -1, -2)) {
     lua_pop(L, 2);
-    return CATNIP_LUA_WIDGET_IMAGE;
+    return CATNIP_LUA_WIDGET_PNG;
   } else {
     lua_pop(L, 1);
   }
