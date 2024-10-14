@@ -25,12 +25,8 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
     svg->rsvg = NULL;
   }
 
-  if (svg->styles.document == NULL) {
-    return;
-  }
-
   GError* error = NULL;
-  RsvgHandle* rsvg = is_svg_filename(svg->styles.document)
+  svg->rsvg = is_svg_filename(svg->styles.document)
     ? rsvg_handle_new_from_file(svg->styles.document, &error)
     : rsvg_handle_new_from_data(
         (const guint8*) svg,
@@ -43,9 +39,6 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
     g_error_free(error);
     return;
   }
-
-  svg->rsvg = rsvg;
-  svg->styles.document = strdup(svg->styles.document);
 
   rsvg_handle_get_intrinsic_size_in_pixels(
     svg->rsvg,
@@ -69,6 +62,42 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
 }
 
 // -----------------------------------------------------------------------------
+// Setters
+// -----------------------------------------------------------------------------
+
+static void
+catnip_lua_widget_svg_set_document(
+  lua_State* L,
+  struct catnip_lua_widget_svg* svg,
+  int idx
+)
+{
+  svg->styles.document = luaL_checkstring(L, idx);
+  luaL_unref(L, LUA_REGISTRYINDEX, svg->styles.document_ref);
+  lua_pushvalue(L, idx);
+  svg->styles.document_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+}
+
+static void
+catnip_lua_widget_svg_set_stylesheet(
+  lua_State* L,
+  struct catnip_lua_widget_svg* svg,
+  int idx
+)
+{
+  if (lua_type(L, idx) == LUA_TNIL) {
+    svg->styles.stylesheet = NULL;
+    luaL_unref(L, LUA_REGISTRYINDEX, svg->styles.stylesheet_ref);
+    svg->styles.stylesheet_ref = LUA_NOREF;
+  } else {
+    svg->styles.stylesheet = luaL_checkstring(L, idx);
+    luaL_unref(L, LUA_REGISTRYINDEX, svg->styles.stylesheet_ref);
+    lua_pushvalue(L, idx);
+    svg->styles.stylesheet_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+  }
+}
+
+// -----------------------------------------------------------------------------
 // Metatable
 // -----------------------------------------------------------------------------
 
@@ -83,9 +112,9 @@ catnip_lua_widget_svg__index(lua_State* L)
   } else if (catnip_lua_widget_base__index(L, &svg->base, key)) {
     return 1;
   } else if (streq(key, "document")) {
-    lua_pushstring(L, svg->styles.document);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, svg->styles.document_ref);
   } else if (streq(key, "stylesheet")) {
-    lua_pushstring(L, svg->styles.stylesheet);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, svg->styles.stylesheet_ref);
   } else {
     lua_pushnil(L);
   }
@@ -102,23 +131,10 @@ catnip_lua_widget_svg__newindex(lua_State* L)
   if (key == NULL || catnip_lua_widget_base__newindex(L, &svg->base, key)) {
     return 0;
   } else if (streq(key, "document")) {
-    const char* new_document = lua_tostring(L, 3);
-
-    if (svg->styles.document != NULL) {
-      free(svg->styles.document);
-    }
-
-    svg->styles.document = new_document == NULL ? NULL : strdup(new_document);
+    catnip_lua_widget_svg_set_document(L, svg, 3);
     catnip_lua_widget_svg_reload(L, svg);
   } else if (streq(key, "stylesheet")) {
-    const char* new_stylesheet = lua_tostring(L, 3);
-
-    if (svg->styles.stylesheet != NULL) {
-      free(svg->styles.stylesheet);
-    }
-
-    svg->styles.stylesheet =
-      new_stylesheet == NULL ? NULL : strdup(new_stylesheet);
+    catnip_lua_widget_svg_set_stylesheet(L, svg, 3);
     catnip_lua_widget_svg_reload(L, svg);
   }
 
@@ -134,13 +150,8 @@ catnip_lua_widget_svg__gc(lua_State* L)
     g_object_unref(svg->rsvg);
   }
 
-  if (svg->styles.document != NULL) {
-    free(svg->styles.document);
-  }
-
-  if (svg->styles.stylesheet != NULL) {
-    free(svg->styles.stylesheet);
-  }
+  luaL_unref(L, LUA_REGISTRYINDEX, svg->styles.document_ref);
+  luaL_unref(L, LUA_REGISTRYINDEX, svg->styles.stylesheet_ref);
 
   catnip_lua_widget_base_cleanup(L, &svg->base);
 
@@ -177,33 +188,29 @@ catnip_lua_widget_lua_svg(lua_State* L)
   svg->base.type = CATNIP_LUA_WIDGET_SVG;
 
   svg->rsvg = NULL;
-  svg->styles.document = NULL;
+
+  svg->styles.document = "";
+  lua_pushstring(L, "");
+  svg->styles.document_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
   svg->styles.stylesheet = NULL;
+  svg->styles.stylesheet_ref = LUA_NOREF;
 
   if (lua_type(L, 1) == LUA_TTABLE) {
     if (lua_hasstringfield(L, 1, "document")) {
-      svg->styles.document = strdup(lua_popstring(L));
+      catnip_lua_widget_svg_set_document(L, svg, -1);
+      lua_pop(L, 1);
     }
 
     if (lua_hasstringfield(L, 1, "stylesheet")) {
-      svg->styles.stylesheet = strdup(lua_popstring(L));
+      catnip_lua_widget_svg_set_stylesheet(L, svg, -1);
+      lua_pop(L, 1);
     }
 
     catnip_lua_widget_svg_reload(L, svg);
   }
 
   return 1;
-}
-
-static void
-catnip_lua_widget_svg_layout(lua_State* L, struct catnip_lua_widget_svg* svg)
-{
-  // TODO: intrinsic scaling
-  // if (viewport.width != -1 && viewport.height == -1) {
-  //   viewport.height *= viewport.width / svg->intrinsic_width;
-  // } else if (viewport.width == -1 && viewport.height != -1) {
-  //   viewport.width *= viewport.height / svg->intrinsic_height;
-  // }
 }
 
 void
@@ -216,6 +223,13 @@ catnip_lua_widget_svg_draw(
   if (svg->rsvg == NULL) {
     return;
   }
+
+  // TODO: aspect ratio
+  // if (viewport.width != -1 && viewport.height == -1) {
+  //   viewport.height *= viewport.width / svg->intrinsic_width;
+  // } else if (viewport.width == -1 && viewport.height != -1) {
+  //   viewport.width *= viewport.height / svg->intrinsic_height;
+  // }
 
   RsvgRectangle viewport = {
     .x = svg->base.computed.x,

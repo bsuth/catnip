@@ -2,6 +2,9 @@
 #include "extensions/cairo.h"
 #include "extensions/string.h"
 #include "widget/lua_widget_base.h"
+#include "widget/lua_widget_png.h"
+#include "widget/lua_widget_svg.h"
+#include "widget/lua_widget_text.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -590,16 +593,27 @@ catnip_lua_widget_block_draw_children(
         );
         break;
       case CATNIP_LUA_WIDGET_PNG:
-        // TODO
+        catnip_lua_widget_png_draw(
+          L,
+          (struct catnip_lua_widget_png*) child,
+          cr
+        );
         break;
       case CATNIP_LUA_WIDGET_TEXT:
-        // TODO
+        catnip_lua_widget_text_draw(
+          L,
+          (struct catnip_lua_widget_text*) child,
+          cr
+        );
         break;
       case CATNIP_LUA_WIDGET_SVG:
-        // TODO
+        catnip_lua_widget_svg_draw(
+          L,
+          (struct catnip_lua_widget_svg*) child,
+          cr
+        );
         break;
       default:
-        // TODO
         break;
     }
 

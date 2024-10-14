@@ -14,28 +14,20 @@ catnip_lua_widget_png_set_path(
   int idx
 )
 {
-  if (lua_type(L, idx) == LUA_TNIL) {
-    luaL_unref(L, LUA_REGISTRYINDEX, png->path);
-    png->path = LUA_NOREF;
+  png->styles.path = luaL_checkstring(L, idx);
 
-    if (png->surface != NULL) {
-      cairo_surface_destroy(png->surface);
-    }
+  luaL_unref(L, LUA_REGISTRYINDEX, png->styles.path_ref);
+  lua_pushvalue(L, idx);
+  png->styles.path_ref = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  png->surface = cairo_image_surface_create_from_png(png->styles.path);
+
+  if (cairo_surface_status(png->surface) == CAIRO_STATUS_SUCCESS) {
+    png->aspect_ratio = (double) cairo_image_surface_get_width(png->surface)
+      / (double) cairo_image_surface_get_height(png->surface);
   } else {
-    const char* path = luaL_checkstring(L, idx);
-
-    lua_pushvalue(L, idx);
-    png->path = luaL_ref(L, LUA_REGISTRYINDEX);
-
-    png->surface = cairo_image_surface_create_from_png(path);
-
-    if (cairo_surface_status(png->surface) == CAIRO_STATUS_SUCCESS) {
-      png->aspect_ratio = (double) cairo_image_surface_get_width(png->surface)
-        / (double) cairo_image_surface_get_height(png->surface);
-    } else {
-      png->surface = NULL;
-      log_warning("failed to load png: %s", path);
-    }
+    png->surface = NULL;
+    log_warning("failed to load png: %s", png->styles.path);
   }
 }
 
@@ -54,7 +46,7 @@ catnip_lua_widget_png__index(lua_State* L)
   } else if (catnip_lua_widget_base__index(L, &png->base, key)) {
     return 1;
   } else if (streq(key, "path")) {
-    lua_rawgeti(L, LUA_REGISTRYINDEX, png->path);
+    lua_rawgeti(L, LUA_REGISTRYINDEX, png->styles.path_ref);
   } else {
     lua_pushnil(L);
   }
@@ -82,7 +74,7 @@ catnip_lua_widget_png__gc(lua_State* L)
 {
   struct catnip_lua_widget_png* png = lua_touserdata(L, 1);
 
-  luaL_unref(L, LUA_REGISTRYINDEX, png->path);
+  luaL_unref(L, LUA_REGISTRYINDEX, png->styles.path_ref);
 
   if (png->surface != NULL) {
     cairo_surface_destroy(png->surface);
@@ -122,8 +114,12 @@ catnip_lua_widget_lua_png(lua_State* L)
   catnip_lua_widget_base_setup(L, &png->base);
   png->base.type = CATNIP_LUA_WIDGET_PNG;
 
-  png->path = LUA_NOREF;
   png->surface = NULL;
+  png->aspect_ratio = 0;
+
+  png->styles.path = "";
+  lua_pushstring(L, "");
+  png->styles.path_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
   if (lua_type(L, 1) == LUA_TTABLE) {
     if (lua_hasstringfield(L, 1, "path")) {
@@ -142,6 +138,10 @@ catnip_lua_widget_png_draw(
   cairo_t* cr
 )
 {
+  if (png->surface == NULL) {
+    return;
+  }
+
   cairo_save(cr);
   // TODO: handle aspect ratio
   // cairo_scale(cr, scale_x, scale_y);

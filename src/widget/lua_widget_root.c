@@ -9,28 +9,6 @@
 #include <wlr/interfaces/wlr_buffer.h>
 
 // -----------------------------------------------------------------------------
-// Linking
-// -----------------------------------------------------------------------------
-
-void
-catnip_lua_widget_block_link(
-  lua_State* L,
-  struct catnip_lua_widget_block* block,
-  struct catnip_lua_widget_base* child
-)
-{
-}
-
-void
-catnip_lua_widget_block_unlink(
-  lua_State* L,
-  struct catnip_lua_widget_block* block,
-  struct catnip_lua_widget_base* child
-)
-{
-}
-
-// -----------------------------------------------------------------------------
 // Buffer
 // -----------------------------------------------------------------------------
 

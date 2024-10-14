@@ -17,6 +17,8 @@ struct catnip_lua_widget_text {
   bool refresh_attributes;
 
   struct {
+    const char* text;
+    lua_Ref text_ref;
     int size;
     int weight;
     bool italic;
