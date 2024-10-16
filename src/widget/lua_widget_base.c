@@ -144,8 +144,17 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
     lua_pop(L, 1);
   }
 
+  luaL_getmetatable(L, "catnip.widget.tostring");
+
+  if (lua_equal(L, -1, -2)) {
+    lua_pop(L, 2);
+    return CATNIP_LUA_WIDGET_TOSTRING;
+  } else {
+    lua_pop(L, 1);
+  }
+
   lua_pop(L, 1);
-  return CATNIP_LUA_WIDGET_TOSTRING;
+  return CATNIP_LUA_WIDGET_NONE;
 }
 
 // -----------------------------------------------------------------------------

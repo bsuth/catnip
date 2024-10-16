@@ -480,9 +480,6 @@ catnip_lua_widget_text_draw(
     catnip_lua_widget_refresh_attributes(L, text);
   }
 
-  // TODO?
-  // pango_cairo_update_context(cr, text->context);
-
   // TODO: valign
 
   cairo_save(cr);
