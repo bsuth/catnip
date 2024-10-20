@@ -16,23 +16,10 @@ catnip_lua_widget_base_setup(lua_State* L, struct catnip_lua_widget_base* base)
   base->event_sources.request_layout = NULL;
   base->event_sources.request_draw = NULL;
 
-  base->styles.x = 0;
-  base->styles.x_unit = CATNIP_LUA_WIDGET_UNIT_PX;
-  base->styles.y = 0;
-  base->styles.y_unit = CATNIP_LUA_WIDGET_UNIT_PX;
-  base->styles.width = 0;
-  base->styles.width_unit = CATNIP_LUA_WIDGET_UNIT_PX;
-  base->styles.height = 0;
-  base->styles.height_unit = CATNIP_LUA_WIDGET_UNIT_PX;
-
-  if (lua_type(L, 1) == LUA_TTABLE) {
-    base->styles.x = lua_hasnumberfield(L, 1, "x") ? lua_popnumber(L) : -1;
-    base->styles.y = lua_hasnumberfield(L, 1, "y") ? lua_popnumber(L) : -1;
-    base->styles.width =
-      lua_hasnumberfield(L, 1, "width") ? lua_popnumber(L) : -1;
-    base->styles.height =
-      lua_hasnumberfield(L, 1, "height") ? lua_popnumber(L) : -1;
-  }
+  base->bounding_box.x = 0;
+  base->bounding_box.y = 0;
+  base->bounding_box.width = 0;
+  base->bounding_box.height = 0;
 }
 
 void

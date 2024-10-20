@@ -148,8 +148,8 @@ catnip_lua_widget_png_draw(
   cairo_set_source_surface(
     cr,
     png->surface,
-    png->base.computed.x,
-    png->base.computed.x
+    png->base.bounding_box.x,
+    png->base.bounding_box.x
   );
   cairo_paint(cr);
   cairo_restore(cr);

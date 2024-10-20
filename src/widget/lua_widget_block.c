@@ -15,6 +15,8 @@
 static int
 catnip_lua_widget_block_lua_insert(lua_State* L)
 {
+  int num_args = lua_gettop(L);
+
   struct catnip_lua_widget_block* block =
     luaL_checkudata(L, 1, "catnip.widget.block");
 
@@ -24,16 +26,14 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   int position = -1;
   int child_index = -1;
 
-  if (lua_type(L, 2) == LUA_TNUMBER) {
+  if (num_args == 2) {
+    position = children_len + 1;
+    child_index = 2;
+  } else if (num_args == 3) {
     position = lua_tointeger(L, 2);
     child_index = 3;
   } else {
-    position = children_len + 1;
-    child_index = 2;
-  }
-
-  if (position < 1 || children_len + 1 < position) {
-    lua_log_error(L, "out of bounds");
+    lua_log_error(L, "wrong number of arguments to 'insert'");
     return 0;
   }
 
@@ -82,11 +82,6 @@ catnip_lua_widget_block_lua_remove(lua_State* L)
 
   int position =
     lua_type(L, 2) == LUA_TNUMBER ? lua_tonumber(L, 2) : children_len;
-
-  if (position < 1 || children_len < position) {
-    lua_log_error(L, "out of bounds");
-    return 0;
-  }
 
   lua_rawgeti(L, -1, position);
   lua_insert(L, -2); // keep for return
@@ -329,6 +324,8 @@ catnip_lua_widget_lua_block(lua_State* L)
   lua_newtable(L);
   block->children = luaL_ref(L, LUA_REGISTRYINDEX);
 
+  block->styles.layout = LUA_NOREF;
+
   block->styles.bg_color = -1;
   block->styles.bg_opacity = 1;
 
@@ -342,6 +339,10 @@ catnip_lua_widget_lua_block(lua_State* L)
   block->styles.radius_bottom_right = -1;
 
   if (lua_type(L, 1) == LUA_TTABLE) {
+    block->styles.layout = lua_hasfunctionfield(L, 1, "layout")
+      ? luaL_ref(L, LUA_REGISTRYINDEX)
+      : LUA_NOREF;
+
     block->styles.padding =
       lua_hasnumberfield(L, 1, "padding") ? lua_popnumber(L) : 0;
     block->styles.padding_top =
@@ -415,77 +416,63 @@ catnip_lua_widget_lua_block(lua_State* L)
 // Layout
 // -----------------------------------------------------------------------------
 
-static void
-catnip_lua_widget_block_pre_layout(
-  lua_State* L,
-  struct catnip_lua_widget_block* block
-)
-{
-  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-  lua_pushnil(L);
-
-  while (lua_next(L, -2) != 0) {
-    struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
-
-    switch (child->type) {
-      case CATNIP_LUA_WIDGET_BLOCK:
-        catnip_lua_widget_block_layout(
-          L,
-          (struct catnip_lua_widget_block*) child
-        );
-        break;
-      default:
-        child->computed.x = block->base.styles.x + child->styles.x;
-        child->computed.y = block->base.styles.y + child->styles.y;
-        child->computed.width = child->styles.width;
-        child->computed.height = child->styles.height;
-        break;
-    }
-
-    lua_pop(L, 1);
-  }
-
-  lua_pop(L, 1);
-}
-
-static void
-catnip_lua_widget_block_post_layout(
-  lua_State* L,
-  struct catnip_lua_widget_block* block
-)
-{
-  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-  lua_pushnil(L);
-
-  while (lua_next(L, -2) != 0) {
-    struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
-
-    child->computed.x = block->base.styles.x + child->styles.x;
-    child->computed.y = block->base.styles.y + child->styles.y;
-    child->computed.width = child->styles.width;
-    child->computed.height = child->styles.height;
-
-    lua_pop(L, 1);
-  }
-
-  lua_pop(L, 1);
-}
-
 void
 catnip_lua_widget_block_layout(
   lua_State* L,
   struct catnip_lua_widget_block* block
 )
 {
-  catnip_lua_widget_block_pre_layout(L, block);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->styles.layout);
 
-  // TODO
-  block->base.computed.x = block->base.styles.x;
-  block->base.computed.y = block->base.styles.y;
-  block->base.computed.width = block->base.styles.width;
-  block->base.computed.height = block->base.styles.height;
+  if (lua_type(L, -1) != LUA_TFUNCTION) {
+    // TODO: warning: invalid layout type
+    // TODO: handle __call metamethod
+    lua_pop(L, 2);
+    return;
+  }
 
-  catnip_lua_widget_block_post_layout(L, block);
+  lua_pushnumber(L, lua_objlen(L, -2));
+  lua_call(L, 1, 1);
+
+  if (lua_type(L, -1) != LUA_TTABLE) {
+    // TODO: warning: invalid layout return
+    lua_pop(L, 2);
+    return;
+  }
+
+  lua_pushnil(L);
+  while (lua_next(L, -3) != 0) {
+    struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
+    int index = lua_tonumber(L, -2);
+    lua_rawgeti(L, -3, index);
+
+    if (lua_type(L, -1) != LUA_TTABLE) {
+      // TODO: warning: invalid child bounding box
+      lua_pop(L, 2);
+      continue;
+    }
+
+    lua_rawgeti(L, -1, 1);
+    child->bounding_box.x = block->base.bounding_box.x + lua_popnumber(L);
+    lua_rawgeti(L, -1, 2);
+    child->bounding_box.y = block->base.bounding_box.y + lua_popnumber(L);
+    lua_rawgeti(L, -1, 3);
+    child->bounding_box.width = lua_popnumber(L);
+    lua_rawgeti(L, -1, 4);
+    child->bounding_box.height = lua_popnumber(L);
+
+    if (child->type == CATNIP_LUA_WIDGET_BLOCK) {
+      catnip_lua_widget_block_layout(
+        L,
+        (struct catnip_lua_widget_block*) child
+      );
+    }
+
+    lua_pop(L, 2);
+  }
+
+  lua_pop(L, 2);
 }
 
 // -----------------------------------------------------------------------------
@@ -522,10 +509,10 @@ catnip_lua_widget_block_draw_self(
     if (is_rounded) {
       cairo_rounded_rectangle(
         cr,
-        block->base.computed.x,
-        block->base.computed.y,
-        block->base.computed.width,
-        block->base.computed.height,
+        block->base.bounding_box.x,
+        block->base.bounding_box.y,
+        block->base.bounding_box.width,
+        block->base.bounding_box.height,
         radius_top_left,
         radius_top_right,
         radius_bottom_right,
@@ -534,10 +521,10 @@ catnip_lua_widget_block_draw_self(
     } else {
       cairo_rectangle(
         cr,
-        block->base.computed.x,
-        block->base.computed.y,
-        block->base.computed.width,
-        block->base.computed.height
+        block->base.bounding_box.x,
+        block->base.bounding_box.y,
+        block->base.bounding_box.width,
+        block->base.bounding_box.height
       );
     }
 
@@ -551,10 +538,10 @@ catnip_lua_widget_block_draw_self(
     if (is_rounded) {
       cairo_rounded_rectangle(
         cr,
-        block->base.computed.x + border_offset,
-        block->base.computed.y + border_offset,
-        block->base.computed.width - block->styles.border_width,
-        block->base.computed.height - block->styles.border_width,
+        block->base.bounding_box.x + border_offset,
+        block->base.bounding_box.y + border_offset,
+        block->base.bounding_box.width - block->styles.border_width,
+        block->base.bounding_box.height - block->styles.border_width,
         radius_top_left,
         radius_top_right,
         radius_bottom_right,
@@ -563,10 +550,10 @@ catnip_lua_widget_block_draw_self(
     } else {
       cairo_rectangle(
         cr,
-        block->base.computed.x + border_offset,
-        block->base.computed.y + border_offset,
-        block->base.computed.width - block->styles.border_width,
-        block->base.computed.height - block->styles.border_width
+        block->base.bounding_box.x + border_offset,
+        block->base.bounding_box.y + border_offset,
+        block->base.bounding_box.width - block->styles.border_width,
+        block->base.bounding_box.height - block->styles.border_width
       );
     }
 

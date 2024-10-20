@@ -244,10 +244,10 @@ catnip_lua_widget_lua_root(lua_State* L)
   root->block->base.parent = &root->base;
   root->block_ref = luaL_ref(L, LUA_REGISTRYINDEX);
 
-  root->block->base.styles.x = 0;
-  root->block->base.styles.y = 0;
-  root->block->base.styles.width = initial_width;
-  root->block->base.styles.height = initial_height;
+  root->block->base.bounding_box.x = 0;
+  root->block->base.bounding_box.y = 0;
+  root->block->base.bounding_box.width = initial_width;
+  root->block->base.bounding_box.height = initial_height;
 
   catnip_lua_widget_root_request_layout(root);
 
@@ -277,8 +277,8 @@ catnip_lua_widget_root_resize(
   root->wlr.buffer.width = new_width;
   root->wlr.buffer.height = new_height;
 
-  root->block->base.styles.width = new_width;
-  root->block->base.styles.height = new_height;
+  root->block->base.bounding_box.width = new_width;
+  root->block->base.bounding_box.height = new_height;
 
   // Unset buffer to force full update on refresh. Required to make sure that
   // widget->scene_buffer->node.visible is updated properly.

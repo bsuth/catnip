@@ -232,10 +232,10 @@ catnip_lua_widget_svg_draw(
   // }
 
   RsvgRectangle viewport = {
-    .x = svg->base.computed.x,
-    .y = svg->base.computed.y,
-    .width = svg->base.computed.width,
-    .height = svg->base.computed.height,
+    .x = svg->base.bounding_box.x,
+    .y = svg->base.bounding_box.y,
+    .width = svg->base.bounding_box.width,
+    .height = svg->base.bounding_box.height,
   };
 
   rsvg_handle_render_document(svg->rsvg, cr, &viewport, NULL);

@@ -483,7 +483,7 @@ catnip_lua_widget_text_draw(
   // TODO: valign
 
   cairo_save(cr);
-  cairo_move_to(cr, text->base.computed.x, text->base.computed.y);
+  cairo_move_to(cr, text->base.bounding_box.x, text->base.bounding_box.y);
   pango_cairo_show_layout(cr, text->layout);
   cairo_restore(cr);
 }

@@ -76,7 +76,11 @@ catnip_lua_widget_tostring_draw(
   // TODO: inherit properties (+ valign?)
 
   cairo_save(cr);
-  cairo_move_to(cr, tostring->base.computed.x, tostring->base.computed.y);
+  cairo_move_to(
+    cr,
+    tostring->base.bounding_box.x,
+    tostring->base.bounding_box.y
+  );
   pango_cairo_show_layout(cr, tostring->layout);
   cairo_restore(cr);
 }

@@ -12,6 +12,8 @@ struct catnip_lua_widget_block {
   lua_Ref children;
 
   struct {
+    lua_Ref layout;
+
     int padding;
     int padding_top;
     int padding_left;

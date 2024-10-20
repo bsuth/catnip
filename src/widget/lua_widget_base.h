@@ -14,12 +14,6 @@ enum catnip_lua_widget_type {
   CATNIP_LUA_WIDGET_TOSTRING,
 };
 
-enum catnip_lua_widget_unit {
-  CATNIP_LUA_WIDGET_UNIT_NONE,
-  CATNIP_LUA_WIDGET_UNIT_PX,
-  CATNIP_LUA_WIDGET_UNIT_PERCENT,
-};
-
 struct catnip_lua_widget_base {
   enum catnip_lua_widget_type type;
   struct catnip_lua_widget_base* parent;
@@ -31,21 +25,10 @@ struct catnip_lua_widget_base {
 
   struct {
     int x;
-    enum catnip_lua_widget_unit x_unit;
-    int y;
-    enum catnip_lua_widget_unit y_unit;
-    int width;
-    enum catnip_lua_widget_unit width_unit;
-    int height;
-    enum catnip_lua_widget_unit height_unit;
-  } styles;
-
-  struct {
-    int x;
     int y;
     int width;
     int height;
-  } computed;
+  } bounding_box;
 };
 
 void
