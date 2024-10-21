@@ -73,7 +73,8 @@ catnip_lua_widget_tostring_draw(
   cairo_t* cr
 )
 {
-  // TODO: inherit properties (+ valign?)
+  pango_layout_set_width(tostring->layout, tostring->base.bounding_box.width);
+  pango_layout_set_height(tostring->layout, tostring->base.bounding_box.height);
 
   cairo_save(cr);
   cairo_move_to(

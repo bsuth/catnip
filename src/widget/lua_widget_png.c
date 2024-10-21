@@ -23,10 +23,12 @@ catnip_lua_widget_png_set_path(
   png->surface = cairo_image_surface_create_from_png(png->styles.path);
 
   if (cairo_surface_status(png->surface) == CAIRO_STATUS_SUCCESS) {
-    png->aspect_ratio = (double) cairo_image_surface_get_width(png->surface)
-      / (double) cairo_image_surface_get_height(png->surface);
+    png->intrinsic_width = cairo_image_surface_get_width(png->surface);
+    png->intrinsic_height = cairo_image_surface_get_height(png->surface);
   } else {
     png->surface = NULL;
+    png->intrinsic_width = 0;
+    png->intrinsic_height = 1;
     log_warning("failed to load png: %s", png->styles.path);
   }
 }
@@ -47,6 +49,11 @@ catnip_lua_widget_png__index(lua_State* L)
     return 1;
   } else if (streq(key, "path")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, png->styles.path_ref);
+  } else if (streq(key, "aspect_ratio")) {
+    lua_pushnumber(
+      L,
+      (double) png->intrinsic_width / (double) png->intrinsic_height
+    );
   } else {
     lua_pushnil(L);
   }
@@ -115,7 +122,8 @@ catnip_lua_widget_lua_png(lua_State* L)
   png->base.type = CATNIP_LUA_WIDGET_PNG;
 
   png->surface = NULL;
-  png->aspect_ratio = 0;
+  png->intrinsic_width = 0;
+  png->intrinsic_height = 1;
 
   png->styles.path = "";
   lua_pushstring(L, "");
@@ -143,13 +151,16 @@ catnip_lua_widget_png_draw(
   }
 
   cairo_save(cr);
-  // TODO: handle aspect ratio
-  // cairo_scale(cr, scale_x, scale_y);
+  cairo_scale(
+    cr,
+    (double) png->base.bounding_box.width / png->intrinsic_width,
+    (double) png->base.bounding_box.height / png->intrinsic_height
+  );
   cairo_set_source_surface(
     cr,
     png->surface,
     png->base.bounding_box.x,
-    png->base.bounding_box.x
+    png->base.bounding_box.y
   );
   cairo_paint(cr);
   cairo_restore(cr);

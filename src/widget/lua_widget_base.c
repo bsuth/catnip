@@ -45,13 +45,34 @@ catnip_lua_widget_base__index(
 )
 {
   if (streq(key, "x")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
+    lua_pushnumber(L, base->bounding_box.x);
   } else if (streq(key, "y")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
+    lua_pushnumber(L, base->bounding_box.y);
   } else if (streq(key, "width")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
+    lua_pushnumber(L, base->bounding_box.width);
   } else if (streq(key, "height")) {
-    lua_pushnumber(L, 0); // TODO (need to handle units)
+    lua_pushnumber(L, base->bounding_box.height);
+  } else if (streq(key, "type")) {
+    switch (base->type) {
+      case CATNIP_LUA_WIDGET_BLOCK:
+        lua_pushstring(L, "block");
+        return true;
+      case CATNIP_LUA_WIDGET_PNG:
+        lua_pushstring(L, "png");
+        return true;
+      case CATNIP_LUA_WIDGET_ROOT:
+        lua_pushstring(L, "root");
+        return true;
+      case CATNIP_LUA_WIDGET_SVG:
+        lua_pushstring(L, "svg");
+        return true;
+      case CATNIP_LUA_WIDGET_TEXT:
+        lua_pushstring(L, "text");
+        return true;
+      default:
+        lua_pushstring(L, "");
+        return true;
+    }
   } else {
     return false;
   }
@@ -67,13 +88,13 @@ catnip_lua_widget_base__newindex(
 )
 {
   if (streq(key, "x")) {
-    // TODO
+    base->bounding_box.x = luaL_checknumber(L, 3);
   } else if (streq(key, "y")) {
-    // TODO
+    base->bounding_box.y = luaL_checknumber(L, 3);
   } else if (streq(key, "width")) {
-    // TODO
+    base->bounding_box.width = luaL_checknumber(L, 3);
   } else if (streq(key, "height")) {
-    // TODO
+    base->bounding_box.height = luaL_checknumber(L, 3);
   } else {
     return false;
   }

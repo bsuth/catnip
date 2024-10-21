@@ -11,8 +11,7 @@ struct catnip_lua_widget_svg {
   struct catnip_lua_widget_base base;
 
   RsvgHandle* rsvg;
-  double intrinsic_width;
-  double intrinsic_height;
+  double aspect_ratio;
 
   struct {
     const char* document;

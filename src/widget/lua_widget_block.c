@@ -136,6 +136,8 @@ catnip_lua_widget_block__index(lua_State* L)
     lua_pushnil(L);
   } else if (catnip_lua_widget_base__index(L, &block->base, key)) {
     return 1;
+  } else if (streq(key, "layout")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, block->styles.layout);
   } else if (streq(key, "padding")) {
     lua_pushnumber(L, block->styles.padding);
   } else if (streq(key, "padding_top")) {
@@ -220,7 +222,12 @@ catnip_lua_widget_block__newindex(lua_State* L)
     return 0;
   }
 
-  if (streq(key, "padding")) {
+  if (streq(key, "layout")) {
+    luaL_checktype(L, 3, LUA_TFUNCTION);
+    luaL_unref(L, LUA_REGISTRYINDEX, block->styles.layout);
+    lua_pushvalue(L, 3);
+    luaL_ref(L, block->styles.layout);
+  } else if (streq(key, "padding")) {
     block->styles.padding = luaL_checknumber(L, 3);
     catnip_lua_widget_base_request_layout(L, &block->base);
   } else if (streq(key, "padding_top")) {
@@ -274,6 +281,8 @@ static int
 catnip_lua_widget_block__gc(lua_State* L)
 {
   struct catnip_lua_widget_block* block = lua_touserdata(L, 1);
+
+  luaL_unref(L, LUA_REGISTRYINDEX, block->styles.layout);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
   lua_pushnil(L);
@@ -432,8 +441,29 @@ catnip_lua_widget_block_layout(
     return;
   }
 
-  lua_pushnumber(L, lua_objlen(L, -2));
-  lua_call(L, 1, 1);
+  int padding_top = block->styles.padding_top == -1 ? block->styles.padding
+                                                    : block->styles.padding_top;
+  int padding_right = block->styles.padding_right == -1
+    ? block->styles.padding
+    : block->styles.padding_right;
+  int padding_bottom = block->styles.padding_bottom == -1
+    ? block->styles.padding
+    : block->styles.padding_bottom;
+  int padding_left = block->styles.padding_left == -1
+    ? block->styles.padding
+    : block->styles.padding_left;
+
+  int content_x = block->base.bounding_box.x + padding_right;
+  int content_y = block->base.bounding_box.y + padding_top;
+  int content_width =
+    block->base.bounding_box.width - (padding_right + padding_left);
+  int content_height =
+    block->base.bounding_box.height - (padding_top + padding_bottom);
+
+  lua_pushnumber(L, content_width);
+  lua_pushnumber(L, content_height);
+  lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
+  lua_call(L, 3, 1);
 
   if (lua_type(L, -1) != LUA_TTABLE) {
     // TODO: warning: invalid layout return
@@ -454,9 +484,9 @@ catnip_lua_widget_block_layout(
     }
 
     lua_rawgeti(L, -1, 1);
-    child->bounding_box.x = block->base.bounding_box.x + lua_popnumber(L);
+    child->bounding_box.x = content_x + lua_popnumber(L);
     lua_rawgeti(L, -1, 2);
-    child->bounding_box.y = block->base.bounding_box.y + lua_popnumber(L);
+    child->bounding_box.y = content_y + lua_popnumber(L);
     lua_rawgeti(L, -1, 3);
     child->bounding_box.width = lua_popnumber(L);
     lua_rawgeti(L, -1, 4);

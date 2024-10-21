@@ -82,11 +82,11 @@ catnip_lua_widget_text_set_valign(
   } else {
     const char* valign = luaL_checkstring(L, idx);
 
-    if (streq(valign, "left")) {
+    if (streq(valign, "top")) {
       text->styles.valign = PANGO_ALIGN_LEFT;
     } else if (streq(valign, "center")) {
       text->styles.valign = PANGO_ALIGN_CENTER;
-    } else if (streq(valign, "right")) {
+    } else if (streq(valign, "bottom")) {
       text->styles.valign = PANGO_ALIGN_RIGHT;
     }
 
@@ -235,6 +235,40 @@ catnip_lua_widget_refresh_attributes(
 }
 
 // -----------------------------------------------------------------------------
+// Lua Methods
+// -----------------------------------------------------------------------------
+
+static int
+catnip_lua_widget_text_lua_measure(lua_State* L)
+{
+  struct catnip_lua_widget_text* text =
+    luaL_checkudata(L, 1, "catnip.widget.text");
+
+  int layout_width = pango_layout_get_width(text->layout);
+  int layout_height = pango_layout_get_height(text->layout);
+
+  pango_layout_set_width(text->layout, -1);
+  pango_layout_set_height(text->layout, -1);
+
+  int intrinsic_width = -1;
+  int intrinsic_height = -1;
+
+  pango_layout_get_pixel_size(
+    text->layout,
+    &intrinsic_width,
+    &intrinsic_height
+  );
+
+  pango_layout_set_width(text->layout, layout_width);
+  pango_layout_set_height(text->layout, layout_height);
+
+  lua_pushnumber(L, intrinsic_width);
+  lua_pushnumber(L, intrinsic_height);
+
+  return 2;
+}
+
+// -----------------------------------------------------------------------------
 // Metatable
 // -----------------------------------------------------------------------------
 
@@ -270,6 +304,8 @@ catnip_lua_widget_text__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, text->styles.ellipsis_ref);
   } else if (streq(key, "wrap")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, text->styles.wrap_ref);
+  } else if (streq(key, "measure")) {
+    lua_pushcfunction(L, catnip_lua_widget_text_lua_measure);
   } else {
     lua_pushnil(L);
   }
@@ -480,10 +516,38 @@ catnip_lua_widget_text_draw(
     catnip_lua_widget_refresh_attributes(L, text);
   }
 
-  // TODO: valign
+  pango_layout_set_width(text->layout, text->base.bounding_box.width);
+  pango_layout_set_height(text->layout, text->base.bounding_box.height);
+
+  int draw_x = text->base.bounding_box.x;
+  int draw_y = text->base.bounding_box.y;
+
+  bool has_trivial_valign =
+    text->styles.valign == -1 || text->styles.valign == PANGO_ALIGN_LEFT;
+
+  if (!has_trivial_valign) {
+    int intrinsic_height = -1;
+
+    pango_layout_set_height(text->layout, -1);
+    pango_layout_get_pixel_size(text->layout, NULL, &intrinsic_height);
+    pango_layout_set_height(text->layout, text->base.bounding_box.height);
+
+    // If we have overflow w/ ellipsis, then the content will take up the whole
+    // height available and there is nothing to align.
+    bool has_active_ellipsis = text->styles.ellipsis != -1
+      && intrinsic_height > text->base.bounding_box.height;
+
+    if (!has_active_ellipsis) {
+      if (text->styles.valign == PANGO_ALIGN_CENTER) {
+        draw_y += (text->base.bounding_box.height - intrinsic_height) / 2;
+      } else if (text->styles.valign == PANGO_ALIGN_RIGHT) {
+        draw_y += text->base.bounding_box.height - intrinsic_height;
+      }
+    }
+  }
 
   cairo_save(cr);
-  cairo_move_to(cr, text->base.bounding_box.x, text->base.bounding_box.y);
+  cairo_move_to(cr, draw_x, draw_y);
   pango_cairo_show_layout(cr, text->layout);
   cairo_restore(cr);
 }

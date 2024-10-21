@@ -10,7 +10,8 @@ struct catnip_lua_widget_png {
   struct catnip_lua_widget_base base;
 
   cairo_surface_t* surface;
-  double aspect_ratio;
+  int intrinsic_width;
+  int intrinsic_height;
 
   struct {
     const char* path;

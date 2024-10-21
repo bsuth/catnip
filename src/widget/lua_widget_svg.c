@@ -40,11 +40,16 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
     return;
   }
 
+  double intrinsic_width;
+  double intrinsic_height;
+
   rsvg_handle_get_intrinsic_size_in_pixels(
     svg->rsvg,
-    &svg->intrinsic_width,
-    &svg->intrinsic_height
+    &intrinsic_width,
+    &intrinsic_height
   );
+
+  svg->aspect_ratio = intrinsic_width / intrinsic_height;
 
   if (svg->styles.stylesheet != NULL) {
     rsvg_handle_set_stylesheet(
@@ -115,6 +120,8 @@ catnip_lua_widget_svg__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, svg->styles.document_ref);
   } else if (streq(key, "stylesheet")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, svg->styles.stylesheet_ref);
+  } else if (streq(key, "aspect_ratio")) {
+    lua_pushnumber(L, svg->aspect_ratio);
   } else {
     lua_pushnil(L);
   }

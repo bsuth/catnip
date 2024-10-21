@@ -39,13 +39,6 @@ struct catnip_lua_widget_block {
     // double opacity;
     // - text properties
   } styles;
-
-  struct {
-    int content_x;
-    int content_y;
-    int content_width;
-    int content_height;
-  } computed;
 };
 
 void
