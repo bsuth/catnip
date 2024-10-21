@@ -1,5 +1,4 @@
 #include "lua_state.h"
-#include "canvas/lua_canvas.h"
 #include "desktop/lua_cursor.h"
 #include "desktop/lua_key_event.h"
 #include "desktop/lua_keyboard.h"
@@ -46,8 +45,6 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_widget_svg_init(L);
   catnip_lua_widget_text_init(L);
   catnip_lua_widget_tostring_init(L);
-
-  catnip_lua_canvas_init(L); // TODO: remove
 
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
