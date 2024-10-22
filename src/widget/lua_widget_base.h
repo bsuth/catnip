@@ -39,20 +39,6 @@ catnip_lua_widget_base_cleanup(
   struct catnip_lua_widget_base* base
 );
 
-bool
-catnip_lua_widget_base__index(
-  lua_State* L,
-  struct catnip_lua_widget_base* base,
-  const char* key
-);
-
-bool
-catnip_lua_widget_base__newindex(
-  lua_State* L,
-  struct catnip_lua_widget_base* base,
-  const char* key
-);
-
 enum catnip_lua_widget_type
 catnip_lua_widget_base_type(lua_State* L, int idx);
 

@@ -218,18 +218,6 @@ catnip_lua_widget_refresh_attributes(
     );
   }
 
-  if (text->styles.halign != -1) {
-    pango_layout_set_alignment(text->layout, text->styles.halign);
-  }
-
-  if (text->styles.ellipsis != -1) {
-    pango_layout_set_ellipsize(text->layout, text->styles.ellipsis);
-  }
-
-  if (text->styles.wrap != -1) {
-    pango_layout_set_wrap(text->layout, text->styles.wrap);
-  }
-
   text->refresh_attributes = false;
   pango_layout_set_attributes(text->layout, text->attributes);
 }
@@ -280,8 +268,8 @@ catnip_lua_widget_text__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
-  } else if (catnip_lua_widget_base__index(L, &text->base, key)) {
-    return 1;
+  } else if (streq(key, "type")) {
+    lua_pushstring(L, "text");
   } else if (streq(key, "text")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, text->styles.text_ref);
   } else if (streq(key, "size")) {
@@ -319,7 +307,7 @@ catnip_lua_widget_text__newindex(lua_State* L)
   struct catnip_lua_widget_text* text = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (key == NULL || catnip_lua_widget_base__newindex(L, &text->base, key)) {
+  if (key == NULL) {
     return 0;
   } else if (streq(key, "text")) {
     catnip_lua_widget_text_set_text(L, text, 3);
@@ -350,19 +338,18 @@ catnip_lua_widget_text__newindex(lua_State* L)
     catnip_lua_widget_base_request_draw(L, &text->base);
   } else if (streq(key, "halign")) {
     catnip_lua_widget_text_set_halign(L, text, 3);
-    text->refresh_attributes = true;
+    pango_layout_set_alignment(text->layout, text->styles.halign);
     catnip_lua_widget_base_request_draw(L, &text->base);
   } else if (streq(key, "valign")) {
     catnip_lua_widget_text_set_valign(L, text, 3);
-    text->refresh_attributes = true;
     catnip_lua_widget_base_request_draw(L, &text->base);
   } else if (streq(key, "ellipsis")) {
     catnip_lua_widget_text_set_ellipsis(L, text, 3);
-    text->refresh_attributes = true;
+    pango_layout_set_ellipsize(text->layout, text->styles.ellipsis);
     catnip_lua_widget_base_request_layout(L, &text->base);
   } else if (streq(key, "wrap")) {
     catnip_lua_widget_text_set_wrap(L, text, 3);
-    text->refresh_attributes = true;
+    pango_layout_set_wrap(text->layout, text->styles.wrap);
     catnip_lua_widget_base_request_layout(L, &text->base);
   }
 

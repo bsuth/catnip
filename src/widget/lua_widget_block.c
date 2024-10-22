@@ -123,8 +123,8 @@ catnip_lua_widget_block__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
-  } else if (catnip_lua_widget_base__index(L, &block->base, key)) {
-    return 1;
+  } else if (streq(key, "type")) {
+    lua_pushstring(L, "block");
   } else if (streq(key, "layout")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->styles.layout);
   } else if (streq(key, "padding")) {
@@ -204,7 +204,7 @@ catnip_lua_widget_block__newindex(lua_State* L)
 
   const char* key = lua_tostring(L, 2);
 
-  if (key == NULL || catnip_lua_widget_base__newindex(L, &block->base, key)) {
+  if (key == NULL) {
     return 0;
   }
 

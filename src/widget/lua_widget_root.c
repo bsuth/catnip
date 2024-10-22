@@ -67,6 +67,8 @@ catnip_lua_widget_root__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
+  } else if (streq(key, "type")) {
+    lua_pushstring(L, "root");
   } else if (streq(key, "x")) {
     lua_pushnumber(L, root->wlr.scene_buffer->node.x);
   } else if (streq(key, "y")) {

@@ -1,6 +1,5 @@
 #include "lua_widget_base.h"
 #include "compositor/event_loop.h"
-#include "extensions/string.h"
 #include "widget/lua_widget_root.h"
 #include <lauxlib.h>
 
@@ -35,71 +34,6 @@ catnip_lua_widget_base_cleanup(
   if (base->event_sources.request_draw != NULL) {
     wl_event_source_remove(base->event_sources.request_draw);
   }
-}
-
-bool
-catnip_lua_widget_base__index(
-  lua_State* L,
-  struct catnip_lua_widget_base* base,
-  const char* key
-)
-{
-  if (streq(key, "x")) {
-    lua_pushnumber(L, base->bounding_box.x);
-  } else if (streq(key, "y")) {
-    lua_pushnumber(L, base->bounding_box.y);
-  } else if (streq(key, "width")) {
-    lua_pushnumber(L, base->bounding_box.width);
-  } else if (streq(key, "height")) {
-    lua_pushnumber(L, base->bounding_box.height);
-  } else if (streq(key, "type")) {
-    switch (base->type) {
-      case CATNIP_LUA_WIDGET_BLOCK:
-        lua_pushstring(L, "block");
-        return true;
-      case CATNIP_LUA_WIDGET_PNG:
-        lua_pushstring(L, "png");
-        return true;
-      case CATNIP_LUA_WIDGET_ROOT:
-        lua_pushstring(L, "root");
-        return true;
-      case CATNIP_LUA_WIDGET_SVG:
-        lua_pushstring(L, "svg");
-        return true;
-      case CATNIP_LUA_WIDGET_TEXT:
-        lua_pushstring(L, "text");
-        return true;
-      default:
-        lua_pushstring(L, "");
-        return true;
-    }
-  } else {
-    return false;
-  }
-
-  return true;
-}
-
-bool
-catnip_lua_widget_base__newindex(
-  lua_State* L,
-  struct catnip_lua_widget_base* base,
-  const char* key
-)
-{
-  if (streq(key, "x")) {
-    base->bounding_box.x = luaL_checknumber(L, 3);
-  } else if (streq(key, "y")) {
-    base->bounding_box.y = luaL_checknumber(L, 3);
-  } else if (streq(key, "width")) {
-    base->bounding_box.width = luaL_checknumber(L, 3);
-  } else if (streq(key, "height")) {
-    base->bounding_box.height = luaL_checknumber(L, 3);
-  } else {
-    return false;
-  }
-
-  return true;
 }
 
 enum catnip_lua_widget_type

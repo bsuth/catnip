@@ -114,8 +114,8 @@ catnip_lua_widget_svg__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
-  } else if (catnip_lua_widget_base__index(L, &svg->base, key)) {
-    return 1;
+  } else if (streq(key, "type")) {
+    lua_pushstring(L, "svg");
   } else if (streq(key, "document")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, svg->styles.document_ref);
   } else if (streq(key, "stylesheet")) {
@@ -135,7 +135,7 @@ catnip_lua_widget_svg__newindex(lua_State* L)
   struct catnip_lua_widget_svg* svg = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (key == NULL || catnip_lua_widget_base__newindex(L, &svg->base, key)) {
+  if (key == NULL) {
     return 0;
   } else if (streq(key, "document")) {
     catnip_lua_widget_svg_set_document(L, svg, 3);

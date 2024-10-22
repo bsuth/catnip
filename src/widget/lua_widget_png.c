@@ -45,8 +45,8 @@ catnip_lua_widget_png__index(lua_State* L)
 
   if (key == NULL) {
     lua_pushnil(L);
-  } else if (catnip_lua_widget_base__index(L, &png->base, key)) {
-    return 1;
+  } else if (streq(key, "type")) {
+    lua_pushstring(L, "png");
   } else if (streq(key, "path")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, png->styles.path_ref);
   } else if (streq(key, "aspect_ratio")) {
@@ -67,7 +67,7 @@ catnip_lua_widget_png__newindex(lua_State* L)
   struct catnip_lua_widget_png* png = lua_touserdata(L, 1);
   const char* key = lua_tostring(L, 2);
 
-  if (key == NULL || catnip_lua_widget_base__newindex(L, &png->base, key)) {
+  if (key == NULL) {
     return 0;
   } else if (streq(key, "path")) {
     catnip_lua_widget_png_set_path(L, png, 3);
