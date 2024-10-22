@@ -231,13 +231,6 @@ catnip_lua_widget_svg_draw(
     return;
   }
 
-  // TODO: aspect ratio
-  // if (viewport.width != -1 && viewport.height == -1) {
-  //   viewport.height *= viewport.width / svg->intrinsic_width;
-  // } else if (viewport.width == -1 && viewport.height != -1) {
-  //   viewport.width *= viewport.height / svg->intrinsic_height;
-  // }
-
   RsvgRectangle viewport = {
     .x = svg->base.bounding_box.x,
     .y = svg->base.bounding_box.y,

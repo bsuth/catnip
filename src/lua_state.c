@@ -18,7 +18,6 @@
 #include "widget/lua_widget_root.h"
 #include "widget/lua_widget_svg.h"
 #include "widget/lua_widget_text.h"
-#include "widget/lua_widget_tostring.h"
 #include <lauxlib.h>
 
 void
@@ -44,7 +43,6 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_widget_root_init(L);
   catnip_lua_widget_svg_init(L);
   catnip_lua_widget_text_init(L);
-  catnip_lua_widget_tostring_init(L);
 
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");

@@ -11,7 +11,6 @@ enum catnip_lua_widget_type {
   CATNIP_LUA_WIDGET_ROOT,
   CATNIP_LUA_WIDGET_SVG,
   CATNIP_LUA_WIDGET_TEXT,
-  CATNIP_LUA_WIDGET_TOSTRING,
 };
 
 struct catnip_lua_widget_base {

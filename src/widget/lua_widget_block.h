@@ -20,8 +20,6 @@ struct catnip_lua_widget_block {
     int padding_bottom;
     int padding_right;
 
-    // TODO: layout properties
-
     int radius;
     int radius_top_left;
     int radius_top_right;

@@ -327,7 +327,7 @@ catnip_lua_widget_text__newindex(lua_State* L)
   } else if (streq(key, "size")) {
     text->styles.size = luaL_checkinteger(L, 3);
     text->refresh_attributes = true;
-    catnip_lua_widget_base_request_layout(L, &text->base); // TODO: double check
+    catnip_lua_widget_base_request_layout(L, &text->base);
   } else if (streq(key, "weight")) {
     text->styles.weight = luaL_checkinteger(L, 3);
     text->refresh_attributes = true;
@@ -351,19 +351,19 @@ catnip_lua_widget_text__newindex(lua_State* L)
   } else if (streq(key, "halign")) {
     catnip_lua_widget_text_set_halign(L, text, 3);
     text->refresh_attributes = true;
-    catnip_lua_widget_base_request_layout(L, &text->base); // TODO: double check
+    catnip_lua_widget_base_request_draw(L, &text->base);
   } else if (streq(key, "valign")) {
     catnip_lua_widget_text_set_valign(L, text, 3);
     text->refresh_attributes = true;
-    catnip_lua_widget_base_request_layout(L, &text->base); // TODO: double check
+    catnip_lua_widget_base_request_draw(L, &text->base);
   } else if (streq(key, "ellipsis")) {
     catnip_lua_widget_text_set_ellipsis(L, text, 3);
     text->refresh_attributes = true;
-    catnip_lua_widget_base_request_draw(L, &text->base);
+    catnip_lua_widget_base_request_layout(L, &text->base);
   } else if (streq(key, "wrap")) {
     catnip_lua_widget_text_set_wrap(L, text, 3);
     text->refresh_attributes = true;
-    catnip_lua_widget_base_request_layout(L, &text->base); // TODO: double check
+    catnip_lua_widget_base_request_layout(L, &text->base);
   }
 
   return 0;
@@ -516,8 +516,14 @@ catnip_lua_widget_text_draw(
     catnip_lua_widget_refresh_attributes(L, text);
   }
 
-  pango_layout_set_width(text->layout, text->base.bounding_box.width);
-  pango_layout_set_height(text->layout, text->base.bounding_box.height);
+  pango_layout_set_width(
+    text->layout,
+    PANGO_SCALE * text->base.bounding_box.width
+  );
+  pango_layout_set_height(
+    text->layout,
+    PANGO_SCALE * text->base.bounding_box.height
+  );
 
   int draw_x = text->base.bounding_box.x;
   int draw_y = text->base.bounding_box.y;
@@ -530,7 +536,10 @@ catnip_lua_widget_text_draw(
 
     pango_layout_set_height(text->layout, -1);
     pango_layout_get_pixel_size(text->layout, NULL, &intrinsic_height);
-    pango_layout_set_height(text->layout, text->base.bounding_box.height);
+    pango_layout_set_height(
+      text->layout,
+      PANGO_SCALE * text->base.bounding_box.height
+    );
 
     // If we have overflow w/ ellipsis, then the content will take up the whole
     // height available and there is nothing to align.

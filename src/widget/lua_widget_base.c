@@ -152,15 +152,6 @@ catnip_lua_widget_base_type(lua_State* L, int idx)
     lua_pop(L, 1);
   }
 
-  luaL_getmetatable(L, "catnip.widget.tostring");
-
-  if (lua_equal(L, -1, -2)) {
-    lua_pop(L, 2);
-    return CATNIP_LUA_WIDGET_TOSTRING;
-  } else {
-    lua_pop(L, 1);
-  }
-
   lua_pop(L, 1);
   return CATNIP_LUA_WIDGET_NONE;
 }
@@ -174,8 +165,6 @@ __catnip_lua_widget_base_request_layout(void* data)
 {
   struct catnip_lua_widget_base* base = data;
   struct catnip_lua_widget_base* ancestor = base->parent;
-
-  // TODO: stop at first parent not dependent on children sizes
 
   while (ancestor != NULL && ancestor->type != CATNIP_LUA_WIDGET_ROOT) {
     ancestor = ancestor->parent;

@@ -5,7 +5,6 @@
 #include "widget/lua_widget_png.h"
 #include "widget/lua_widget_svg.h"
 #include "widget/lua_widget_text.h"
-#include "widget/lua_widget_tostring.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -41,12 +40,12 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
     catnip_lua_widget_base_type(L, child_index);
   struct catnip_lua_widget_base* child = NULL;
 
-  if (child_type == CATNIP_LUA_WIDGET_ROOT) {
+  if (child_type == CATNIP_LUA_WIDGET_NONE) {
+    lua_log_error(L, "attempt to set non-widget child");
+    return 0;
+  } else if (child_type == CATNIP_LUA_WIDGET_ROOT) {
     lua_log_error(L, "cannot use root widget as child");
     return 0;
-  } else if (child_type == CATNIP_LUA_WIDGET_NONE) {
-    child = (struct catnip_lua_widget_base*)
-      catnip_lua_widget_lua_tostring(L, child_index);
   } else {
     child = lua_touserdata(L, child_index);
     lua_pushvalue(L, child_index);
@@ -117,16 +116,6 @@ catnip_lua_widget_block__index(lua_State* L)
   if (lua_type(L, 2) == LUA_TNUMBER) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
     lua_rawgeti(L, -1, lua_tonumber(L, 2));
-
-    bool is_tostring_child = lua_type(L, -1) == LUA_TUSERDATA
-      && catnip_lua_widget_base_type(L, -1) == CATNIP_LUA_WIDGET_TOSTRING;
-
-    if (is_tostring_child) {
-      struct catnip_lua_widget_tostring* child = lua_touserdata(L, -1);
-      lua_pop(L, 1);
-      lua_pushvalue(L, child->ref);
-    }
-
     return 1;
   }
 
@@ -189,7 +178,10 @@ catnip_lua_widget_block__newindex(lua_State* L)
     enum catnip_lua_widget_type new_child_type =
       catnip_lua_widget_base_type(L, 3);
 
-    if (new_child_type == CATNIP_LUA_WIDGET_ROOT) {
+    if (new_child_type == CATNIP_LUA_WIDGET_NONE) {
+      lua_log_error(L, "attempt to set non-widget child");
+      return 0;
+    } else if (new_child_type == CATNIP_LUA_WIDGET_ROOT) {
       lua_log_error(L, "cannot use root widget as child");
       return 0;
     }
@@ -200,15 +192,9 @@ catnip_lua_widget_block__newindex(lua_State* L)
     struct catnip_lua_widget_base* old_child = lua_touserdata(L, -1);
     old_child->parent = NULL;
 
-    if (new_child_type == CATNIP_LUA_WIDGET_NONE) {
-      struct catnip_lua_widget_tostring* new_child =
-        catnip_lua_widget_lua_tostring(L, 3);
-      new_child->base.parent = &block->base;
-    } else {
-      struct catnip_lua_widget_base* new_child = lua_touserdata(L, 3);
-      new_child->parent = &block->base;
-      lua_pushvalue(L, 3);
-    }
+    struct catnip_lua_widget_base* new_child = lua_touserdata(L, 3);
+    new_child->parent = &block->base;
+    lua_pushvalue(L, 3);
 
     lua_rawseti(L, -2, position);
     lua_pop(L, 1);
@@ -399,15 +385,12 @@ catnip_lua_widget_lua_block(lua_State* L)
       enum catnip_lua_widget_type child_type =
         catnip_lua_widget_base_type(L, -1);
 
-      if (child_type == CATNIP_LUA_WIDGET_ROOT) {
+      if (child_type == CATNIP_LUA_WIDGET_NONE) {
+        lua_log_error(L, "attempt to set non-widget child");
+        lua_pop(L, 1);
+      } else if (child_type == CATNIP_LUA_WIDGET_ROOT) {
         lua_log_error(L, "cannot use root widget as child");
         lua_pop(L, 1);
-      } else if (child_type == CATNIP_LUA_WIDGET_NONE) {
-        struct catnip_lua_widget_tostring* child =
-          catnip_lua_widget_lua_tostring(L, -1);
-        lua_remove(L, -2);
-        child->base.parent = &block->base;
-        lua_rawseti(L, -3, position);
       } else {
         struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
         child->parent = &block->base;
@@ -642,13 +625,6 @@ catnip_lua_widget_block_draw_children(
           cr
         );
         break;
-      case CATNIP_LUA_WIDGET_TOSTRING:
-        catnip_lua_widget_tostring_draw(
-          L,
-          (struct catnip_lua_widget_tostring*) child,
-          cr
-        );
-        break;
       default:
         break;
     }
@@ -667,8 +643,5 @@ catnip_lua_widget_block_draw(
 )
 {
   catnip_lua_widget_block_draw_self(block, cr);
-
-  // TODO: inheritable properties
-
   catnip_lua_widget_block_draw_children(L, block, cr);
 }
