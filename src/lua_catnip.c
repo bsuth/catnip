@@ -12,6 +12,7 @@
 #include "extensions/string.h"
 #include "lua_events.h"
 #include "lua_keybindings.h"
+#include "widget/lua_widget.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -81,6 +82,8 @@ catnip_lua_catnip__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_outputs->ref);
   } else if (streq(key, "windows")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_windows->ref);
+  } else if (streq(key, "widget")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_widget);
   } else if (streq(key, "focused")) {
     struct catnip_window* focused_window = catnip_windows_get_focused();
 
