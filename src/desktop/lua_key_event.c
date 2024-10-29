@@ -23,9 +23,9 @@ catnip_lua_key_event__index(lua_State* L)
     lua_pushnumber(L, lua_key_event->key_event->xkb_keysym);
   } else if (streq(key, "char")) {
     if (lua_key_event->key_event->xkb_keysym == 9) {
-      lua_pushstring(L, "\t");
+      lua_pushliteral(L, "\t");
     } else if (lua_key_event->key_event->xkb_keysym == 10) {
-      lua_pushstring(L, "\n");
+      lua_pushliteral(L, "\n");
     } else if (31 < lua_key_event->key_event->xkb_keysym
                && lua_key_event->key_event->xkb_keysym < 127) {
       lua_pushstring(L, (char*) &lua_key_event->key_event->xkb_keysym);
