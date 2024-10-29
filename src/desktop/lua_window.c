@@ -7,11 +7,11 @@
 #include <wlr/types/wlr_scene.h>
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_window_on(lua_State* L)
+catnip_lua_window_lua_on(lua_State* L)
 {
   struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
   const char* event = luaL_checkstring(L, 2);
@@ -24,7 +24,7 @@ catnip_lua_window_on(lua_State* L)
 }
 
 static int
-catnip_lua_window_emit(lua_State* L)
+catnip_lua_window_lua_emit(lua_State* L)
 {
   struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
   const char* event = luaL_checkstring(L, 2);
@@ -40,12 +40,16 @@ catnip_lua_window_emit(lua_State* L)
 }
 
 static int
-catnip_lua_window_close(lua_State* L)
+catnip_lua_window_lua_close(lua_State* L)
 {
   struct catnip_lua_window* lua_window = luaL_checkudata(L, 1, "catnip.window");
   wlr_xdg_toplevel_send_close(lua_window->window->wlr.xdg_toplevel);
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_window__index(lua_State* L)
@@ -63,9 +67,9 @@ catnip_lua_window__index(lua_State* L)
   } else if (streq(key, "id")) {
     lua_pushnumber(L, window->id);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_window_on);
+    lua_pushcfunction(L, catnip_lua_window_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_window_emit);
+    lua_pushcfunction(L, catnip_lua_window_lua_emit);
   } else if (streq(key, "x")) {
     lua_pushnumber(L, window->wlr.scene_tree->node.x);
   } else if (streq(key, "y")) {
@@ -81,17 +85,13 @@ catnip_lua_window__index(lua_State* L)
   } else if (streq(key, "title")) {
     lua_pushstring(L, window->wlr.xdg_toplevel->title);
   } else if (streq(key, "destroy")) {
-    lua_pushcfunction(L, catnip_lua_window_close);
+    lua_pushcfunction(L, catnip_lua_window_lua_close);
   } else {
     lua_pushnil(L);
   }
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __newindex
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_window__newindex(lua_State* L)
@@ -146,15 +146,15 @@ catnip_lua_window__newindex(lua_State* L)
   return 0;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_window_mt[] = {
   {"__index", catnip_lua_window__index},
   {"__newindex", catnip_lua_window__newindex},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_window_init(lua_State* L)

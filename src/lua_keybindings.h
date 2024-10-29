@@ -13,9 +13,9 @@ bool
 catnip_lua_keybindings_check(lua_State* L, struct catnip_key_event* key_event);
 
 int
-catnip_lua_keybindings_bind(lua_State* L);
+catnip_lua_keybindings_lua_bind(lua_State* L);
 
 int
-catnip_lua_keybindings_unbind(lua_State* L);
+catnip_lua_keybindings_lua_unbind(lua_State* L);
 
 #endif
