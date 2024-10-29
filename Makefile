@@ -82,6 +82,7 @@ $(OBJECT_BUILD_DIR)/%.o: $(SOURCE_DIR)/%.c $(PROTOCOL_HEADERS)
 # ------------------------------------------------------------------------------
 
 LIBS := \
+	-lm \
 	-lrt \
 	$(shell pkg-config --libs $(DEPENDENCIES))
 
