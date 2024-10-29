@@ -12,6 +12,12 @@
 #include "lua_catnip.h"
 #include "lua_events.h"
 #include "lua_keybindings.h"
+#include "widget/lua_widget.h"
+#include "widget/lua_widget_block.h"
+#include "widget/lua_widget_png.h"
+#include "widget/lua_widget_root.h"
+#include "widget/lua_widget_svg.h"
+#include "widget/lua_widget_text.h"
 #include <lauxlib.h>
 
 void
@@ -31,6 +37,12 @@ catnip_lua_state_init(lua_State* L)
   catnip_lua_outputs_init(L);
   catnip_lua_window_init(L);
   catnip_lua_windows_init(L);
+  catnip_lua_widget_init(L);
+  catnip_lua_widget_block_init(L);
+  catnip_lua_widget_png_init(L);
+  catnip_lua_widget_root_init(L);
+  catnip_lua_widget_svg_init(L);
+  catnip_lua_widget_text_init(L);
 
   lua_getglobal(L, "package");
   lua_getfield(L, -1, "loaded");
