@@ -9,11 +9,11 @@
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_output_on(lua_State* L)
+catnip_lua_output_lua_on(lua_State* L)
 {
   struct catnip_lua_output* lua_output = luaL_checkudata(L, 1, "catnip.output");
   const char* event = luaL_checkstring(L, 2);
@@ -26,7 +26,7 @@ catnip_lua_output_on(lua_State* L)
 }
 
 static int
-catnip_lua_output_emit(lua_State* L)
+catnip_lua_output_lua_emit(lua_State* L)
 {
   struct catnip_lua_output* lua_output = luaL_checkudata(L, 1, "catnip.output");
   const char* event = luaL_checkstring(L, 2);
@@ -40,6 +40,10 @@ catnip_lua_output_emit(lua_State* L)
 
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static void
 catnip_lua_output_push_mode(
@@ -76,9 +80,9 @@ catnip_lua_output__index(lua_State* L)
   } else if (streq(key, "id")) {
     lua_pushnumber(L, output->id);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_output_on);
+    lua_pushcfunction(L, catnip_lua_output_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_output_emit);
+    lua_pushcfunction(L, catnip_lua_output_lua_emit);
   } else if (streq(key, "x")) {
     lua_pushnumber(
       L,
@@ -111,10 +115,6 @@ catnip_lua_output__index(lua_State* L)
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __newindex
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_output__newindex(lua_State* L)
@@ -174,15 +174,15 @@ catnip_lua_output__newindex(lua_State* L)
   return 0;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_output_mt[] = {
   {"__index", catnip_lua_output__index},
   {"__newindex", catnip_lua_output__newindex},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_output_init(lua_State* L)

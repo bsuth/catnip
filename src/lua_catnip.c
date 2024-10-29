@@ -14,8 +14,12 @@
 #include "lua_keybindings.h"
 #include <lauxlib.h>
 
+// -----------------------------------------------------------------------------
+// Lua Methods
+// -----------------------------------------------------------------------------
+
 static int
-catnip_lua_catnip_on(lua_State* L)
+catnip_lua_catnip_lua_on(lua_State* L)
 {
   const char* event = luaL_checkstring(L, 1);
   luaL_checktype(L, 2, LUA_TFUNCTION);
@@ -27,7 +31,7 @@ catnip_lua_catnip_on(lua_State* L)
 }
 
 static int
-catnip_lua_catnip_emit(lua_State* L)
+catnip_lua_catnip_lua_emit(lua_State* L)
 {
   const char* event = luaL_checkstring(L, 1);
 
@@ -42,7 +46,7 @@ catnip_lua_catnip_emit(lua_State* L)
 }
 
 static int
-catnip_lua_catnip_reload(lua_State* L)
+catnip_lua_catnip_lua_reload(lua_State* L)
 {
   if (catnip_config_loading) {
     lua_log_warning(L, "attempted to reload during startup, ignoring...");
@@ -54,11 +58,15 @@ catnip_lua_catnip_reload(lua_State* L)
 }
 
 static int
-catnip_lua_catnip_quit(lua_State* L)
+catnip_lua_catnip_lua_quit(lua_State* L)
 {
   catnip_display_run = false;
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_catnip__index(lua_State* L)
@@ -82,17 +90,17 @@ catnip_lua_catnip__index(lua_State* L)
       lua_rawgeti(L, LUA_REGISTRYINDEX, focused_window->lua_window->ref);
     }
   } else if (streq(key, "bind")) {
-    lua_pushcfunction(L, catnip_lua_keybindings_bind);
+    lua_pushcfunction(L, catnip_lua_keybindings_lua_bind);
   } else if (streq(key, "unbind")) {
-    lua_pushcfunction(L, catnip_lua_keybindings_unbind);
+    lua_pushcfunction(L, catnip_lua_keybindings_lua_unbind);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_catnip_on);
+    lua_pushcfunction(L, catnip_lua_catnip_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_catnip_emit);
+    lua_pushcfunction(L, catnip_lua_catnip_lua_emit);
   } else if (streq(key, "reload")) {
-    lua_pushcfunction(L, catnip_lua_catnip_reload);
+    lua_pushcfunction(L, catnip_lua_catnip_lua_reload);
   } else if (streq(key, "quit")) {
-    lua_pushcfunction(L, catnip_lua_catnip_quit);
+    lua_pushcfunction(L, catnip_lua_catnip_lua_quit);
   } else {
     lua_pushnil(L);
   }
@@ -123,6 +131,10 @@ static const struct luaL_Reg catnip_lua_catnip_mt[] = {
   {"__newindex", catnip_lua_catnip__newindex},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_catnip_init(lua_State* L)

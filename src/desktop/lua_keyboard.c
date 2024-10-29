@@ -7,11 +7,11 @@
 #include <string.h>
 
 // -----------------------------------------------------------------------------
-// __index
+// Lua Methods
 // -----------------------------------------------------------------------------
 
 static int
-catnip_lua_keyboard_on(lua_State* L)
+catnip_lua_keyboard_lua_on(lua_State* L)
 {
   struct catnip_lua_keyboard* lua_keyboard =
     luaL_checkudata(L, 1, "catnip.keyboard");
@@ -25,7 +25,7 @@ catnip_lua_keyboard_on(lua_State* L)
 }
 
 static int
-catnip_lua_keyboard_emit(lua_State* L)
+catnip_lua_keyboard_lua_emit(lua_State* L)
 {
   struct catnip_lua_keyboard* lua_keyboard =
     luaL_checkudata(L, 1, "catnip.keyboard");
@@ -40,6 +40,10 @@ catnip_lua_keyboard_emit(lua_State* L)
 
   return 0;
 }
+
+// -----------------------------------------------------------------------------
+// Metatable
+// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_keyboard__index(lua_State* L)
@@ -57,9 +61,9 @@ catnip_lua_keyboard__index(lua_State* L)
   } else if (streq(key, "id")) {
     lua_pushnumber(L, keyboard->id);
   } else if (streq(key, "on")) {
-    lua_pushcfunction(L, catnip_lua_keyboard_on);
+    lua_pushcfunction(L, catnip_lua_keyboard_lua_on);
   } else if (streq(key, "emit")) {
-    lua_pushcfunction(L, catnip_lua_keyboard_emit);
+    lua_pushcfunction(L, catnip_lua_keyboard_lua_emit);
   } else if (streq(key, "name")) {
     lua_pushstring(L, keyboard->wlr.keyboard->base.name);
   } else if (streq(key, "xkb_rules")) {
@@ -78,10 +82,6 @@ catnip_lua_keyboard__index(lua_State* L)
 
   return 1;
 }
-
-// -----------------------------------------------------------------------------
-// __newindex
-// -----------------------------------------------------------------------------
 
 static int
 catnip_lua_keyboard__newindex(lua_State* L)
@@ -132,15 +132,15 @@ catnip_lua_keyboard__newindex(lua_State* L)
   return 0;
 }
 
-// -----------------------------------------------------------------------------
-// Core
-// -----------------------------------------------------------------------------
-
 static const struct luaL_Reg catnip_lua_keyboard_mt[] = {
   {"__index", catnip_lua_keyboard__index},
   {"__newindex", catnip_lua_keyboard__newindex},
   {NULL, NULL}
 };
+
+// -----------------------------------------------------------------------------
+// Core
+// -----------------------------------------------------------------------------
 
 void
 catnip_lua_keyboard_init(lua_State* L)
