@@ -187,10 +187,15 @@ catnip_lua_widget_block__newindex(lua_State* L)
     }
 
     lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-    lua_rawgeti(L, -1, position);
 
+    lua_rawgeti(L, -1, position);
     struct catnip_lua_widget_base* old_child = lua_touserdata(L, -1);
-    old_child->parent = NULL;
+
+    if (old_child != NULL) {
+      old_child->parent = NULL;
+    }
+
+    lua_pop(L, 1);
 
     struct catnip_lua_widget_base* new_child = lua_touserdata(L, 3);
     new_child->parent = &block->base;
