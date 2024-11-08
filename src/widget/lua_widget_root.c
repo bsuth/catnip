@@ -3,6 +3,7 @@
 #include "compositor/scene.h"
 #include "config.h"
 #include "extensions/string.h"
+#include "extensions/wlroots.h"
 #include "widget/lua_widget_block.h"
 #include <drm_fourcc.h>
 #include <lauxlib.h>
@@ -73,6 +74,8 @@ catnip_lua_widget_root__index(lua_State* L)
     lua_pushnumber(L, root->wlr.scene_buffer->node.x);
   } else if (streq(key, "y")) {
     lua_pushnumber(L, root->wlr.scene_buffer->node.y);
+  } else if (streq(key, "z")) {
+    lua_pushnumber(L, wlr_scene_node_get_zindex(&root->wlr.scene_buffer->node));
   } else if (streq(key, "width")) {
     lua_pushnumber(L, root->wlr.buffer.width);
   } else if (streq(key, "height")) {
@@ -117,6 +120,11 @@ catnip_lua_widget_root__newindex(lua_State* L)
     wlr_scene_node_set_position(
       &root->wlr.scene_buffer->node,
       root->wlr.scene_buffer->node.x,
+      luaL_checkinteger(L, 3)
+    );
+  } else if (streq(key, "z")) {
+    wlr_scene_node_set_zindex(
+      &root->wlr.scene_buffer->node,
       luaL_checkinteger(L, 3)
     );
   } else if (streq(key, "width")) {
