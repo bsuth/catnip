@@ -212,7 +212,7 @@ catnip_lua_widget_block__newindex(lua_State* L)
     luaL_checktype(L, 3, LUA_TFUNCTION);
     luaL_unref(L, LUA_REGISTRYINDEX, block->styles.layout);
     lua_pushvalue(L, 3);
-    luaL_ref(L, block->styles.layout);
+    block->styles.layout = luaL_ref(L, LUA_REGISTRYINDEX);
   } else if (streq(key, "padding")) {
     block->styles.padding = luaL_checknumber(L, 3);
     catnip_lua_widget_base_request_layout(L, &block->base);
