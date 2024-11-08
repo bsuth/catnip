@@ -1,4 +1,5 @@
 #include "lua_output.h"
+#include "compositor/scene.h"
 #include "desktop/cursor.h"
 #include "desktop/lua_output_mode.h"
 #include "desktop/lua_output_modes.h"
@@ -6,7 +7,38 @@
 #include "desktop/outputs.h"
 #include "extensions/string.h"
 #include "lua_events.h"
+#include "widget/lua_widget_root.h"
 #include <lauxlib.h>
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+static int
+catnip_lua_output_wallpaper_default_layout(lua_State* L)
+{
+  int width = lua_tonumber(L, 1);
+  int height = lua_tonumber(L, 2);
+
+  lua_newtable(L);
+
+  for (size_t i = 0; i < lua_objlen(L, 3); ++i) {
+    lua_newtable(L);
+
+    lua_pushnumber(L, 0);
+    lua_rawseti(L, -2, 1);
+    lua_pushnumber(L, 0);
+    lua_rawseti(L, -2, 2);
+    lua_pushnumber(L, width);
+    lua_rawseti(L, -2, 3);
+    lua_pushnumber(L, height);
+    lua_rawseti(L, -2, 4);
+
+    lua_rawseti(L, -2, i + 1);
+  }
+
+  return 1;
+}
 
 // -----------------------------------------------------------------------------
 // Lua Methods
@@ -109,6 +141,8 @@ catnip_lua_output__index(lua_State* L)
     lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->lua_output_modes->ref);
   } else if (streq(key, "scale")) {
     lua_pushnumber(L, output->wlr.output->scale);
+  } else if (streq(key, "wallpaper")) {
+    lua_rawgeti(L, LUA_REGISTRYINDEX, lua_output->wallpaper);
   } else {
     lua_pushnil(L);
   }
@@ -206,6 +240,24 @@ catnip_lua_output_create(lua_State* L, struct catnip_output* output)
   lua_newtable(L);
   lua_output->subscriptions = luaL_ref(L, LUA_REGISTRYINDEX);
 
+  lua_pushcfunction(L, catnip_lua_widget_lua_root);
+  lua_newtable(L);
+  lua_pushnumber(L, output->wlr.output->width);
+  lua_setfield(L, -2, "width");
+  lua_pushnumber(L, output->wlr.output->height);
+  lua_setfield(L, -2, "height");
+  lua_pushcfunction(L, catnip_lua_output_wallpaper_default_layout);
+  lua_setfield(L, -2, "layout");
+  lua_call(L, 1, 1);
+
+  struct catnip_lua_widget_root* wallpaper = lua_touserdata(L, -1);
+  lua_output->wallpaper = luaL_ref(L, LUA_REGISTRYINDEX);
+
+  wlr_scene_node_reparent(
+    &wallpaper->wlr.scene_buffer->node,
+    catnip_scene_wallpaper_layer
+  );
+
   wl_list_insert(&catnip_lua_outputs->outputs, &lua_output->link);
 
   // Assign `output->lua_output` here, since the Lua output may be created much
@@ -224,6 +276,7 @@ catnip_lua_output_destroy(lua_State* L, struct catnip_lua_output* lua_output)
   lua_output->output = NULL;
 
   catnip_lua_output_modes_destroy(L, lua_output->lua_output_modes);
+  luaL_unref(L, LUA_REGISTRYINDEX, lua_output->wallpaper);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_output->subscriptions);
   luaL_unref(L, LUA_REGISTRYINDEX, lua_output->ref);
   wl_list_remove(&lua_output->link);

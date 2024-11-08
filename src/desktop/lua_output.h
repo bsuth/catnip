@@ -7,6 +7,7 @@
 struct catnip_lua_output {
   lua_Ref ref;
   lua_Ref subscriptions;
+  lua_Ref wallpaper;
   struct wl_list link;
   struct catnip_output* output;
   struct catnip_lua_output_modes* lua_output_modes;

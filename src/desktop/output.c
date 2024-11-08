@@ -8,6 +8,7 @@
 #include "desktop/outputs.h"
 #include "extensions/wayland.h"
 #include "id.h"
+#include "widget/lua_widget_root.h"
 #include <stdlib.h>
 
 // -----------------------------------------------------------------------------
@@ -33,8 +34,25 @@ on_output_frame(struct wl_listener* listener, void* data)
 static void
 on_output_request_state(struct wl_listener* listener, void* data)
 {
+  struct catnip_output* output =
+    wl_container_of(listener, output, listeners.output_request_state);
+
   struct wlr_output_event_request_state* event = data;
   wlr_output_commit_state(event->output, event->state);
+
+  if (event->state->mode != NULL) {
+    int32_t new_width = event->state->mode->width;
+    int32_t new_height = event->state->mode->height;
+
+    bool needs_wallpaper_resize = output->wlr.output->width != new_width
+      || output->wlr.output->height != new_height && output->lua_output != NULL;
+
+    if (needs_wallpaper_resize) {
+      lua_rawgeti(catnip_L, LUA_REGISTRYINDEX, output->lua_output->wallpaper);
+      struct catnip_lua_widget_root* root = lua_popuserdata(catnip_L);
+      catnip_lua_widget_root_request_resize(root, new_width, new_height);
+    }
+  }
 }
 
 static void
