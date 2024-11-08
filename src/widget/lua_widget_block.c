@@ -3,9 +3,27 @@
 #include "extensions/string.h"
 #include "widget/lua_widget_base.h"
 #include "widget/lua_widget_png.h"
+#include "widget/lua_widget_root.h"
 #include "widget/lua_widget_svg.h"
 #include "widget/lua_widget_text.h"
 #include <lauxlib.h>
+
+// -----------------------------------------------------------------------------
+// Helpers
+// -----------------------------------------------------------------------------
+
+static struct catnip_lua_widget_block*
+catnip_lua_widget_block_check(lua_State* L, int idx)
+{
+  enum catnip_lua_widget_type widget_type = catnip_lua_widget_base_type(L, idx);
+
+  if (widget_type == CATNIP_LUA_WIDGET_ROOT) {
+    struct catnip_lua_widget_root* root = lua_touserdata(L, idx);
+    return root->block;
+  } else {
+    return luaL_checkudata(L, idx, "catnip.widget.block");
+  }
+}
 
 // -----------------------------------------------------------------------------
 // Lua Methods
@@ -16,8 +34,7 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
 {
   int num_args = lua_gettop(L);
 
-  struct catnip_lua_widget_block* block =
-    luaL_checkudata(L, 1, "catnip.widget.block");
+  struct catnip_lua_widget_block* block = catnip_lua_widget_block_check(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
   int children_len = lua_objlen(L, -1);
@@ -73,8 +90,7 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
 static int
 catnip_lua_widget_block_lua_remove(lua_State* L)
 {
-  struct catnip_lua_widget_block* block =
-    luaL_checkudata(L, 1, "catnip.widget.block");
+  struct catnip_lua_widget_block* block = catnip_lua_widget_block_check(L, 1);
 
   lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
   int children_len = lua_objlen(L, -1);
