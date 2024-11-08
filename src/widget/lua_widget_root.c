@@ -220,7 +220,7 @@ catnip_lua_widget_lua_root(lua_State* L)
   );
 
   root->wlr.scene_buffer =
-    wlr_scene_buffer_create(&catnip_scene->tree, &root->wlr.buffer);
+    wlr_scene_buffer_create(catnip_scene_desktop_layer, &root->wlr.buffer);
 
   root->request.event_source = NULL;
   root->request.width = initial_width;

@@ -103,7 +103,7 @@ catnip_window_create(struct wlr_xdg_toplevel* xdg_toplevel)
   window->id = generate_catnip_id();
   window->wlr.xdg_toplevel = xdg_toplevel;
   window->wlr.scene_tree =
-    wlr_scene_xdg_surface_create(&catnip_scene->tree, xdg_surface);
+    wlr_scene_xdg_surface_create(catnip_scene_desktop_layer, xdg_surface);
 
   // wlroots provides a helper for adding xdg popups to the scene graph, but
   // it requires the popup parent's scene node. For convenience, we always
