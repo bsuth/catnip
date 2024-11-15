@@ -3,11 +3,11 @@
 #include "default_config.h"
 #include "extensions/string.h"
 #include "utils/log.h"
-#include "utils/path.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include <wlr/util/log.h>
 
 static const char* catnip_version = "0.1.0";
@@ -31,6 +31,22 @@ static const char* catnip_help =
   "  -d, --default      print default user config and exit\n"
   "  -v, --version      print help and exit\n"
   "  -h, --help         print version and exit\n";
+
+static char*
+abspath(const char* path)
+{
+  if (path == NULL || strlen(path) == 0) {
+    return getcwd(NULL, 0);
+  } else if (path[0] == '/') {
+    return strdup(path);
+  }
+
+  char* cwd = getcwd(NULL, 0);
+  char* abspath = strfmt("%s/%s", cwd, path);
+  free(cwd);
+
+  return abspath;
+}
 
 static int
 catnip_cli_getopt(int argc, char* argv[])
@@ -58,6 +74,8 @@ catnip_cli_init(int argc, char* argv[])
         printf("%s\n", catnip_version);
         exit(0);
       case 'c':
+        // Make sure to get the absolute path here, since we change the
+        // working directory when loading the user config.
         catnip_config_user_path = abspath(optarg);
         break;
       case 'l': {
