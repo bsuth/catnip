@@ -2,7 +2,7 @@
 #include "config.h"
 #include "default_config.h"
 #include "extensions/string.h"
-#include "utils/log.h"
+#include "log.h"
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -80,20 +80,22 @@ catnip_cli_init(int argc, char* argv[])
         break;
       case 'l': {
         if (streq(optarg, "silent")) {
-          global_log_level = LOG_LEVEL_SILENT;
+          catnip_log_level = CATNIP_LOG_LEVEL_SILENT;
           wlr_log_init(WLR_SILENT, NULL);
+        } else if (streq(optarg, "error")) {
+          catnip_log_level = CATNIP_LOG_LEVEL_ERROR;
+          wlr_log_init(WLR_ERROR, NULL);
         } else if (streq(optarg, "warning")) {
-          global_log_level = LOG_LEVEL_WARNING;
+          catnip_log_level = CATNIP_LOG_LEVEL_WARNING;
           wlr_log_init(WLR_ERROR, NULL);
         } else if (streq(optarg, "info")) {
-          global_log_level = LOG_LEVEL_INFO;
+          catnip_log_level = CATNIP_LOG_LEVEL_INFO;
           wlr_log_init(WLR_INFO, NULL);
         } else if (streq(optarg, "debug")) {
-          global_log_level = LOG_LEVEL_DEBUG;
+          catnip_log_level = CATNIP_LOG_LEVEL_DEBUG;
           wlr_log_init(WLR_DEBUG, NULL);
         } else {
-          global_log_level = LOG_LEVEL_ERROR;
-          wlr_log_init(WLR_ERROR, NULL);
+          catnip_log_warning("unknown log level: %s", optarg);
         }
       }; break;
       case 'd':

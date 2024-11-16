@@ -6,6 +6,7 @@
 #include "desktop/lua_outputs.h"
 #include "desktop/outputs.h"
 #include "extensions/string.h"
+#include "log.h"
 #include "lua_events.h"
 #include "widget/lua_widget_root.h"
 #include <lauxlib.h>
@@ -105,7 +106,7 @@ catnip_lua_output__index(lua_State* L)
   struct catnip_output* output = lua_output->output;
 
   if (output == NULL) {
-    lua_log_error(L, "attempt to index outdated output");
+    catnip_log_error("attempt to index outdated output");
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
@@ -163,7 +164,7 @@ catnip_lua_output__newindex(lua_State* L)
   }
 
   if (output == NULL) {
-    lua_log_error(L, "attempt to index outdated output");
+    catnip_log_error("attempt to index outdated output");
   } else if (streq(key, "x")) {
     wlr_output_layout_add(
       catnip_output_layout,

@@ -1,5 +1,6 @@
 #include "lua_output_mode.h"
 #include "extensions/string.h"
+#include "log.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -13,7 +14,7 @@ catnip_lua_output_mode__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (lua_output_mode->wlr_output_mode == NULL) {
-    lua_log_error(L, "attempt to index outdated output mode");
+    catnip_log_error("attempt to index outdated output mode");
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);

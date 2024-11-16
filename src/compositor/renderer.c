@@ -1,7 +1,7 @@
 #include "renderer.h"
 #include "compositor/backend.h"
 #include "compositor/display.h"
-#include "utils/log.h"
+#include "log.h"
 #include <stdlib.h>
 
 struct wlr_renderer* catnip_renderer = NULL;
@@ -12,7 +12,7 @@ catnip_renderer_init()
   catnip_renderer = wlr_renderer_autocreate(catnip_backend);
 
   if (catnip_renderer == NULL) {
-    log_error("failed to create renderer");
+    catnip_log_error("failed to create renderer");
     exit(1);
   }
 

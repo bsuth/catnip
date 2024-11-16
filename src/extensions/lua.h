@@ -1,7 +1,6 @@
 #ifndef CATNIP_EXTENSIONS_LUA_H
 #define CATNIP_EXTENSIONS_LUA_H
 
-#include "utils/log.h"
 #include <lua.h>
 #include <stdbool.h>
 
@@ -73,48 +72,10 @@ lua_hasfieldtype(lua_State* L, int index, const char* field, int type);
   lua_hasfieldtype(L, index, field, LUA_TTHREAD)
 
 // -----------------------------------------------------------------------------
-// Messages
+// Error Handling
 // -----------------------------------------------------------------------------
 
-char*
-lua_msg_bad_type(lua_State* L, int index);
-
-char*
-lua_msg_expected_type(lua_State* L, int index, int type);
-
-char*
-lua_msg_bad_arg(lua_State* L, int index, const char* details);
-
-char*
-lua_msg_bad_field(lua_State* L, const char* field, const char* details);
-
-// -----------------------------------------------------------------------------
-// Logging
-// -----------------------------------------------------------------------------
-
-void
-lua_log(lua_State* L, enum LOG_LEVEL log_level, const char* format, ...);
-
-#define lua_log_error(L, ...) lua_log(L, LOG_LEVEL_ERROR, __VA_ARGS__)
-#define lua_log_warning(L, ...) lua_log(L, LOG_LEVEL_WARNING, __VA_ARGS__)
-#define lua_log_info(L, ...) lua_log(L, LOG_LEVEL_INFO, __VA_ARGS__)
-#define lua_log_debug(L, ...) lua_log(L, LOG_LEVEL_DEBUG, __VA_ARGS__)
-
-void
-lua_log_bad_arg_type(lua_State* L, int index);
-
-void
-lua_log_expected_arg_type(lua_State* L, int index, int type);
-
-void
-lua_log_bad_field_type(lua_State* L, int index, const char* field);
-
-void
-lua_log_expected_field_type(
-  lua_State* L,
-  int index,
-  const char* field,
-  int type
-);
+int
+luaL_pcall(lua_State* L, int nargs, int nresults);
 
 #endif

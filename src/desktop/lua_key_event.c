@@ -2,6 +2,7 @@
 #include "desktop/keyboard.h"
 #include "desktop/lua_keyboard.h"
 #include "extensions/string.h"
+#include "log.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -15,7 +16,7 @@ catnip_lua_key_event__index(lua_State* L)
   const char* key = lua_tostring(L, 2);
 
   if (lua_key_event->key_event == NULL) {
-    lua_log_error(L, "attempt to index outdated key event");
+    catnip_log_error("attempt to index outdated key event");
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
@@ -77,7 +78,7 @@ catnip_lua_key_event__newindex(lua_State* L)
   }
 
   if (lua_key_event->key_event == NULL) {
-    lua_log_error(L, "attempt to index outdated key event");
+    catnip_log_error("attempt to index outdated key event");
   } else if (streq(key, "propagate")) {
     lua_key_event->key_event->propagate = lua_toboolean(L, 3);
   }

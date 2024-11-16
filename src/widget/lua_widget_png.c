@@ -1,6 +1,7 @@
 #include "lua_widget_png.h"
 #include "extensions/lua.h"
 #include "extensions/string.h"
+#include "log.h"
 #include <lauxlib.h>
 
 // -----------------------------------------------------------------------------
@@ -29,7 +30,7 @@ catnip_lua_widget_png_set_path(
     png->surface = NULL;
     png->intrinsic_width = 0;
     png->intrinsic_height = 1;
-    log_warning("failed to load png: %s", png->styles.path);
+    catnip_log_error("failed to load %s", png->styles.path);
   }
 }
 
