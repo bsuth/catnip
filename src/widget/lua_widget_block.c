@@ -1,6 +1,7 @@
 #include "lua_widget_block.h"
 #include "extensions/cairo.h"
 #include "extensions/string.h"
+#include "log.h"
 #include "widget/lua_widget_base.h"
 #include "widget/lua_widget_png.h"
 #include "widget/lua_widget_root.h"
@@ -49,7 +50,7 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
     position = lua_tointeger(L, 2);
     child_index = 3;
   } else {
-    lua_log_error(L, "wrong number of arguments to 'insert'");
+    catnip_log_error("wrong number of arguments to 'insert'");
     return 0;
   }
 
@@ -58,10 +59,10 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   struct catnip_lua_widget_base* child = NULL;
 
   if (child_type == CATNIP_LUA_WIDGET_NONE) {
-    lua_log_error(L, "attempt to set non-widget child");
+    catnip_log_error("attempt to set non-widget child");
     return 0;
   } else if (child_type == CATNIP_LUA_WIDGET_ROOT) {
-    lua_log_error(L, "cannot use root widget as child");
+    catnip_log_error("cannot use root widget as child");
     return 0;
   } else {
     child = lua_touserdata(L, child_index);
@@ -69,7 +70,7 @@ catnip_lua_widget_block_lua_insert(lua_State* L)
   }
 
   if (child->parent != NULL) {
-    lua_log_error(L, "widget already belongs to another parent");
+    catnip_log_error("widget already belongs to another parent");
     return 0;
   }
 
@@ -195,10 +196,10 @@ catnip_lua_widget_block__newindex(lua_State* L)
       catnip_lua_widget_base_type(L, 3);
 
     if (new_child_type == CATNIP_LUA_WIDGET_NONE) {
-      lua_log_error(L, "attempt to set non-widget child");
+      catnip_log_error("attempt to set non-widget child");
       return 0;
     } else if (new_child_type == CATNIP_LUA_WIDGET_ROOT) {
-      lua_log_error(L, "cannot use root widget as child");
+      catnip_log_error("cannot use root widget as child");
       return 0;
     }
 
@@ -407,10 +408,10 @@ catnip_lua_widget_lua_block(lua_State* L)
         catnip_lua_widget_base_type(L, -1);
 
       if (child_type == CATNIP_LUA_WIDGET_NONE) {
-        lua_log_error(L, "attempt to set non-widget child");
+        catnip_log_error("attempt to set non-widget child");
         lua_pop(L, 1);
       } else if (child_type == CATNIP_LUA_WIDGET_ROOT) {
-        lua_log_error(L, "cannot use root widget as child");
+        catnip_log_error("cannot use root widget as child");
         lua_pop(L, 1);
       } else {
         struct catnip_lua_widget_base* child = lua_touserdata(L, -1);
@@ -465,10 +466,15 @@ catnip_lua_widget_block_layout(
   lua_pushnumber(L, content_width);
   lua_pushnumber(L, content_height);
   lua_rawgeti(L, LUA_REGISTRYINDEX, block->children);
-  lua_call(L, 3, 1);
+
+  if (luaL_pcall(L, 3, 1) != 0) {
+    catnip_log_error("%s", lua_tostring(L, -1));
+    lua_pop(L, 2);
+    return;
+  }
 
   if (lua_type(L, -1) != LUA_TTABLE) {
-    lua_log_warning(L, "invalid layout");
+    catnip_log_warning("widget layout must return a table");
     lua_pop(L, 2);
     return;
   }
@@ -480,7 +486,7 @@ catnip_lua_widget_block_layout(
     lua_rawgeti(L, -3, index);
 
     if (lua_type(L, -1) != LUA_TTABLE) {
-      lua_log_warning(L, "invalid bounding box");
+      catnip_log_warning("child bounding box must be a table");
       lua_pop(L, 2);
       continue;
     }

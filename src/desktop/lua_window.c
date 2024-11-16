@@ -2,6 +2,7 @@
 #include "desktop/lua_windows.h"
 #include "extensions/string.h"
 #include "extensions/wlroots.h"
+#include "log.h"
 #include "lua_events.h"
 #include <lauxlib.h>
 #include <wlr/types/wlr_scene.h>
@@ -60,7 +61,7 @@ catnip_lua_window__index(lua_State* L)
   struct catnip_window* window = lua_window->window;
 
   if (window == NULL) {
-    lua_log_error(L, "attempt to index outdated window");
+    catnip_log_error("attempt to index outdated window");
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
@@ -106,7 +107,7 @@ catnip_lua_window__newindex(lua_State* L)
   }
 
   if (window == NULL) {
-    lua_log_error(L, "attempt to index outdated window");
+    catnip_log_error("attempt to index outdated window");
   } else if (streq(key, "x")) {
     wlr_scene_node_set_position(
       &window->wlr.scene_tree->node,

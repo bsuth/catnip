@@ -1,5 +1,6 @@
 #include "lua_keybindings.h"
 #include "extensions/string.h"
+#include "log.h"
 #include <lauxlib.h>
 #include <stdint.h>
 #include <string.h>
@@ -23,6 +24,7 @@ catnip_lua_keybindings_get_modifiers(lua_State* L, int idx)
     const char* modifier = lua_tostring(L, -1);
 
     if (modifier == NULL) {
+      catnip_log_warning("invalid modifier");
       continue;
     }
 
@@ -38,6 +40,8 @@ catnip_lua_keybindings_get_modifiers(lua_State* L, int idx)
       modifiers |= WLR_MODIFIER_LOGO;
     } else if (streq(modifier, "mod5")) {
       modifiers |= WLR_MODIFIER_MOD5;
+    } else {
+      catnip_log_warning("invalid modifier (%s)", modifier);
     }
 
     lua_pop(L, 1);
@@ -94,7 +98,7 @@ catnip_lua_keybindings_check(lua_State* L, struct catnip_key_event* key_event)
 
   if (key_event->state == WL_KEYBOARD_KEY_STATE_PRESSED) {
     if (lua_pcall(L, 0, 0, 0) != 0) {
-      log_error("%s", lua_popstring(L));
+      catnip_log_error("%s", lua_popstring(L));
     }
   }
 
@@ -117,7 +121,7 @@ catnip_lua_keybindings_lua_bind(lua_State* L)
   xkb_keysym_t xkb_keysym = catnip_lua_keybindings_get_xkb_keysym(L, key);
 
   if (xkb_keysym == XKB_KEY_NoSymbol) {
-    lua_log_error(L, "unknown key: %s", key);
+    catnip_log_error("unknown key (%s)", key);
     return 0;
   }
 

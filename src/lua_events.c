@@ -1,5 +1,5 @@
 #include "lua_events.h"
-#include "utils/log.h"
+#include "log.h"
 #include <lauxlib.h>
 
 lua_Ref catnip_lua_subscriptions = LUA_NOREF;
@@ -109,7 +109,7 @@ catnip_lua_events_publish(
       }
 
       if (lua_pcall(L, nargs, 0, 0) != 0) {
-        log_error("%s", lua_popstring(L));
+        catnip_log_error("%s", lua_popstring(L));
       }
 
       lua_pop(L, 1);

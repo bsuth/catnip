@@ -12,8 +12,8 @@
 #include "desktop/keyboards.h"
 #include "desktop/outputs.h"
 #include "desktop/windows.h"
+#include "log.h"
 #include "lua_events.h"
-#include "utils/log.h"
 #include <stdlib.h>
 #include <wlr/types/wlr_data_device.h>
 #include <wlr/types/wlr_subcompositor.h>
@@ -57,7 +57,7 @@ main(int argc, char* argv[])
   setenv("WAYLAND_DISPLAY", catnip_display_socket, true);
 
   if (!wlr_backend_start(catnip_backend)) {
-    log_error("failed to start backend");
+    catnip_log_error("failed to start backend");
     exit(EXIT_FAILURE);
   }
 

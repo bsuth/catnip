@@ -10,6 +10,7 @@
 #include "desktop/window.h"
 #include "desktop/windows.h"
 #include "extensions/string.h"
+#include "log.h"
 #include "lua_events.h"
 #include "lua_keybindings.h"
 #include "widget/lua_widget.h"
@@ -50,7 +51,7 @@ static int
 catnip_lua_catnip_lua_reload(lua_State* L)
 {
   if (catnip_config_loading) {
-    lua_log_warning(L, "attempted to reload during startup, ignoring...");
+    catnip_log_warning("attempted to reload during startup, ignoring...");
     return 0;
   } else {
     catnip_config_request_reload = true;
@@ -72,9 +73,11 @@ catnip_lua_catnip_lua_quit(lua_State* L)
 static int
 catnip_lua_catnip__index(lua_State* L)
 {
-  const char* key = luaL_checkstring(L, 2);
+  const char* key = lua_tostring(L, 2);
 
-  if (streq(key, "cursor")) {
+  if (key == NULL) {
+    lua_pushnil(L);
+  } else if (streq(key, "cursor")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_cursor->ref);
   } else if (streq(key, "keyboards")) {
     lua_rawgeti(L, LUA_REGISTRYINDEX, catnip_lua_keyboards->ref);
@@ -114,7 +117,11 @@ catnip_lua_catnip__index(lua_State* L)
 static int
 catnip_lua_catnip__newindex(lua_State* L)
 {
-  const char* key = luaL_checkstring(L, 2);
+  const char* key = lua_tostring(L, 2);
+
+  if (key == NULL) {
+    return 0;
+  }
 
   if (streq(key, "focused")) {
     if (lua_type(L, 3) == LUA_TNIL) {

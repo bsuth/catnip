@@ -1,6 +1,7 @@
 #include "lua_widget_svg.h"
 #include "extensions/lua.h"
 #include "extensions/string.h"
+#include "log.h"
 #include <lauxlib.h>
 #include <stdlib.h>
 #include <string.h>
@@ -35,7 +36,7 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
       );
 
   if (error != NULL) {
-    lua_log_error(L, "failed to load svg: %s", error->message);
+    catnip_log_error("failed to load svg (%s)", error->message);
     g_error_free(error);
     return;
   }
@@ -60,7 +61,7 @@ catnip_lua_widget_svg_reload(lua_State* L, struct catnip_lua_widget_svg* svg)
     );
 
     if (error != NULL) {
-      lua_log_error(L, "failed to load svg styles: %s", error->message);
+      catnip_log_error("failed to load svg styles (%s)", error->message);
       g_error_free(error);
     }
   }

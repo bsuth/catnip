@@ -1,9 +1,9 @@
 #include "config.h"
 #include "default_config.h"
 #include "extensions/string.h"
+#include "log.h"
 #include "lua_events.h"
 #include "lua_state.h"
-#include "utils/log.h"
 #include <lauxlib.h>
 #include <libgen.h>
 #include <lualib.h>
@@ -38,7 +38,7 @@ catnip_config_load(
   catnip_config_loading = false;
 
   if (!loaded) {
-    log_error("%s", lua_tostring(catnip_L, -1));
+    catnip_log_error("%s", lua_tostring(catnip_L, -1));
     lua_close(catnip_L);
     catnip_L = NULL;
   }

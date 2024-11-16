@@ -1,6 +1,7 @@
 #include "lua_keyboard.h"
 #include "desktop/lua_keyboards.h"
 #include "extensions/string.h"
+#include "log.h"
 #include "lua_events.h"
 #include <lauxlib.h>
 #include <stdlib.h>
@@ -54,7 +55,7 @@ catnip_lua_keyboard__index(lua_State* L)
   struct catnip_keyboard* keyboard = lua_keyboard->keyboard;
 
   if (keyboard == NULL) {
-    lua_log_error(L, "attempt to index outdated keyboard");
+    catnip_log_error("attempt to index outdated keyboard");
     lua_pushnil(L);
   } else if (key == NULL) {
     lua_pushnil(L);
@@ -96,7 +97,7 @@ catnip_lua_keyboard__newindex(lua_State* L)
   }
 
   if (keyboard == NULL) {
-    lua_log_error(L, "attempt to index outdated keyboard");
+    catnip_log_error("attempt to index outdated keyboard");
   } else if (streq(key, "xkb_rules")) {
     catnip_keyboard_update_xkb_rule_name(
       keyboard,

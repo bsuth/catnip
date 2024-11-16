@@ -146,7 +146,8 @@ catnip_lua_cursor_publish_button_event(
   catnip_lua_events_publish(
     L,
     catnip_lua_cursor->subscriptions,
-    event->state == WLR_BUTTON_PRESSED ? "button::press" : "button:release",
+    event->state == WL_POINTER_BUTTON_STATE_PRESSED ? "button::press"
+                                                    : "button:release",
     1
   );
 
