@@ -12,7 +12,7 @@
 
 static const char* catnip_version = "0.1.0";
 
-static const char* catnip_short_options = "hvc:ld";
+static const char* catnip_short_options = "hvc:l:d";
 
 static const struct option catnip_long_options[] = {
   {"help", no_argument, NULL, 'h'},
@@ -27,7 +27,7 @@ static const char* catnip_help =
   "usage: catnip [OPTION]\n"
   "  -c, --config FILE  specify lua config path\n"
   "  -l, --log LEVEL    specify log level, must be one of:\n"
-  "                     silent, error, warning, info, debug \n"
+  "                     silent, error, warning, info, debug\n"
   "  -d, --default      print default user config and exit\n"
   "  -v, --version      print help and exit\n"
   "  -h, --help         print version and exit\n";
